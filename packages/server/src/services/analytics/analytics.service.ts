@@ -228,3 +228,168 @@ export async function getBudgetUtilization(orgId: number) {
     utilizationRate: totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0,
   };
 }
+
+// ---------------------------------------------------------------------------
+// getManagerDashboard — recognition stats for a specific manager's team
+// ---------------------------------------------------------------------------
+export async function getManagerDashboard(orgId: number, managerId: number) {
+  const db = getDB();
+
+  // Get team members (users reporting to this manager)
+  const [teamMembers] = await db.raw<any>(
+    `SELECT id, first_name, last_name, email, designation
+     FROM empcloud.users
+     WHERE organization_id = ? AND reporting_to = ? AND status = 1`,
+    [orgId, managerId],
+  );
+
+  const team = teamMembers || [];
+  const teamSize = team.length;
+  const teamUserIds = team.map((m: any) => m.id);
+
+  if (teamSize === 0) {
+    return {
+      teamSize: 0,
+      kudosGivenThisMonth: 0,
+      teamKudosReceived: 0,
+      engagementScore: 0,
+      teamMembers: [],
+      trends: [],
+      orgAverageEngagement: 0,
+    };
+  }
+
+  const placeholders = teamUserIds.map(() => "?").join(",");
+
+  // Kudos given by the manager this month
+  const [managerKudos] = await db.raw<any>(
+    `SELECT COUNT(*) as count FROM kudos
+     WHERE organization_id = ? AND sender_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())`,
+    [orgId, managerId],
+  );
+  const kudosGivenThisMonth = Number(managerKudos[0]?.count || 0);
+
+  // Team kudos received this month
+  const [teamReceived] = await db.raw<any>(
+    `SELECT COUNT(*) as count FROM kudos
+     WHERE organization_id = ? AND receiver_id IN (${placeholders})
+       AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())`,
+    [orgId, ...teamUserIds],
+  );
+  const teamKudosReceived = Number(teamReceived[0]?.count || 0);
+
+  // Engagement score: kudos per employee per month (last 3 months average)
+  const [engagementRows] = await db.raw<any>(
+    `SELECT COUNT(*) as total_kudos FROM kudos
+     WHERE organization_id = ?
+       AND (sender_id IN (${placeholders}) OR receiver_id IN (${placeholders}))
+       AND created_at >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)`,
+    [orgId, ...teamUserIds, ...teamUserIds],
+  );
+  const totalKudos3m = Number(engagementRows[0]?.total_kudos || 0);
+  const engagementScore = teamSize > 0 ? Math.round((totalKudos3m / teamSize / 3) * 10) / 10 : 0;
+
+  // Individual team member stats
+  const [memberStats] = await db.raw<any>(
+    `SELECT
+       u.id as user_id, u.first_name, u.last_name, u.designation,
+       COALESCE(ks.sent, 0) as kudos_sent,
+       COALESCE(kr.received, 0) as kudos_received
+     FROM empcloud.users u
+     LEFT JOIN (
+       SELECT sender_id, COUNT(*) as sent FROM kudos
+       WHERE organization_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())
+       GROUP BY sender_id
+     ) ks ON ks.sender_id = u.id
+     LEFT JOIN (
+       SELECT receiver_id, COUNT(*) as received FROM kudos
+       WHERE organization_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())
+       GROUP BY receiver_id
+     ) kr ON kr.receiver_id = u.id
+     WHERE u.organization_id = ? AND u.reporting_to = ? AND u.status = 1
+     ORDER BY kudos_received DESC`,
+    [orgId, orgId, orgId, managerId],
+  );
+
+  // Team engagement trend (last 6 months)
+  const [trendRows] = await db.raw<any>(
+    `SELECT
+       DATE_FORMAT(k.created_at, '%Y-%m') as period,
+       COUNT(*) as kudos_count
+     FROM kudos k
+     WHERE k.organization_id = ?
+       AND (k.sender_id IN (${placeholders}) OR k.receiver_id IN (${placeholders}))
+       AND k.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+     GROUP BY DATE_FORMAT(k.created_at, '%Y-%m')
+     ORDER BY period ASC`,
+    [orgId, ...teamUserIds, ...teamUserIds],
+  );
+
+  // Org-wide average engagement for comparison
+  const [orgEngagement] = await db.raw<any>(
+    `SELECT
+       COUNT(DISTINCT k.id) as total_kudos,
+       COUNT(DISTINCT u.id) as total_employees
+     FROM empcloud.users u
+     LEFT JOIN kudos k ON (k.sender_id = u.id OR k.receiver_id = u.id)
+       AND k.organization_id = ? AND k.created_at >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+     WHERE u.organization_id = ? AND u.status = 1`,
+    [orgId, orgId],
+  );
+  const orgTotalKudos = Number(orgEngagement[0]?.total_kudos || 0);
+  const orgTotalEmployees = Number(orgEngagement[0]?.total_employees || 1);
+  const orgAverageEngagement = Math.round((orgTotalKudos / orgTotalEmployees / 3) * 10) / 10;
+
+  return {
+    teamSize,
+    kudosGivenThisMonth,
+    teamKudosReceived,
+    engagementScore,
+    teamMembers: memberStats || [],
+    trends: trendRows || [],
+    orgAverageEngagement,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// getManagerComparison — all managers ranked by team engagement score
+// ---------------------------------------------------------------------------
+export async function getManagerComparison(orgId: number) {
+  const db = getDB();
+
+  // Get all managers (users who have direct reports)
+  const [managers] = await db.raw<any>(
+    `SELECT DISTINCT
+       m.id as manager_id,
+       m.first_name,
+       m.last_name,
+       m.designation,
+       COUNT(DISTINCT e.id) as team_size,
+       COALESCE(k_data.team_kudos, 0) as team_kudos_3m
+     FROM empcloud.users m
+     JOIN empcloud.users e ON e.reporting_to = m.id AND e.organization_id = ? AND e.status = 1
+     LEFT JOIN (
+       SELECT
+         u.reporting_to as mgr_id,
+         COUNT(DISTINCT k.id) as team_kudos
+       FROM empcloud.users u
+       JOIN kudos k ON (k.sender_id = u.id OR k.receiver_id = u.id)
+         AND k.organization_id = ? AND k.created_at >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+       WHERE u.organization_id = ? AND u.status = 1
+       GROUP BY u.reporting_to
+     ) k_data ON k_data.mgr_id = m.id
+     WHERE m.organization_id = ? AND m.status = 1
+     GROUP BY m.id, m.first_name, m.last_name, m.designation, k_data.team_kudos
+     ORDER BY team_kudos_3m DESC`,
+    [orgId, orgId, orgId, orgId],
+  );
+
+  return (managers || []).map((m: any, idx: number) => ({
+    ...m,
+    engagementScore: Number(m.team_size) > 0
+      ? Math.round((Number(m.team_kudos_3m) / Number(m.team_size) / 3) * 10) / 10
+      : 0,
+    rank: idx + 1,
+  }));
+}

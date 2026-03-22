@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Award, Star, Trophy, Lock, Loader2 } from "lucide-react";
+import { Award, Star, Trophy, Lock, Loader2, Target } from "lucide-react";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate } from "@/lib/utils";
@@ -21,6 +21,17 @@ interface UserBadge {
   created_at: string;
 }
 
+interface MilestoneAchievement {
+  id: string;
+  milestone_rule_id: string;
+  achieved_at: string;
+  points_awarded: number;
+  rule_name?: string;
+  rule_description?: string;
+  trigger_type?: string;
+  trigger_value?: number;
+}
+
 const CRITERIA_LABELS: Record<string, string> = {
   manual: "Manual Award",
   auto_kudos_count: "kudos received",
@@ -39,15 +50,17 @@ export function MyBadgesPage() {
   const user = getUser();
   const [allBadges, setAllBadges] = useState<BadgeDefinition[]>([]);
   const [myBadges, setMyBadges] = useState<UserBadge[]>([]);
+  const [milestones, setMilestones] = useState<MilestoneAchievement[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const [badgesRes, myRes] = await Promise.all([
+        const [badgesRes, myRes, milestonesRes] = await Promise.all([
           apiGet<any>("/badges"),
           apiGet<any>("/badges/my"),
+          apiGet<any>("/milestones/my-achievements"),
         ]);
 
         if (badgesRes.success && badgesRes.data) {
@@ -55,6 +68,9 @@ export function MyBadgesPage() {
         }
         if (myRes.success && myRes.data) {
           setMyBadges(Array.isArray(myRes.data) ? myRes.data : []);
+        }
+        if (milestonesRes.success && milestonesRes.data) {
+          setMilestones(Array.isArray(milestonesRes.data) ? milestonesRes.data : []);
         }
       } catch {
         // handled by interceptor
@@ -189,10 +205,45 @@ export function MyBadgesPage() {
         </div>
       )}
 
-      {allBadges.length === 0 && (
+      {/* Milestones */}
+      {milestones.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Milestones</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {milestones.map((m) => (
+              <div
+                key={m.id}
+                className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-5 shadow-sm"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                  <Target className="h-7 w-7" />
+                </div>
+                <h3 className="mt-3 text-base font-semibold text-gray-900">
+                  {m.rule_name || "Milestone"}
+                </h3>
+                {m.rule_description && (
+                  <p className="mt-1 text-sm text-gray-500">{m.rule_description}</p>
+                )}
+                <div className="mt-3 flex items-center gap-2">
+                  {m.points_awarded > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
+                      +{m.points_awarded} pts
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">
+                    Achieved {formatDate(m.achieved_at)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allBadges.length === 0 && milestones.length === 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Award className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No badges available yet.</p>
+          <p className="mt-3 text-sm text-gray-500">No badges or milestones available yet.</p>
         </div>
       )}
     </div>

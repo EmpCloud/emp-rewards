@@ -109,4 +109,31 @@ router.get("/budget-utilization", async (req: Request, res: Response, next: Next
   }
 });
 
+// ---------------------------------------------------------------------------
+// GET /manager/:managerId — Manager's team dashboard
+// ---------------------------------------------------------------------------
+router.get("/manager/:managerId", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const managerId = parseInt(req.params.managerId);
+    const dashboard = await analyticsService.getManagerDashboard(orgId, managerId);
+    sendSuccess(res, dashboard);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /managers — Comparison across all managers
+// ---------------------------------------------------------------------------
+router.get("/managers", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const comparison = await analyticsService.getManagerComparison(orgId);
+    sendSuccess(res, comparison);
+  } catch (err) {
+    next(err);
+  }
+});
+
 export { router as analyticsRoutes };

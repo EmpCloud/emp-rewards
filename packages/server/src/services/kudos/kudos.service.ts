@@ -12,6 +12,7 @@ import { AppError, NotFoundError, ForbiddenError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
 import * as pointsService from "../points/points.service";
 import * as slackService from "../slack/slack.service";
+import * as milestoneService from "../milestone/milestone.service";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -119,6 +120,12 @@ export async function sendKudos(
 
   // Send Slack notification (non-blocking — errors are caught silently)
   slackService.sendKudosNotification(orgId, kudos.id).catch(() => {});
+
+  // Check milestones for both sender and receiver (non-blocking)
+  milestoneService.checkMilestones(orgId, data.receiver_id).catch(() => {});
+  if (senderId !== data.receiver_id) {
+    milestoneService.checkMilestones(orgId, senderId).catch(() => {});
+  }
 
   return kudos;
 }

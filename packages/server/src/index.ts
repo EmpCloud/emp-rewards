@@ -26,10 +26,13 @@ import { analyticsRoutes } from "./api/routes/analytics.routes";
 import { settingsRoutes } from "./api/routes/settings.routes";
 import { slackRoutes } from "./api/routes/slack.routes";
 import { celebrationRoutes } from "./api/routes/celebration.routes";
+import { challengeRoutes } from "./api/routes/challenge.routes";
+import { milestoneRoutes } from "./api/routes/milestone.routes";
 import { authRoutes } from "./api/routes/auth.routes";
 import { errorHandler } from "./api/middleware/error.middleware";
 import { apiLimiter, authLimiter } from "./api/middleware/rate-limit.middleware";
 import { scheduleDailyCelebrationJob, stopDailyCelebrationJob } from "./jobs/celebration.jobs";
+import { swaggerUIHandler, openapiHandler } from "./api/docs";
 
 const app = express();
 
@@ -86,9 +89,15 @@ v1.use("/analytics", analyticsRoutes);
 v1.use("/settings", settingsRoutes);
 v1.use("/slack", slackRoutes);
 v1.use("/celebrations", celebrationRoutes);
+v1.use("/challenges", challengeRoutes);
+v1.use("/milestones", milestoneRoutes);
 v1.use("/auth", authLimiter, authRoutes);
 
 app.use("/api/v1", v1);
+
+// API Documentation
+app.get("/api/docs", swaggerUIHandler);
+app.get("/api/docs/openapi.json", openapiHandler);
 
 // ---------------------------------------------------------------------------
 // Error handling

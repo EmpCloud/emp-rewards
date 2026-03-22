@@ -16,6 +16,8 @@ import {
   Menu,
   X,
   PartyPopper,
+  Swords,
+  Target,
 } from "lucide-react";
 import { isLoggedIn, getUser, useAuthStore } from "@/lib/auth-store";
 import { cn, getInitials } from "@/lib/utils";
@@ -29,6 +31,8 @@ const NAV_ITEMS = [
   { to: "/badges", label: "Badges", icon: Award },
   { to: "/rewards", label: "Rewards", icon: Gift },
   { to: "/redemptions", label: "Redemptions", icon: ShoppingCart },
+  { to: "/challenges", label: "Challenges", icon: Swords },
+  { to: "/milestones", label: "Milestones", icon: Target },
   { to: "/nominations", label: "Nominations", icon: Star },
   { to: "/budgets", label: "Budgets", icon: Wallet },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },

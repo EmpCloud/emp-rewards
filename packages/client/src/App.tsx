@@ -88,6 +88,22 @@ const BudgetListPage = lazy(() =>
 const AnalyticsPage = lazy(() =>
   import("@/pages/analytics/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })),
 );
+const ManagerDashboardPage = lazy(() =>
+  import("@/pages/analytics/ManagerDashboardPage").then((m) => ({ default: m.ManagerDashboardPage })),
+);
+
+// Challenges
+const ChallengeListPage = lazy(() =>
+  import("@/pages/challenges/ChallengeListPage").then((m) => ({ default: m.ChallengeListPage })),
+);
+const ChallengeDetailPage = lazy(() =>
+  import("@/pages/challenges/ChallengeDetailPage").then((m) => ({ default: m.ChallengeDetailPage })),
+);
+
+// Milestones
+const MilestoneRulesPage = lazy(() =>
+  import("@/pages/milestones/MilestoneRulesPage").then((m) => ({ default: m.MilestoneRulesPage })),
+);
 
 // Settings
 const SettingsPage = lazy(() =>
@@ -210,8 +226,17 @@ export default function App() {
           {/* Budgets */}
           <Route path="/budgets" element={<BudgetListPage />} />
 
+          {/* Challenges */}
+          <Route path="/challenges" element={<ChallengeListPage />} />
+          <Route path="/challenges/:id" element={<ChallengeDetailPage />} />
+
+          {/* Milestones */}
+          <Route path="/milestones" element={<MilestoneRulesPage />} />
+
           {/* Analytics */}
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/analytics/manager/:managerId" element={<ManagerDashboardPage />} />
+          <Route path="/analytics/managers" element={<ManagerDashboardPage />} />
 
           {/* Settings */}
           <Route path="/settings" element={<SettingsPage />} />
