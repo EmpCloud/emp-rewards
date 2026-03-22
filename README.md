@@ -46,6 +46,31 @@ EMP Rewards is the employee recognition and rewards module of the EmpCloud ecosy
 
 ---
 
+## Screenshots
+
+### Dashboard
+![Dashboard](screenshots/rewards-01-dashboard.png)
+
+### Recognition Feed
+![Feed](screenshots/rewards-02-feed.png)
+
+### Leaderboard
+![Leaderboard](screenshots/rewards-03-leaderboard.png)
+
+### Badges
+![Badges](screenshots/rewards-04-badges.png)
+
+### Reward Catalog
+![Catalog](screenshots/rewards-05-catalog.png)
+
+### Analytics
+![Analytics](screenshots/rewards-06-analytics.png)
+
+### Settings
+![Settings](screenshots/rewards-07-settings.png)
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
