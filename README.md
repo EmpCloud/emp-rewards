@@ -4,26 +4,45 @@
 
 [![Part of EmpCloud](https://img.shields.io/badge/EmpCloud-Module-blue)]()
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-purple.svg)](LICENSE)
+[![Status: Built](https://img.shields.io/badge/Status-Built-green)]()
 
-EMP Rewards is the employee recognition and rewards module of the EmpCloud ecosystem. It provides peer-to-peer kudos, a points system, badges, a reward catalog with redemption workflows, leaderboards, nominations, and a social celebration feed.
+EMP Rewards is the employee recognition and rewards module of the EmpCloud ecosystem. It provides peer-to-peer kudos, a points system, badges, a reward catalog with redemption workflows, leaderboards, nominations, a social celebration feed, Slack integration, team challenges, automated milestone rewards, and a manager recognition dashboard.
+
+---
+
+## Project Status
+
+**Built** -- all phases implemented and tested.
+
+| Metric | Count |
+|--------|-------|
+| Database tables | 21+ |
+| Frontend pages | 22+ |
+| Migrations | 4 |
 
 ---
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| Peer Recognition / Kudos | Send kudos to colleagues with message, category, public/private visibility |
-| Points System | Earn points for kudos, milestones, achievements; configurable values per org |
-| Badges & Achievements | Milestone badges (tenure, kudos count, top performer), custom badges per org |
-| Reward Catalog | Redeemable rewards (gift cards, extra PTO, swag, experiences), point-based pricing |
-| Redemption & Fulfillment | Redeem points for rewards, approval workflow, fulfillment tracking |
-| Leaderboard | Top recognized employees (weekly/monthly/quarterly), department leaderboards |
-| Manager Nominations | Nominate employees for special awards (Employee of the Month, etc.) |
-| Celebration Wall / Social Feed | Public feed of kudos, achievements, celebrations (birthdays, anniversaries) |
-| Budget Management | Set recognition budgets per manager/department, track spend |
-| Rewards Analytics | Recognition trends, most recognized values, department participation |
-| Integration API | Summary endpoint for EMP Performance module |
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Peer Recognition / Kudos | Built | Send kudos to colleagues with message, category, public/private visibility |
+| Points System | Built | Earn points for kudos, milestones, achievements; configurable values per org |
+| Badges & Achievements | Built | Milestone badges (tenure, kudos count, top performer), custom badges per org |
+| Reward Catalog | Built | Redeemable rewards (gift cards, extra PTO, swag, experiences), point-based pricing |
+| Redemption & Fulfillment | Built | Redeem points for rewards, approval workflow, fulfillment tracking |
+| Leaderboard | Built | Top recognized employees (weekly/monthly/quarterly), department leaderboards |
+| Manager Nominations | Built | Nominate employees for special awards (Employee of the Month, etc.) |
+| Celebration Wall / Social Feed | Built | Public feed of kudos, achievements, celebrations (birthdays, anniversaries) |
+| Budget Management | Built | Set recognition budgets per manager/department, track spend |
+| Rewards Analytics | Built | Recognition trends, most recognized values, department participation |
+| Integration API | Built | Summary endpoint for EMP Performance module |
+| Celebrations Feed | Built | Auto-detect birthdays and work anniversaries from EMP Cloud, wish functionality |
+| Slack Integration | Built | Webhook notifications for kudos/badges, /kudos slash command support |
+| Team Challenges | Built | Time-bound competitions, progress tracking, auto-award winners |
+| Automated Milestone Rewards | Built | Anniversary badges, kudos count milestones, auto-trigger on threshold |
+| Manager Recognition Dashboard | Built | Team engagement score, department comparison, recognition recommendations |
+| API Documentation | Built | Swagger UI at /api/docs with OpenAPI 3.0 spec |
 
 ---
 
@@ -38,6 +57,7 @@ EMP Rewards is the employee recognition and rewards module of the EmpCloud ecosy
 | Database | MySQL 8 via Knex.js (`emp_rewards` database) |
 | Cache / Queue | Redis 7, BullMQ |
 | Auth | OAuth2/OIDC via EMP Cloud (RS256 JWT verification) |
+| Integrations | Slack Webhooks & Slash Commands |
 
 ---
 
@@ -62,26 +82,28 @@ emp-rewards/
         db/
           connection.ts         # Knex connection to emp_rewards
           empcloud.ts           # Read-only connection to empcloud DB
-          migrations/           # 5 migration files
+          migrations/           # 4 migration files
         api/
           middleware/            # auth, RBAC, error handling
           routes/               # Route handlers per domain
         services/               # Business logic per domain
-        jobs/                   # BullMQ workers (badge eval, leaderboard, celebrations)
+        jobs/                   # BullMQ workers (badge eval, leaderboard, celebrations, milestones, challenges)
         utils/                  # Logger, errors, response helpers
+        swagger/                # OpenAPI spec & Swagger UI setup
     client/                     # @emp-rewards/client (port 5180)
       src/
         api/                    # API client & hooks
         components/
           layout/               # DashboardLayout, SelfServiceLayout
           ui/                   # Radix-based UI primitives
+          rewards/              # ChallengeCard, MilestoneProgress, EngagementScore, etc.
         pages/                  # Route-based page components
         lib/                    # Auth store, utilities
 ```
 
 ---
 
-## Database Tables
+## Database Tables (21+)
 
 | Table | Purpose |
 |-------|---------|
@@ -102,6 +124,12 @@ emp-rewards/
 | `recognition_budgets` | Per-manager/department spend caps |
 | `celebration_events` | Birthdays, work anniversaries, promotions |
 | `notifications` | In-app notification queue |
+| `team_challenges` | Time-bound team competitions with rules and prizes |
+| `challenge_participants` | Team/individual participation and progress in challenges |
+| `milestone_rules` | Automated milestone trigger definitions (anniversary, kudos count thresholds) |
+| `slack_integrations` | Per-org Slack webhook URLs and slash command config |
+
+**4 migrations** across the database schema.
 
 ---
 
@@ -166,6 +194,46 @@ All endpoints under `/api/v1/`. Server runs on port **4600**.
 | GET | `/leaderboard/department/:deptId` | Department leaderboard |
 | GET | `/leaderboard/my-rank` | My current rank |
 
+### Celebrations Feed
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/celebrations` | Upcoming birthdays and work anniversaries |
+| GET | `/celebrations/feed` | Combined celebration + kudos social feed |
+| POST | `/celebrations/:id/wish` | Send a wish for a celebration |
+
+### Slack Integration
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/slack/config` | Get Slack integration config |
+| PUT | `/slack/config` | Update webhook URL and settings |
+| POST | `/slack/test` | Send test notification to Slack |
+| POST | `/slack/slash-command` | Handle /kudos slash command from Slack |
+
+### Team Challenges
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/challenges` | List active and past challenges |
+| POST | `/challenges` | Create team challenge (admin) |
+| GET | `/challenges/:id` | Get challenge detail with leaderboard |
+| POST | `/challenges/:id/join` | Join a challenge |
+| GET | `/challenges/:id/progress` | Get progress for all participants |
+| POST | `/challenges/:id/complete` | End challenge and auto-award winners |
+
+### Automated Milestone Rewards
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/milestones/rules` | List milestone trigger rules |
+| POST | `/milestones/rules` | Create milestone rule (admin) |
+| PUT | `/milestones/rules/:id` | Update milestone rule |
+| GET | `/milestones/history` | View triggered milestone awards |
+
+### Manager Recognition Dashboard
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/manager/dashboard` | Team engagement score and recognition summary |
+| GET | `/manager/team-comparison` | Department-level recognition comparison |
+| GET | `/manager/recommendations` | AI-powered recognition recommendations |
+
 ### Other Endpoints
 - **Celebrations**: Upcoming celebrations, combined social feed
 - **Settings**: Org recognition settings, category CRUD
@@ -173,10 +241,11 @@ All endpoints under `/api/v1/`. Server runs on port **4600**.
 - **Notifications**: List, mark read, unread count
 - **Analytics**: Overview, trends, categories, departments, top recognizers, budget utilization
 - **Integration**: `/integration/user/:userId/summary` for EMP Performance
+- **API Docs**: Swagger UI at `/api/docs`
 
 ---
 
-## Frontend Pages
+## Frontend Pages (22+)
 
 ### Admin / Manager Views
 | Route | Page | Description |
@@ -190,6 +259,11 @@ All endpoints under `/api/v1/`. Server runs on port **4600**.
 | `/redemptions` | Redemption Management | Approve/reject/fulfill redemptions |
 | `/nominations` | Nomination Management | Manage programs, review nominations |
 | `/budgets` | Budget Management | Set and track recognition budgets |
+| `/challenges` | Team Challenges | Create and manage time-bound competitions |
+| `/challenges/:id` | Challenge Detail | Progress tracking, participant leaderboard |
+| `/milestones` | Milestone Rules | Configure automated milestone reward triggers |
+| `/manager-dashboard` | Manager Recognition Dashboard | Team engagement score, comparison, recommendations |
+| `/slack` | Slack Integration | Configure webhook, test connection, slash command setup |
 | `/analytics` | Analytics | Charts: trends, categories, departments, ROI |
 | `/settings` | Settings | Org recognition settings, categories |
 
@@ -245,30 +319,10 @@ pnpm --filter @emp-rewards/client dev    # Client on :5180
 pnpm --filter @emp-rewards/server migrate
 ```
 
----
-
-## Implementation Plan
-
-### Phase 1: MVP (Weeks 1-3)
-**Goal:** Basic peer recognition with points and a public feed.
-
-- **Week 1:** Monorepo scaffolding, server/client/shared setup, dual DB connections, Migrations 001-002 (settings, categories, kudos, points, badges), seed default categories
-- **Week 2:** Auth/RBAC middleware, settings service, kudos service (send, list, reactions), points service (balance, transactions, auto-credit), Zod validators
-- **Week 3:** Client MVP -- Vite/React/Tailwind setup, auth flow, DashboardPage, SocialFeedPage, MyKudosPage, MySummaryPage
-
-### Phase 2: Core Features (Weeks 4-6)
-**Goal:** Badges, reward catalog, redemption workflow, leaderboard.
-
-- **Week 4:** Badge service (CRUD, auto-evaluation via BullMQ), leaderboard service (compute + cache), BadgeManagementPage, LeaderboardPage
-- **Week 5:** Migration 003 (rewards, redemptions), reward catalog CRUD, redemption workflow (atomic point debit), admin approval queue
-- **Week 6:** Notification service, BullMQ notification dispatch, notification bell UI, kudos comments feature
-
-### Phase 3: Advanced Features (Weeks 7-9)
-**Goal:** Nominations, celebrations, budgets, analytics, integration.
-
-- **Week 7:** Migration 004 (nominations, leaderboard cache), nomination programs/submissions, celebration auto-detection from empcloud, combined social feed
-- **Week 8:** Migration 005 (budgets, celebrations), budget service, analytics service (trends, categories, departments), budget enforcement in redemption flow
-- **Week 9:** Integration endpoint for EMP Performance, Docker Compose, unit tests (vitest), E2E tests (Playwright), seed data
+Once running, visit:
+- **Client**: http://localhost:5180
+- **API**: http://localhost:4600
+- **API Documentation**: http://localhost:4600/api/docs
 
 ---
 
