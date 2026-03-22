@@ -52,6 +52,12 @@ export async function updateSettings(
     points_currency_name?: string;
     require_category?: boolean;
     require_message?: boolean;
+    // Slack integration
+    slack_webhook_url?: string | null;
+    slack_channel_name?: string | null;
+    slack_notifications_enabled?: boolean;
+    slack_notify_kudos?: boolean;
+    slack_notify_celebrations?: boolean;
   },
 ): Promise<RecognitionSettings> {
   const db = getDB();

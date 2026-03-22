@@ -11,6 +11,7 @@ import type { QueryResult } from "../../db/adapters/interface";
 import { AppError, NotFoundError, ForbiddenError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
 import * as pointsService from "../points/points.service";
+import * as slackService from "../slack/slack.service";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -115,6 +116,10 @@ export async function sendKudos(
   }
 
   logger.info(`Kudos sent: id=${kudos.id} sender=${senderId} receiver=${data.receiver_id} org=${orgId}`);
+
+  // Send Slack notification (non-blocking — errors are caught silently)
+  slackService.sendKudosNotification(orgId, kudos.id).catch(() => {});
+
   return kudos;
 }
 
@@ -275,6 +280,61 @@ export async function deleteComment(commentId: string, userId: number): Promise<
   }
 
   await db.delete("kudos_comments", commentId);
+}
+
+// ---------------------------------------------------------------------------
+// sendBirthdayKudos — auto-generated birthday kudos from "system"
+// ---------------------------------------------------------------------------
+export async function sendBirthdayKudos(
+  orgId: number,
+  employeeId: number,
+  fromSystem: boolean = true,
+): Promise<Kudos> {
+  const db = getDB();
+
+  const kudos = await db.create<Kudos>("kudos", {
+    id: uuidv4(),
+    organization_id: orgId,
+    sender_id: fromSystem ? 0 : employeeId,
+    receiver_id: employeeId,
+    category_id: null,
+    message: "Happy Birthday! Wishing you a fantastic day filled with joy and celebration!",
+    points: 0,
+    visibility: KudosVisibility.PUBLIC,
+    feedback_type: "kudos",
+    is_anonymous: false,
+  } as any);
+
+  logger.info(`Birthday kudos sent: id=${kudos.id} employee=${employeeId} org=${orgId}`);
+  return kudos;
+}
+
+// ---------------------------------------------------------------------------
+// sendAnniversaryKudos — "Congratulations on X years!"
+// ---------------------------------------------------------------------------
+export async function sendAnniversaryKudos(
+  orgId: number,
+  employeeId: number,
+  years: number,
+  fromSystem: boolean = true,
+): Promise<Kudos> {
+  const db = getDB();
+
+  const kudos = await db.create<Kudos>("kudos", {
+    id: uuidv4(),
+    organization_id: orgId,
+    sender_id: fromSystem ? 0 : employeeId,
+    receiver_id: employeeId,
+    category_id: null,
+    message: `Congratulations on ${years} year${years !== 1 ? "s" : ""} with the organization! Thank you for your dedication and contributions.`,
+    points: 0,
+    visibility: KudosVisibility.PUBLIC,
+    feedback_type: "kudos",
+    is_anonymous: false,
+  } as any);
+
+  logger.info(`Anniversary kudos sent: id=${kudos.id} employee=${employeeId} years=${years} org=${orgId}`);
+  return kudos;
 }
 
 // ---------------------------------------------------------------------------

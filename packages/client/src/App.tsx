@@ -20,6 +20,11 @@ const FeedPage = lazy(() =>
   import("@/pages/feed/FeedPage").then((m) => ({ default: m.FeedPage })),
 );
 
+// Celebrations
+const CelebrationPage = lazy(() =>
+  import("@/pages/celebrations/CelebrationPage").then((m) => ({ default: m.CelebrationPage })),
+);
+
 // Kudos
 const SendKudosPage = lazy(() =>
   import("@/pages/kudos/SendKudosPage").then((m) => ({ default: m.SendKudosPage })),
@@ -172,6 +177,9 @@ export default function App() {
 
           {/* Feed */}
           <Route path="/feed" element={<FeedPage />} />
+
+          {/* Celebrations */}
+          <Route path="/celebrations" element={<CelebrationPage />} />
 
           {/* Kudos */}
           <Route path="/kudos" element={<MyKudosPage />} />

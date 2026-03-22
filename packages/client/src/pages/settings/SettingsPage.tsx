@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Plus, Pencil, Trash2, X, Check, Palette } from "lucide-react";
+import { Settings, Plus, Pencil, Trash2, X, Check, Palette, MessageSquare, Hash, Zap, ExternalLink, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { apiGet, apiPut, apiPost, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
@@ -27,6 +27,14 @@ interface Category {
   sort_order: number;
 }
 
+interface SlackConfig {
+  slack_webhook_url: string | null;
+  slack_channel_name: string | null;
+  slack_notifications_enabled: boolean;
+  slack_notify_kudos: boolean;
+  slack_notify_celebrations: boolean;
+}
+
 const ICON_OPTIONS = [
   "star", "heart", "trophy", "zap", "target", "award", "flame", "sparkles",
   "thumbs-up", "rocket", "lightbulb", "shield", "gem", "crown", "medal",
@@ -40,6 +48,7 @@ const COLOR_OPTIONS = [
 const TABS = [
   { key: "general", label: "General" },
   { key: "categories", label: "Categories" },
+  { key: "slack", label: "Slack" },
 ];
 
 export function SettingsPage() {
@@ -57,6 +66,18 @@ export function SettingsPage() {
   const [editingCat, setEditingCat] = useState<Category | null>(null);
   const [catForm, setCatForm] = useState({ name: "", description: "", icon: "star", color: "#f59e0b", points_multiplier: "1" });
 
+  // Slack config
+  const [slackConfig, setSlackConfig] = useState<SlackConfig>({
+    slack_webhook_url: null,
+    slack_channel_name: null,
+    slack_notifications_enabled: false,
+    slack_notify_kudos: true,
+    slack_notify_celebrations: true,
+  });
+  const [savingSlack, setSavingSlack] = useState(false);
+  const [testingWebhook, setTestingWebhook] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -64,15 +85,19 @@ export function SettingsPage() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [settingsRes, catsRes] = await Promise.allSettled([
+      const [settingsRes, catsRes, slackRes] = await Promise.allSettled([
         apiGet<RecognitionSettings>("/settings"),
         apiGet<Category[]>("/settings/categories", { includeInactive: "true" }),
+        apiGet<SlackConfig>("/slack/config"),
       ]);
       if (settingsRes.status === "fulfilled" && settingsRes.value.data) {
         setSettings(settingsRes.value.data);
       }
       if (catsRes.status === "fulfilled" && catsRes.value.data) {
         setCategories(catsRes.value.data);
+      }
+      if (slackRes.status === "fulfilled" && slackRes.value.data) {
+        setSlackConfig(slackRes.value.data as SlackConfig);
       }
     } catch {
       // Demo data
@@ -105,6 +130,52 @@ export function SettingsPage() {
       toast.error(err.response?.data?.error?.message || "Failed to save settings");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveSlackConfig() {
+    if (!isAdmin) return;
+    setSavingSlack(true);
+    try {
+      const res = await apiPut<SlackConfig>("/slack/config", {
+        slack_webhook_url: slackConfig.slack_webhook_url || null,
+        slack_channel_name: slackConfig.slack_channel_name || null,
+        slack_notifications_enabled: slackConfig.slack_notifications_enabled,
+        slack_notify_kudos: slackConfig.slack_notify_kudos,
+        slack_notify_celebrations: slackConfig.slack_notify_celebrations,
+      });
+      if (res.success && res.data) {
+        setSlackConfig(res.data as SlackConfig);
+        toast.success("Slack settings saved");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to save Slack settings");
+    } finally {
+      setSavingSlack(false);
+    }
+  }
+
+  async function testWebhookConnection() {
+    if (!slackConfig.slack_webhook_url) {
+      toast.error("Please enter a webhook URL first");
+      return;
+    }
+    setTestingWebhook(true);
+    setTestResult(null);
+    try {
+      const res = await apiPost<{ connected: boolean; message: string }>("/slack/test", {
+        webhook_url: slackConfig.slack_webhook_url,
+      });
+      if (res.success && res.data) {
+        setTestResult({ success: true, message: res.data.message || "Connection successful!" });
+      }
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err.response?.data?.error?.message || "Connection failed. Check the webhook URL.",
+      });
+    } finally {
+      setTestingWebhook(false);
     }
   }
 
@@ -199,6 +270,7 @@ export function SettingsPage() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
+              {t.key === "slack" && <MessageSquare className="mr-1.5 inline h-3.5 w-3.5" />}
               {t.label}
             </button>
           ))}
@@ -498,6 +570,197 @@ export function SettingsPage() {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Slack Tab */}
+      {tab === "slack" && (
+        <div className="space-y-6">
+          {/* Slack Configuration */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                <MessageSquare className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Slack Integration</h3>
+                <p className="text-xs text-gray-500">Post kudos and celebrations to a Slack channel automatically.</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {/* Webhook URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Zap className="mr-1 inline h-3.5 w-3.5 text-amber-500" />
+                  Webhook URL
+                </label>
+                <input
+                  type="url"
+                  value={slackConfig.slack_webhook_url || ""}
+                  onChange={(e) => setSlackConfig((s) => ({ ...s, slack_webhook_url: e.target.value || null }))}
+                  disabled={!isAdmin}
+                  placeholder="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXX"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Your Slack incoming webhook URL. Keep this secret.
+                </p>
+              </div>
+
+              {/* Channel Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Hash className="mr-1 inline h-3.5 w-3.5 text-gray-400" />
+                  Channel Name
+                </label>
+                <input
+                  type="text"
+                  value={slackConfig.slack_channel_name || ""}
+                  onChange={(e) => setSlackConfig((s) => ({ ...s, slack_channel_name: e.target.value || null }))}
+                  disabled={!isAdmin}
+                  placeholder="e.g. #recognition"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  For display only. The actual channel is configured in Slack when creating the webhook.
+                </p>
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-3 pt-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={slackConfig.slack_notifications_enabled}
+                    onChange={(e) => setSlackConfig((s) => ({ ...s, slack_notifications_enabled: e.target.checked }))}
+                    disabled={!isAdmin}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Enable Slack Notifications</span>
+                    <p className="text-xs text-gray-400">Master toggle for all Slack notifications</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={slackConfig.slack_notify_kudos}
+                    onChange={(e) => setSlackConfig((s) => ({ ...s, slack_notify_kudos: e.target.checked }))}
+                    disabled={!isAdmin || !slackConfig.slack_notifications_enabled}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${slackConfig.slack_notifications_enabled ? "text-gray-700" : "text-gray-400"}`}>
+                      Notify on Kudos
+                    </span>
+                    <p className="text-xs text-gray-400">Post a message when someone sends kudos</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={slackConfig.slack_notify_celebrations}
+                    onChange={(e) => setSlackConfig((s) => ({ ...s, slack_notify_celebrations: e.target.checked }))}
+                    disabled={!isAdmin || !slackConfig.slack_notifications_enabled}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${slackConfig.slack_notifications_enabled ? "text-gray-700" : "text-gray-400"}`}>
+                      Notify on Celebrations
+                    </span>
+                    <p className="text-xs text-gray-400">Post birthdays and work anniversaries</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Action buttons */}
+              {isAdmin && (
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={testWebhookConnection}
+                    disabled={testingWebhook || !slackConfig.slack_webhook_url}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {testingWebhook ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Zap className="h-4 w-4" />
+                    )}
+                    Test Connection
+                  </button>
+
+                  <button
+                    onClick={saveSlackConfig}
+                    disabled={savingSlack}
+                    className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    {savingSlack ? "Saving..." : "Save Slack Settings"}
+                  </button>
+
+                  {testResult && (
+                    <div className={`ml-auto inline-flex items-center gap-1.5 text-sm font-medium ${testResult.success ? "text-green-600" : "text-red-600"}`}>
+                      {testResult.success ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <XCircle className="h-4 w-4" />
+                      )}
+                      {testResult.message}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Setup Instructions */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">How to set up Slack integration</h3>
+            <ol className="space-y-2.5 text-sm text-gray-600">
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">1</span>
+                <span>
+                  Go to{" "}
+                  <a
+                    href="https://api.slack.com/apps"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-600 underline hover:text-amber-700"
+                  >
+                    api.slack.com/apps
+                    <ExternalLink className="ml-0.5 inline h-3 w-3" />
+                  </a>{" "}
+                  and create a new app (or select an existing one).
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">2</span>
+                <span>Under "Features", click <strong>Incoming Webhooks</strong> and toggle it on.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">3</span>
+                <span>Click <strong>"Add New Webhook to Workspace"</strong> and select the channel where you want recognition messages to appear.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">4</span>
+                <span>Copy the <strong>Webhook URL</strong> and paste it above.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">5</span>
+                <span>Click <strong>"Test Connection"</strong> to verify it works, then save.</span>
+              </li>
+            </ol>
+
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs text-amber-800">
+                <strong>Slash commands (optional):</strong> To allow your team to send kudos directly from Slack using{" "}
+                <code className="rounded bg-amber-100 px-1 py-0.5">/kudos @user message</code>, create a{" "}
+                <strong>Slash Command</strong> in your Slack app pointing to your server's webhook endpoint. Contact your admin for the URL.
+              </p>
+            </div>
           </div>
         </div>
       )}

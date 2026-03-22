@@ -168,6 +168,23 @@ export const updateCategorySchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Celebrations
+// ---------------------------------------------------------------------------
+
+export const sendCelebrationWishSchema = z.object({
+  message: z.string().min(1).max(500),
+});
+
+export const createCustomCelebrationSchema = z.object({
+  user_id: z.number().int().positive(),
+  type: z.enum(["birthday", "work_anniversary", "new_joiner", "promotion", "custom"]),
+  title: z.string().min(1).max(255),
+  description: z.string().max(2000).optional().nullable(),
+  celebration_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  metadata: z.record(z.any()).optional().nullable(),
+});
+
+// ---------------------------------------------------------------------------
 // Common
 // ---------------------------------------------------------------------------
 

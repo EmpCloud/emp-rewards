@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   X,
+  PartyPopper,
 } from "lucide-react";
 import { isLoggedIn, getUser, useAuthStore } from "@/lib/auth-store";
 import { cn, getInitials } from "@/lib/utils";
@@ -22,6 +23,7 @@ import { cn, getInitials } from "@/lib/utils";
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/feed", label: "Feed", icon: MessageSquare },
+  { to: "/celebrations", label: "Celebrations", icon: PartyPopper },
   { to: "/kudos", label: "Kudos", icon: Heart },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/badges", label: "Badges", icon: Award },

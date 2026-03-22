@@ -24,9 +24,12 @@ import { leaderboardRoutes } from "./api/routes/leaderboard.routes";
 import { budgetRoutes } from "./api/routes/budget.routes";
 import { analyticsRoutes } from "./api/routes/analytics.routes";
 import { settingsRoutes } from "./api/routes/settings.routes";
+import { slackRoutes } from "./api/routes/slack.routes";
+import { celebrationRoutes } from "./api/routes/celebration.routes";
 import { authRoutes } from "./api/routes/auth.routes";
 import { errorHandler } from "./api/middleware/error.middleware";
 import { apiLimiter, authLimiter } from "./api/middleware/rate-limit.middleware";
+import { scheduleDailyCelebrationJob, stopDailyCelebrationJob } from "./jobs/celebration.jobs";
 
 const app = express();
 
@@ -81,6 +84,8 @@ v1.use("/leaderboard", leaderboardRoutes);
 v1.use("/budgets", budgetRoutes);
 v1.use("/analytics", analyticsRoutes);
 v1.use("/settings", settingsRoutes);
+v1.use("/slack", slackRoutes);
+v1.use("/celebrations", celebrationRoutes);
 v1.use("/auth", authLimiter, authRoutes);
 
 app.use("/api/v1", v1);
@@ -111,6 +116,9 @@ async function start() {
     await db.migrate();
     logger.info("Rewards database migrations applied");
 
+    // Schedule daily celebration job
+    scheduleDailyCelebrationJob();
+
     // Start server
     app.listen(config.port, config.host, () => {
       logger.info(`emp-rewards server running at http://${config.host}:${config.port}`);
@@ -125,6 +133,7 @@ async function start() {
 // Graceful shutdown
 const shutdown = async () => {
   logger.info("Shutting down...");
+  stopDailyCelebrationJob();
   await closeDB();
   await closeEmpCloudDB();
   process.exit(0);

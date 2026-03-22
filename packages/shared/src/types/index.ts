@@ -309,6 +309,72 @@ export interface AuditLog {
 }
 
 // ---------------------------------------------------------------------------
+// Celebrations
+// ---------------------------------------------------------------------------
+
+export enum CelebrationType {
+  BIRTHDAY = "birthday",
+  WORK_ANNIVERSARY = "work_anniversary",
+  NEW_JOINER = "new_joiner",
+  PROMOTION = "promotion",
+  CUSTOM = "custom",
+}
+
+export interface Celebration {
+  id: string;
+  organization_id: number;
+  user_id: number;
+  type: CelebrationType;
+  title: string;
+  description: string | null;
+  celebration_date: string;
+  metadata: Record<string, any> | null;
+  is_auto_generated: boolean;
+  created_at: string;
+  // Joined fields
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  designation?: string;
+  wish_count?: number;
+}
+
+export interface CelebrationWish {
+  id: string;
+  celebration_id: string;
+  user_id: number;
+  message: string;
+  created_at: string;
+  // Joined fields
+  first_name?: string;
+  last_name?: string;
+}
+
+export interface CelebrationFeedItem {
+  id: string;
+  feed_type: "birthday" | "work_anniversary" | "new_joiner" | "promotion" | "custom" | "kudos";
+  title: string;
+  description: string | null;
+  item_date: string;
+  created_at: string;
+  user_id?: number;
+  first_name?: string;
+  last_name?: string;
+  designation?: string;
+  metadata?: Record<string, any> | null;
+  wish_count?: number;
+  // Kudos-specific
+  sender_id?: number;
+  receiver_id?: number;
+  sender_first_name?: string;
+  sender_last_name?: string;
+  receiver_first_name?: string;
+  receiver_last_name?: string;
+  points?: number;
+  is_anonymous?: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // API Response Types
 // ---------------------------------------------------------------------------
 

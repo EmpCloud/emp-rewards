@@ -11,10 +11,116 @@ import {
   ChevronUp,
   Loader2,
   Trash2,
+  Cake,
+  Trophy,
+  PartyPopper,
+  Gift,
+  Star,
+  Calendar,
+  ChevronRight,
 } from "lucide-react";
 import { apiGet, apiPost, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate, getInitials } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Celebration types for the feed
+// ---------------------------------------------------------------------------
+interface CelebrationItem {
+  id: string;
+  user_id: number;
+  type: string;
+  title: string;
+  description: string | null;
+  celebration_date: string;
+  metadata: Record<string, any> | null;
+  first_name?: string;
+  last_name?: string;
+  designation?: string;
+  wish_count?: number;
+}
+
+interface UpcomingCelebration {
+  id: string;
+  type: string;
+  title: string;
+  celebration_date: string;
+  first_name?: string;
+  last_name?: string;
+  designation?: string;
+  metadata?: Record<string, any> | null;
+}
+
+function getCelebrationIcon(type: string) {
+  switch (type) {
+    case "birthday":
+      return Cake;
+    case "work_anniversary":
+      return Trophy;
+    case "promotion":
+      return Star;
+    case "new_joiner":
+      return Gift;
+    default:
+      return PartyPopper;
+  }
+}
+
+function getCelebrationCardStyle(type: string) {
+  switch (type) {
+    case "birthday":
+      return {
+        border: "border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50",
+        iconBg: "bg-pink-100",
+        iconColor: "text-pink-600",
+        accent: "text-pink-700",
+        badge: "bg-pink-100 text-pink-700",
+        wishBtn: "bg-pink-500 hover:bg-pink-600 text-white",
+      };
+    case "work_anniversary":
+      return {
+        border: "border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50",
+        iconBg: "bg-amber-100",
+        iconColor: "text-amber-600",
+        accent: "text-amber-700",
+        badge: "bg-amber-100 text-amber-700",
+        wishBtn: "bg-amber-500 hover:bg-amber-600 text-white",
+      };
+    case "promotion":
+      return {
+        border: "border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50",
+        iconBg: "bg-purple-100",
+        iconColor: "text-purple-600",
+        accent: "text-purple-700",
+        badge: "bg-purple-100 text-purple-700",
+        wishBtn: "bg-purple-500 hover:bg-purple-600 text-white",
+      };
+    default:
+      return {
+        border: "border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50",
+        iconBg: "bg-blue-100",
+        iconColor: "text-blue-600",
+        accent: "text-blue-700",
+        badge: "bg-blue-100 text-blue-700",
+        wishBtn: "bg-blue-500 hover:bg-blue-600 text-white",
+      };
+  }
+}
+
+function getTypeLabel(type: string) {
+  switch (type) {
+    case "birthday":
+      return "Birthday";
+    case "work_anniversary":
+      return "Work Anniversary";
+    case "promotion":
+      return "Promotion";
+    case "new_joiner":
+      return "New Joiner";
+    default:
+      return "Celebration";
+  }
+}
 
 interface KudosItem {
   id: string;
@@ -30,6 +136,7 @@ interface KudosItem {
   receiver_name?: string;
   category_name?: string;
   category_color?: string;
+  source?: string; // "slack" when sent via Slack slash command
 }
 
 interface Reaction {
@@ -66,6 +173,12 @@ export function FeedPage() {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
 
+  // Celebration state
+  const [todayCelebrations, setTodayCelebrations] = useState<CelebrationItem[]>([]);
+  const [upcomingCelebrations, setUpcomingCelebrations] = useState<UpcomingCelebration[]>([]);
+  const [wishInputs, setWishInputs] = useState<Record<string, string>>({});
+  const [sendingWish, setSendingWish] = useState<string | null>(null);
+
   const fetchFeed = useCallback(async (p: number) => {
     setLoading(true);
     try {
@@ -81,9 +194,42 @@ export function FeedPage() {
     }
   }, []);
 
+  const fetchCelebrations = useCallback(async () => {
+    try {
+      const [todayRes, upcomingRes] = await Promise.all([
+        apiGet<CelebrationItem[]>("/celebrations/today"),
+        apiGet<UpcomingCelebration[]>("/celebrations/upcoming"),
+      ]);
+      if (todayRes.success && todayRes.data) {
+        setTodayCelebrations(todayRes.data);
+      }
+      if (upcomingRes.success && upcomingRes.data) {
+        setUpcomingCelebrations(upcomingRes.data);
+      }
+    } catch {
+      // silent
+    }
+  }, []);
+
   useEffect(() => {
     fetchFeed(page);
-  }, [page, fetchFeed]);
+    fetchCelebrations();
+  }, [page, fetchFeed, fetchCelebrations]);
+
+  const handleSendCelebrationWish = async (celebrationId: string) => {
+    const message = wishInputs[celebrationId]?.trim();
+    if (!message) return;
+    setSendingWish(celebrationId);
+    try {
+      await apiPost(`/celebrations/${celebrationId}/wish`, { message });
+      setWishInputs((prev) => ({ ...prev, [celebrationId]: "" }));
+      fetchCelebrations();
+    } catch {
+      // silent
+    } finally {
+      setSendingWish(null);
+    }
+  };
 
   const fetchKudosDetail = async (kudosId: string) => {
     try {
@@ -175,7 +321,7 @@ export function FeedPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Recognition Feed</h1>
           <p className="mt-1 text-sm text-gray-500">
-            See all public kudos and recognitions across your organization.
+            See all public kudos, celebrations, and recognitions across your organization.
           </p>
         </div>
         <button
@@ -186,6 +332,99 @@ export function FeedPage() {
           Send Kudos
         </button>
       </div>
+
+      {/* Today's Celebrations Banner */}
+      {todayCelebrations.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <PartyPopper className="h-4 w-4 text-amber-500" />
+            <h2 className="text-sm font-semibold text-gray-700">Today's Celebrations</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {todayCelebrations.map((celebration) => {
+              const style = getCelebrationCardStyle(celebration.type);
+              const Icon = getCelebrationIcon(celebration.type);
+
+              return (
+                <div
+                  key={celebration.id}
+                  className={cn(
+                    "rounded-xl border-2 p-4 transition-shadow hover:shadow-md",
+                    style.border,
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                        style.iconBg,
+                      )}
+                    >
+                      <Icon className={cn("h-5 w-5", style.iconColor)} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mb-1",
+                          style.badge,
+                        )}
+                      >
+                        {getTypeLabel(celebration.type)}
+                      </span>
+                      <h3 className={cn("font-semibold text-sm leading-tight", style.accent)}>
+                        {celebration.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {celebration.first_name} {celebration.last_name}
+                        {celebration.designation ? ` - ${celebration.designation}` : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick wish */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <input
+                      type="text"
+                      placeholder="Send a wish..."
+                      value={wishInputs[celebration.id] || ""}
+                      onChange={(e) =>
+                        setWishInputs((prev) => ({
+                          ...prev,
+                          [celebration.id]: e.target.value,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSendCelebrationWish(celebration.id);
+                      }}
+                      className="flex-1 rounded-lg border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs placeholder:text-gray-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                    <button
+                      onClick={() => handleSendCelebrationWish(celebration.id)}
+                      disabled={sendingWish === celebration.id}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+                        style.wishBtn,
+                      )}
+                    >
+                      <Heart className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  {(celebration.wish_count || 0) > 0 && (
+                    <p className="mt-1.5 text-xs text-gray-400">
+                      {celebration.wish_count} wish{(celebration.wish_count || 0) !== 1 ? "es" : ""}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-6">
+        {/* Main Feed Column */}
+        <div className="flex-1 min-w-0">
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
@@ -227,17 +466,28 @@ export function FeedPage() {
                       <p className="text-xs text-gray-400">{formatDate(kudos.created_at)}</p>
                     </div>
                   </div>
-                  {kudos.category_name && (
-                    <span
-                      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: `${kudos.category_color || "#f59e0b"}20`,
-                        color: kudos.category_color || "#d97706",
-                      }}
-                    >
-                      {kudos.category_name}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {kudos.source === "slack" && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-600"
+                        title="Sent via Slack"
+                      >
+                        <MessageSquare className="h-3 w-3" />
+                        Slack
+                      </span>
+                    )}
+                    {kudos.category_name && (
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        style={{
+                          backgroundColor: `${kudos.category_color || "#f59e0b"}20`,
+                          color: kudos.category_color || "#d97706",
+                        }}
+                      >
+                        {kudos.category_name}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Message */}
@@ -372,6 +622,61 @@ export function FeedPage() {
           )}
         </div>
       )}
+
+        </div>
+
+        {/* Upcoming Celebrations Sidebar */}
+        {upcomingCelebrations.length > 0 && (
+          <div className="hidden xl:block w-72 shrink-0">
+            <div className="sticky top-4 rounded-lg border border-gray-200 bg-white p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="h-4 w-4 text-amber-500" />
+                <h3 className="text-sm font-semibold text-gray-700">Upcoming Celebrations</h3>
+              </div>
+              <div className="space-y-3">
+                {upcomingCelebrations.slice(0, 10).map((celebration) => {
+                  const Icon = getCelebrationIcon(celebration.type);
+                  const style = getCelebrationCardStyle(celebration.type);
+
+                  return (
+                    <div key={celebration.id} className="flex items-start gap-2.5">
+                      <div
+                        className={cn(
+                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+                          style.iconBg,
+                        )}
+                      >
+                        <Icon className={cn("h-3.5 w-3.5", style.iconColor)} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-800 truncate">
+                          {celebration.first_name} {celebration.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {getTypeLabel(celebration.type)}
+                          {celebration.type === "work_anniversary" && celebration.metadata?.years
+                            ? ` (${celebration.metadata.years}y)`
+                            : ""}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(celebration.celebration_date)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => navigate("/celebrations")}
+                className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors"
+              >
+                View all
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Floating Send Kudos button (mobile) */}
       <button
