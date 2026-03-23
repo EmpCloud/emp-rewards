@@ -345,6 +345,46 @@ export async function sendAnniversaryKudos(
 }
 
 // ---------------------------------------------------------------------------
+// getReceivedKudos — kudos received by a specific user
+// ---------------------------------------------------------------------------
+export async function getReceivedKudos(
+  orgId: number,
+  userId: number,
+  params: { page?: number; perPage?: number },
+): Promise<QueryResult<Kudos>> {
+  const db = getDB();
+  return db.findMany<Kudos>("kudos", {
+    page: params.page || 1,
+    limit: params.perPage || 20,
+    sort: { field: "created_at", order: "desc" },
+    filters: {
+      organization_id: orgId,
+      receiver_id: userId,
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// getSentKudos — kudos sent by a specific user
+// ---------------------------------------------------------------------------
+export async function getSentKudos(
+  orgId: number,
+  userId: number,
+  params: { page?: number; perPage?: number },
+): Promise<QueryResult<Kudos>> {
+  const db = getDB();
+  return db.findMany<Kudos>("kudos", {
+    page: params.page || 1,
+    limit: params.perPage || 20,
+    sort: { field: "created_at", order: "desc" },
+    filters: {
+      organization_id: orgId,
+      sender_id: userId,
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // getPublicFeed — public kudos feed ordered by created_at desc
 // ---------------------------------------------------------------------------
 export async function getPublicFeed(

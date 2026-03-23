@@ -46,6 +46,42 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // ---------------------------------------------------------------------------
+// GET /received — Kudos received by the authenticated user
+// ---------------------------------------------------------------------------
+router.get("/received", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const userId = req.user!.empcloudUserId;
+    const params = paginationSchema.parse(req.query);
+    const result = await kudosService.getReceivedKudos(orgId, userId, {
+      page: params.page,
+      perPage: params.perPage,
+    });
+    return sendPaginated(res, result.data, result.total, result.page, result.limit);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /sent — Kudos sent by the authenticated user
+// ---------------------------------------------------------------------------
+router.get("/sent", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const userId = req.user!.empcloudUserId;
+    const params = paginationSchema.parse(req.query);
+    const result = await kudosService.getSentKudos(orgId, userId, {
+      page: params.page,
+      perPage: params.perPage,
+    });
+    return sendPaginated(res, result.data, result.total, result.page, result.limit);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /:id — Single kudos with reactions + comments
 // ---------------------------------------------------------------------------
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {

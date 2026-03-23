@@ -188,12 +188,18 @@ export const createCustomCelebrationSchema = z.object({
 // Common
 // ---------------------------------------------------------------------------
 
-export const paginationSchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  perPage: z.coerce.number().int().min(1).max(100).default(20),
-  sort: z.string().optional(),
-  order: z.enum(["asc", "desc"]).optional().default("desc"),
-});
+export const paginationSchema = z
+  .object({
+    page: z.coerce.number().int().positive().default(1),
+    perPage: z.coerce.number().int().min(1).max(100).optional(),
+    per_page: z.coerce.number().int().min(1).max(100).optional(),
+    sort: z.string().optional(),
+    order: z.enum(["asc", "desc"]).optional().default("desc"),
+  })
+  .transform((val) => ({
+    ...val,
+    perPage: val.perPage ?? val.per_page ?? 20,
+  }));
 
 export const idParamSchema = z.object({
   id: z.string().uuid(),
