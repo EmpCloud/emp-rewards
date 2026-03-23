@@ -192,7 +192,7 @@ export function LeaderboardPage() {
 
           {/* Ranked table */}
           {rest.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white -mx-4 lg:mx-0">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>

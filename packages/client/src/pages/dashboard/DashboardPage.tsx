@@ -162,7 +162,7 @@ export function DashboardPage() {
             <TrendingUp className="h-5 w-5 text-amber-500" />
             <h2 className="text-lg font-semibold text-gray-900">Points Summary</h2>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-lg bg-green-50 p-4 text-center">
               <p className="text-xl font-bold text-green-700">
                 {Number(balance.total_earned).toLocaleString()}

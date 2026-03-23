@@ -66,7 +66,7 @@ function BudgetCard({ budget }: { budget: Budget }) {
         </span>
       </div>
 
-      <div className="mb-3 grid grid-cols-3 gap-3 text-center">
+      <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div>
           <p className="text-lg font-bold text-gray-900">{total.toLocaleString()}</p>
           <p className="text-[10px] uppercase text-gray-500">Allocated</p>
@@ -194,7 +194,7 @@ export function BudgetListPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-amber-500" />
