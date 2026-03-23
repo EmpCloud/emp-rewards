@@ -37,6 +37,19 @@ const createRuleSchema = z.object({
 const updateRuleSchema = createRuleSchema.partial();
 
 // ---------------------------------------------------------------------------
+// GET / — List all milestone rules (alias for /rules)
+// ---------------------------------------------------------------------------
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const rules = await milestoneService.listRules(orgId);
+    return sendSuccess(res, rules);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /rules — List all milestone rules
 // ---------------------------------------------------------------------------
 router.get("/rules", async (req: Request, res: Response, next: NextFunction) => {
