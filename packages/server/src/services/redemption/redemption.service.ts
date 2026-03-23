@@ -201,7 +201,7 @@ export async function fulfillRedemption(
   const updated = await db.update<RewardRedemption>(TABLE, id, {
     status: "fulfilled" as RedemptionStatus,
     review_note: notes || redemption.review_note,
-    fulfilled_at: new Date().toISOString(),
+    fulfilled_at: new Date(),
   } as any);
 
   logger.info(`Redemption ${id} fulfilled`);
