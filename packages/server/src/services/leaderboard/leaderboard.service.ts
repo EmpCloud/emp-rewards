@@ -248,7 +248,7 @@ export async function refreshLeaderboard(
     ]);
     await db.raw(
       `INSERT INTO leaderboard_snapshots
-       (id, organization_id, user_id, period, period_key, `rank`, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
+       (id, organization_id, user_id, period, period_key, \`rank\`, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
        VALUES ${placeholders}`,
       values,
     );
