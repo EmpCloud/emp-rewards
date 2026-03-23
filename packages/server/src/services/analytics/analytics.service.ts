@@ -70,7 +70,7 @@ export async function getTrends(orgId: number, params: { interval?: string; mont
     groupBy = "DATE_FORMAT(created_at, '%Y-%m')";
   } else {
     dateFormat = "%x-W%v";
-    groupBy = "YEARWEEK(created_at, 1)";
+    groupBy = "DATE_FORMAT(created_at, '%x-W%v')";
   }
 
   const [rows] = await db.raw<any>(

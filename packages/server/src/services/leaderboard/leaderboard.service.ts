@@ -141,7 +141,7 @@ export async function getMyRank(
   const db = getDB();
 
   const [rows] = await db.raw<any>(
-    `SELECT rank, total_points, kudos_received, kudos_sent, badges_earned
+    `SELECT \`rank\`, total_points, kudos_received, kudos_sent, badges_earned
      FROM leaderboard_snapshots
      WHERE organization_id = ? AND period = ? AND period_key = ? AND user_id = ?`,
     [orgId, periodType, periodKey, userId],
@@ -169,7 +169,7 @@ export async function getMyRank(
   );
 
   const allUsers = pointRows || [];
-  const myIdx = allUsers.findIndex((r: any) => r.user_id === userId);
+  const myIdx = allUsers.findIndex((r: any) => Number(r.user_id) === Number(userId));
 
   return {
     rank: myIdx >= 0 ? myIdx + 1 : 0,
@@ -248,7 +248,7 @@ export async function refreshLeaderboard(
     ]);
     await db.raw(
       `INSERT INTO leaderboard_snapshots
-       (id, organization_id, user_id, period, period_key, rank, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
+       (id, organization_id, user_id, period, period_key, `rank`, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
        VALUES ${placeholders}`,
       values,
     );
