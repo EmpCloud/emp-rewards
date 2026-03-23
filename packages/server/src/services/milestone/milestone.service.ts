@@ -259,6 +259,25 @@ export async function checkMilestones(
 
         awarded.push(achievement);
         logger.info(`Milestone achieved: rule=${rule.id} user=${userId} org=${orgId} name=${rule.name}`);
+
+        // Notify EMP Cloud about the milestone achievement (non-blocking)
+        const webhookUrl = process.env.EMPCLOUD_WEBHOOK_URL;
+        if (webhookUrl) {
+          fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "rewards.milestone_achieved",
+              data: {
+                employeeId: userId,
+                milestoneName: rule.name,
+                pointsAwarded: rule.reward_points,
+              },
+              source: "emp-rewards",
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(() => {}); // fire-and-forget
+        }
       } catch (err: any) {
         // Duplicate or other error — skip
         if (err.code !== "ER_DUP_ENTRY") {
