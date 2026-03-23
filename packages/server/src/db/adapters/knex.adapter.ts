@@ -147,8 +147,11 @@ export class KnexAdapter implements IDBAdapter {
     const record: Record<string, any> = {
       ...data,
       id,
-      created_at: now,
     };
+
+    if (await this.hasColumn(table, "created_at")) {
+      record.created_at = now;
+    }
 
     if (await this.hasColumn(table, "updated_at")) {
       record.updated_at = now;

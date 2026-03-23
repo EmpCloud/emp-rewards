@@ -50,7 +50,7 @@ export async function getLeaderboard(
     `SELECT ls.*, u.first_name, u.last_name, u.email, u.designation, u.department_id
      FROM leaderboard_snapshots ls
      LEFT JOIN empcloud.users u ON u.id = ls.user_id
-     WHERE ls.organization_id = ? AND ls.period_type = ? AND ls.period_key = ?
+     WHERE ls.organization_id = ? AND ls.period = ? AND ls.period_key = ?
      ORDER BY ls.rank ASC
      LIMIT ? OFFSET ?`,
     [orgId, periodType, periodKey, perPage, offset],
@@ -58,7 +58,7 @@ export async function getLeaderboard(
 
   const [countResult] = await db.raw<any>(
     `SELECT COUNT(*) as total FROM leaderboard_snapshots
-     WHERE organization_id = ? AND period_type = ? AND period_key = ?`,
+     WHERE organization_id = ? AND period = ? AND period_key = ?`,
     [orgId, periodType, periodKey],
   );
   const total = Number(countResult[0]?.total || 0);
@@ -92,7 +92,7 @@ export async function getDepartmentLeaderboard(
     `SELECT ls.*, u.first_name, u.last_name, u.email, u.designation, u.department_id
      FROM leaderboard_snapshots ls
      LEFT JOIN empcloud.users u ON u.id = ls.user_id
-     WHERE ls.organization_id = ? AND ls.period_type = ? AND ls.period_key = ?
+     WHERE ls.organization_id = ? AND ls.period = ? AND ls.period_key = ?
        AND u.department_id = ?
      ORDER BY ls.rank ASC
      LIMIT 50`,
@@ -143,13 +143,13 @@ export async function getMyRank(
   const [rows] = await db.raw<any>(
     `SELECT rank, total_points, kudos_received, kudos_sent, badges_earned
      FROM leaderboard_snapshots
-     WHERE organization_id = ? AND period_type = ? AND period_key = ? AND user_id = ?`,
+     WHERE organization_id = ? AND period = ? AND period_key = ? AND user_id = ?`,
     [orgId, periodType, periodKey, userId],
   );
 
   const [countResult] = await db.raw<any>(
     `SELECT COUNT(*) as total FROM leaderboard_snapshots
-     WHERE organization_id = ? AND period_type = ? AND period_key = ?`,
+     WHERE organization_id = ? AND period = ? AND period_key = ?`,
     [orgId, periodType, periodKey],
   );
 
@@ -216,7 +216,7 @@ export async function refreshLeaderboard(
 
   // Delete existing snapshots for this period
   await db.raw(
-    `DELETE FROM leaderboard_snapshots WHERE organization_id = ? AND period_type = ? AND period_key = ?`,
+    `DELETE FROM leaderboard_snapshots WHERE organization_id = ? AND period = ? AND period_key = ?`,
     [orgId, periodType, periodKey],
   );
 
@@ -226,7 +226,7 @@ export async function refreshLeaderboard(
     id: uuidv4(),
     organization_id: orgId,
     user_id: row.user_id,
-    period_type: periodType,
+    period: periodType,
     period_key: periodKey,
     rank: idx + 1,
     total_points: Number(row.total_points),
@@ -242,13 +242,13 @@ export async function refreshLeaderboard(
     const batch = records.slice(i, i + 500);
     const placeholders = batch.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ");
     const values = batch.flatMap((r: any) => [
-      r.id, r.organization_id, r.user_id, r.period_type, r.period_key,
+      r.id, r.organization_id, r.user_id, r.period, r.period_key,
       r.rank, r.total_points, r.kudos_received, r.kudos_sent, r.badges_earned,
       r.created_at, r.updated_at,
     ]);
     await db.raw(
       `INSERT INTO leaderboard_snapshots
-       (id, organization_id, user_id, period_type, period_key, rank, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
+       (id, organization_id, user_id, period, period_key, rank, total_points, kudos_received, kudos_sent, badges_earned, created_at, updated_at)
        VALUES ${placeholders}`,
       values,
     );
