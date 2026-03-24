@@ -304,6 +304,17 @@ All endpoints under `/api/v1/`. Server runs on port **4600**.
 
 ---
 
+## Test Deployment
+
+| Environment | URL |
+|-------------|-----|
+| Frontend | https://test-rewards.empcloud.com |
+| API | https://test-rewards-api.empcloud.com |
+
+SSO integrated with EMP Cloud.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
