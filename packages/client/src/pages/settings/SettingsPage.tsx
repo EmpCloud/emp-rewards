@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Plus, Pencil, Trash2, X, Check, Palette, MessageSquare, Hash, Zap, ExternalLink, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Settings, Plus, Pencil, Trash2, X, Check, Palette, MessageSquare, Hash, Zap, ExternalLink, CheckCircle2, XCircle, Loader2, Bell, BellRing } from "lucide-react";
 import { apiGet, apiPut, apiPost, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
@@ -35,6 +35,14 @@ interface SlackConfig {
   slack_notify_celebrations: boolean;
 }
 
+interface TeamsConfig {
+  teams_webhook_url: string | null;
+  teams_enabled: boolean;
+  teams_notify_kudos: boolean;
+  teams_notify_celebrations: boolean;
+  teams_notify_milestones: boolean;
+}
+
 const ICON_OPTIONS = [
   "star", "heart", "trophy", "zap", "target", "award", "flame", "sparkles",
   "thumbs-up", "rocket", "lightbulb", "shield", "gem", "crown", "medal",
@@ -49,6 +57,8 @@ const TABS = [
   { key: "general", label: "General" },
   { key: "categories", label: "Categories" },
   { key: "slack", label: "Slack" },
+  { key: "teams", label: "Teams" },
+  { key: "push", label: "Push Notifications" },
 ];
 
 export function SettingsPage() {
@@ -78,6 +88,24 @@ export function SettingsPage() {
   const [testingWebhook, setTestingWebhook] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  // Teams config
+  const [teamsConfig, setTeamsConfig] = useState<TeamsConfig>({
+    teams_webhook_url: null,
+    teams_enabled: false,
+    teams_notify_kudos: true,
+    teams_notify_celebrations: true,
+    teams_notify_milestones: true,
+  });
+  const [savingTeams, setSavingTeams] = useState(false);
+  const [testingTeams, setTestingTeams] = useState(false);
+  const [teamsTestResult, setTeamsTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Push notifications
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [subscribingPush, setSubscribingPush] = useState(false);
+  const [testingPush, setTestingPush] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -85,10 +113,11 @@ export function SettingsPage() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [settingsRes, catsRes, slackRes] = await Promise.allSettled([
+      const [settingsRes, catsRes, slackRes, teamsRes] = await Promise.allSettled([
         apiGet<RecognitionSettings>("/settings"),
         apiGet<Category[]>("/settings/categories", { includeInactive: "true" }),
         apiGet<SlackConfig>("/slack/config"),
+        apiGet<TeamsConfig>("/settings/teams"),
       ]);
       if (settingsRes.status === "fulfilled" && settingsRes.value.data) {
         setSettings(settingsRes.value.data);
@@ -99,12 +128,27 @@ export function SettingsPage() {
       if (slackRes.status === "fulfilled" && slackRes.value.data) {
         setSlackConfig(slackRes.value.data as SlackConfig);
       }
+      if (teamsRes.status === "fulfilled" && teamsRes.value.data) {
+        setTeamsConfig(teamsRes.value.data as TeamsConfig);
+      }
     } catch {
       // Demo data
       setSettings(getDemoSettings());
       setCategories(getDemoCategories());
     } finally {
       setLoading(false);
+    }
+
+    // Check push notification support
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      setPushSupported(true);
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        setPushSubscribed(!!sub);
+      } catch {
+        // Push not available
+      }
     }
   }
 
@@ -176,6 +220,135 @@ export function SettingsPage() {
       });
     } finally {
       setTestingWebhook(false);
+    }
+  }
+
+  async function saveTeamsConfig() {
+    if (!isAdmin) return;
+    setSavingTeams(true);
+    try {
+      const res = await apiPut<TeamsConfig>("/settings/teams", {
+        teams_webhook_url: teamsConfig.teams_webhook_url || null,
+        teams_enabled: teamsConfig.teams_enabled,
+        teams_notify_kudos: teamsConfig.teams_notify_kudos,
+        teams_notify_celebrations: teamsConfig.teams_notify_celebrations,
+        teams_notify_milestones: teamsConfig.teams_notify_milestones,
+      });
+      if (res.success && res.data) {
+        setTeamsConfig(res.data as TeamsConfig);
+        toast.success("Teams settings saved");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to save Teams settings");
+    } finally {
+      setSavingTeams(false);
+    }
+  }
+
+  async function testTeamsConnection() {
+    if (!teamsConfig.teams_webhook_url) {
+      toast.error("Please enter a webhook URL first");
+      return;
+    }
+    setTestingTeams(true);
+    setTeamsTestResult(null);
+    try {
+      const res = await apiPost<{ connected: boolean; message: string }>("/settings/teams/test", {
+        webhook_url: teamsConfig.teams_webhook_url,
+      });
+      if (res.success && res.data) {
+        setTeamsTestResult({ success: true, message: res.data.message || "Connection successful!" });
+      }
+    } catch (err: any) {
+      setTeamsTestResult({
+        success: false,
+        message: err.response?.data?.error?.message || "Connection failed. Check the webhook URL.",
+      });
+    } finally {
+      setTestingTeams(false);
+    }
+  }
+
+  async function subscribeToPush() {
+    setSubscribingPush(true);
+    try {
+      // Get VAPID public key
+      const vapidRes = await apiGet<{ publicKey: string }>("/push/vapid-key");
+      if (!vapidRes.success || !vapidRes.data?.publicKey) {
+        toast.error("Push notifications are not configured on the server.");
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+
+      // Convert VAPID key from base64 to Uint8Array
+      const urlBase64ToUint8Array = (base64String: string) => {
+        const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      };
+
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidRes.data.publicKey),
+      });
+
+      const subJson = subscription.toJSON();
+      await apiPost("/push/subscribe", {
+        endpoint: subJson.endpoint,
+        keys: {
+          p256dh: subJson.keys?.p256dh,
+          auth: subJson.keys?.auth,
+        },
+      });
+
+      setPushSubscribed(true);
+      toast.success("Push notifications enabled!");
+    } catch (err: any) {
+      if (err.name === "NotAllowedError") {
+        toast.error("Notification permission was denied. Please allow notifications in your browser settings.");
+      } else {
+        toast.error(err.response?.data?.error?.message || "Failed to enable push notifications");
+      }
+    } finally {
+      setSubscribingPush(false);
+    }
+  }
+
+  async function unsubscribeFromPush() {
+    setSubscribingPush(true);
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const subscription = await reg.pushManager.getSubscription();
+      if (subscription) {
+        await apiPost("/push/unsubscribe", { endpoint: subscription.endpoint });
+        await subscription.unsubscribe();
+      }
+      setPushSubscribed(false);
+      toast.success("Push notifications disabled");
+    } catch (err: any) {
+      toast.error("Failed to disable push notifications");
+    } finally {
+      setSubscribingPush(false);
+    }
+  }
+
+  async function testPushNotification() {
+    setTestingPush(true);
+    try {
+      const res = await apiPost<{ message: string; sent: number; total: number }>("/push/test");
+      if (res.success && res.data) {
+        toast.success(res.data.message);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to send test notification");
+    } finally {
+      setTestingPush(false);
     }
   }
 
@@ -271,6 +444,8 @@ export function SettingsPage() {
               }`}
             >
               {t.key === "slack" && <MessageSquare className="mr-1.5 inline h-3.5 w-3.5" />}
+              {t.key === "teams" && <MessageSquare className="mr-1.5 inline h-3.5 w-3.5" />}
+              {t.key === "push" && <Bell className="mr-1.5 inline h-3.5 w-3.5" />}
               {t.label}
             </button>
           ))}
@@ -761,6 +936,296 @@ export function SettingsPage() {
                 <strong>Slash Command</strong> in your Slack app pointing to your server's webhook endpoint. Contact your admin for the URL.
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Microsoft Teams Tab */}
+      {tab === "teams" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                <MessageSquare className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Microsoft Teams Integration</h3>
+                <p className="text-xs text-gray-500">Post kudos, celebrations, and milestones to a Teams channel automatically.</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {/* Webhook URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Zap className="mr-1 inline h-3.5 w-3.5 text-amber-500" />
+                  Webhook URL
+                </label>
+                <input
+                  type="url"
+                  value={teamsConfig.teams_webhook_url || ""}
+                  onChange={(e) => setTeamsConfig((s) => ({ ...s, teams_webhook_url: e.target.value || null }))}
+                  disabled={!isAdmin}
+                  placeholder="https://outlook.office.com/webhook/..."
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Your Microsoft Teams incoming webhook URL. Keep this secret.
+                </p>
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-3 pt-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={teamsConfig.teams_enabled}
+                    onChange={(e) => setTeamsConfig((s) => ({ ...s, teams_enabled: e.target.checked }))}
+                    disabled={!isAdmin}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Enable Teams Notifications</span>
+                    <p className="text-xs text-gray-400">Master toggle for all Teams notifications</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={teamsConfig.teams_notify_kudos}
+                    onChange={(e) => setTeamsConfig((s) => ({ ...s, teams_notify_kudos: e.target.checked }))}
+                    disabled={!isAdmin || !teamsConfig.teams_enabled}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
+                      Notify on Kudos
+                    </span>
+                    <p className="text-xs text-gray-400">Post a message when someone sends kudos</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={teamsConfig.teams_notify_celebrations}
+                    onChange={(e) => setTeamsConfig((s) => ({ ...s, teams_notify_celebrations: e.target.checked }))}
+                    disabled={!isAdmin || !teamsConfig.teams_enabled}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
+                      Notify on Celebrations
+                    </span>
+                    <p className="text-xs text-gray-400">Post birthdays and work anniversaries</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={teamsConfig.teams_notify_milestones}
+                    onChange={(e) => setTeamsConfig((s) => ({ ...s, teams_notify_milestones: e.target.checked }))}
+                    disabled={!isAdmin || !teamsConfig.teams_enabled}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
+                      Notify on Milestones
+                    </span>
+                    <p className="text-xs text-gray-400">Post milestone achievements</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Action buttons */}
+              {isAdmin && (
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={testTeamsConnection}
+                    disabled={testingTeams || !teamsConfig.teams_webhook_url}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {testingTeams ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Zap className="h-4 w-4" />
+                    )}
+                    Test Connection
+                  </button>
+
+                  <button
+                    onClick={saveTeamsConfig}
+                    disabled={savingTeams}
+                    className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    {savingTeams ? "Saving..." : "Save Teams Settings"}
+                  </button>
+
+                  {teamsTestResult && (
+                    <div className={`ml-auto inline-flex items-center gap-1.5 text-sm font-medium ${teamsTestResult.success ? "text-green-600" : "text-red-600"}`}>
+                      {teamsTestResult.success ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <XCircle className="h-4 w-4" />
+                      )}
+                      {teamsTestResult.message}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Setup Instructions */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">How to set up Microsoft Teams integration</h3>
+            <ol className="space-y-2.5 text-sm text-gray-600">
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">1</span>
+                <span>Open the Teams channel where you want recognition messages to appear.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">2</span>
+                <span>Click the <strong>"..."</strong> (more options) next to the channel name, then select <strong>"Connectors"</strong> or <strong>"Manage channel" &gt; "Connectors"</strong>.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">3</span>
+                <span>Search for <strong>"Incoming Webhook"</strong> and click <strong>"Configure"</strong>.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">4</span>
+                <span>Give the webhook a name (e.g., "EMP Rewards"), optionally upload an icon, and click <strong>"Create"</strong>.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">5</span>
+                <span>Copy the <strong>Webhook URL</strong> and paste it above. Click <strong>"Test Connection"</strong> to verify, then save.</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* Push Notifications Tab */}
+      {tab === "push" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                <BellRing className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Push Notifications</h3>
+                <p className="text-xs text-gray-500">Receive browser notifications when you get kudos, earn badges, or hit milestones.</p>
+              </div>
+            </div>
+
+            {!pushSupported ? (
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                <p className="text-sm text-yellow-800">
+                  Push notifications are not supported in your browser. Please use a modern browser (Chrome, Firefox, Edge) with HTTPS enabled.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Status */}
+                <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${pushSubscribed ? "bg-green-100" : "bg-gray-200"}`}>
+                    {pushSubscribed ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Bell className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {pushSubscribed ? "Push notifications are enabled" : "Push notifications are disabled"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {pushSubscribed
+                        ? "You will receive notifications for kudos, badges, and milestones on this device."
+                        : "Enable to receive real-time notifications on this device."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Enable / Disable */}
+                <div className="flex items-center gap-3">
+                  {pushSubscribed ? (
+                    <>
+                      <button
+                        onClick={unsubscribeFromPush}
+                        disabled={subscribingPush}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {subscribingPush ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                        Disable Notifications
+                      </button>
+                      <button
+                        onClick={testPushNotification}
+                        disabled={testingPush}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {testingPush ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Zap className="h-4 w-4" />
+                        )}
+                        Send Test Notification
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={subscribeToPush}
+                      disabled={subscribingPush}
+                      className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      {subscribingPush ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Bell className="h-4 w-4" />
+                      )}
+                      Enable Push Notifications
+                    </button>
+                  )}
+                </div>
+
+                {/* What you'll receive */}
+                <div className="pt-3 border-t border-gray-100">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">You will be notified when:</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                      Someone sends you kudos
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                      You earn a new badge
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                      You achieve a milestone
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">About push notifications</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li>Notifications are per-device. Enable on each device where you want alerts.</li>
+              <li>Your browser must support the Push API (Chrome, Firefox, Edge).</li>
+              <li>Notifications work even when the EMP Rewards tab is closed.</li>
+              <li>You can disable notifications at any time from this page or your browser settings.</li>
+            </ul>
           </div>
         </div>
       )}

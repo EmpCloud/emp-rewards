@@ -12,6 +12,8 @@ import { AppError, NotFoundError, ForbiddenError } from "../../utils/errors";
 import { logger } from "../../utils/logger";
 import * as pointsService from "../points/points.service";
 import * as slackService from "../slack/slack.service";
+import * as teamsService from "../teams/teams.service";
+import * as pushService from "../push/push.service";
 import * as milestoneService from "../milestone/milestone.service";
 
 // ---------------------------------------------------------------------------
@@ -120,6 +122,41 @@ export async function sendKudos(
 
   // Send Slack notification (non-blocking — errors are caught silently)
   slackService.sendKudosNotification(orgId, kudos.id).catch(() => {});
+
+  // Send Teams notification (non-blocking)
+  teamsService.sendKudosToTeams(orgId, kudos.id).catch(() => {});
+
+  // Send push notification to the recipient (non-blocking)
+  (async () => {
+    try {
+      let senderName = "Someone";
+      if (!data.is_anonymous) {
+        try {
+          const { getEmpCloudDB } = await import("../../db/empcloud");
+          const empDb = getEmpCloudDB();
+          const [senderRows] = await empDb.raw(
+            `SELECT first_name, last_name FROM users WHERE id = ? LIMIT 1`,
+            [senderId],
+          );
+          if (senderRows && senderRows[0]) {
+            senderName = `${senderRows[0].first_name} ${senderRows[0].last_name}`.trim();
+          }
+        } catch {
+          // Use fallback name
+        }
+      } else {
+        senderName = "Anonymous";
+      }
+      await pushService.notifyKudosReceived(data.receiver_id, {
+        senderName,
+        message: data.message,
+        points: pointsToAward,
+        kudosId: kudos.id,
+      });
+    } catch {
+      // Non-blocking
+    }
+  })();
 
   // Check milestones for both sender and receiver (non-blocking)
   milestoneService.checkMilestones(orgId, data.receiver_id).catch(() => {});

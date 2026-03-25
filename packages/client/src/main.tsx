@@ -16,6 +16,13 @@ const queryClient = new QueryClient({
   },
 });
 
+// Register service worker for push notifications
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(() => {
+    // Service worker registration failed — push notifications won't work
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

@@ -54,4 +54,11 @@ export const config = {
   cors: {
     origin: process.env.CORS_ORIGIN || "http://localhost:5180",
   },
+
+  // Web Push (VAPID keys)
+  vapid: {
+    publicKey: process.env.VAPID_PUBLIC_KEY || "",
+    privateKey: process.env.VAPID_PRIVATE_KEY || "",
+    subject: process.env.VAPID_SUBJECT || "mailto:rewards@empcloud.com",
+  },
 } as const;
