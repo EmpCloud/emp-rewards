@@ -118,7 +118,7 @@ router.post("/:id/reactions", async (req: Request, res: Response, next: NextFunc
       kudos_id: req.params.id,
       reaction_type: req.body.reaction_type,
     });
-    await kudosService.addReaction(parsed.kudos_id, userId, parsed.reaction_type);
+    await kudosService.addReaction(req.user!.empcloudOrgId, parsed.kudos_id, userId, parsed.reaction_type);
     return sendSuccess(res, { added: true }, 201);
   } catch (err) {
     next(err);
@@ -131,7 +131,7 @@ router.post("/:id/reactions", async (req: Request, res: Response, next: NextFunc
 router.delete("/:id/reactions/:reaction", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.empcloudUserId;
-    await kudosService.removeReaction(req.params.id, userId, req.params.reaction);
+    await kudosService.removeReaction(req.user!.empcloudOrgId, req.params.id, userId, req.params.reaction);
     return sendSuccess(res, { removed: true });
   } catch (err) {
     next(err);
@@ -148,7 +148,7 @@ router.post("/:id/comments", async (req: Request, res: Response, next: NextFunct
       kudos_id: req.params.id,
       content: req.body.content,
     });
-    const comment = await kudosService.addComment(parsed.kudos_id, userId, parsed.content);
+    const comment = await kudosService.addComment(req.user!.empcloudOrgId, parsed.kudos_id, userId, parsed.content);
     return sendSuccess(res, comment, 201);
   } catch (err) {
     next(err);

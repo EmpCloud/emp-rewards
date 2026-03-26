@@ -234,23 +234,51 @@ export async function deleteKudos(orgId: number, id: string, userId: number): Pr
     throw new ForbiddenError("Only the sender can delete their kudos");
   }
 
+  // Reverse points awarded to the receiver
+  if (kudos.points > 0) {
+    await pointsService.spendPoints(
+      orgId,
+      kudos.receiver_id,
+      kudos.points,
+      PointTransactionType.ADMIN_ADJUSTMENT,
+      "kudos",
+      id,
+      "Points reversed: kudos deleted by sender",
+    );
+  }
+
+  // Reverse sender bonus (10% of points, minimum 1)
+  const senderBonus = Math.max(1, Math.floor(kudos.points * 0.1));
+  if (senderBonus > 0 && kudos.sender_id !== kudos.receiver_id && kudos.points > 0) {
+    await pointsService.spendPoints(
+      orgId,
+      kudos.sender_id,
+      senderBonus,
+      PointTransactionType.ADMIN_ADJUSTMENT,
+      "kudos",
+      id,
+      "Sender bonus reversed: kudos deleted",
+    );
+  }
+
   await db.delete("kudos", id);
-  logger.info(`Kudos deleted: id=${id} by user=${userId}`);
+  logger.info(`Kudos deleted with points reversed: id=${id} by user=${userId}`);
 }
 
 // ---------------------------------------------------------------------------
 // addReaction — INSERT IGNORE for dedup
 // ---------------------------------------------------------------------------
 export async function addReaction(
+  orgId: number,
   kudosId: string,
   userId: number,
   reaction: string,
 ): Promise<void> {
   const db = getDB();
 
-  // Verify kudos exists
+  // Verify kudos exists AND belongs to the same organization
   const kudos = await db.findById<Kudos>("kudos", kudosId);
-  if (!kudos) {
+  if (!kudos || kudos.organization_id !== orgId) {
     throw new NotFoundError("Kudos", kudosId);
   }
 
@@ -270,6 +298,7 @@ export async function addReaction(
 // removeReaction
 // ---------------------------------------------------------------------------
 export async function removeReaction(
+  orgId: number,
   kudosId: string,
   userId: number,
   reaction: string,
@@ -286,15 +315,16 @@ export async function removeReaction(
 // addComment
 // ---------------------------------------------------------------------------
 export async function addComment(
+  orgId: number,
   kudosId: string,
   userId: number,
   message: string,
 ): Promise<KudosComment> {
   const db = getDB();
 
-  // Verify kudos exists
+  // Verify kudos exists AND belongs to the same organization
   const kudos = await db.findById<Kudos>("kudos", kudosId);
-  if (!kudos) {
+  if (!kudos || kudos.organization_id !== orgId) {
     throw new NotFoundError("Kudos", kudosId);
   }
 
