@@ -20,6 +20,18 @@ export function RewardCatalogPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Add reward form state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addingReward, setAddingReward] = useState(false);
+  const [addForm, setAddForm] = useState({
+    name: "",
+    description: "",
+    category: "gift_card",
+    points_cost: 500,
+    quantity_available: "",
+    image_url: "",
+  });
+
   const fetchRewards = async () => {
     try {
       setLoading(true);
@@ -53,6 +65,30 @@ export function RewardCatalogPage() {
     fetchRewards();
     fetchBalance();
   }, [page, categoryFilter]);
+
+  const handleAddReward = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingReward(true);
+    setError(null);
+    try {
+      await apiPost("/rewards", {
+        name: addForm.name,
+        description: addForm.description || null,
+        category: addForm.category,
+        points_cost: Number(addForm.points_cost),
+        quantity_available: addForm.quantity_available ? Number(addForm.quantity_available) : null,
+        image_url: addForm.image_url || null,
+      });
+      setSuccess("Reward added successfully!");
+      setShowAddForm(false);
+      setAddForm({ name: "", description: "", category: "gift_card", points_cost: 500, quantity_available: "", image_url: "" });
+      fetchRewards();
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || "Failed to add reward");
+    } finally {
+      setAddingReward(false);
+    }
+  };
 
   const handleRedeem = async (rewardId: string, rewardName: string) => {
     if (!confirm(`Redeem "${rewardName}"? Points will be deducted from your balance.`)) return;
@@ -90,12 +126,98 @@ export function RewardCatalogPage() {
           <p className="mt-1 text-sm text-gray-500">Browse and redeem rewards with your points.</p>
         </div>
         {isAdmin && (
-          <button className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors">
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
+          >
             <Plus className="h-4 w-4" />
-            Add Reward
+            {showAddForm ? "Cancel" : "Add Reward"}
           </button>
         )}
       </div>
+
+      {/* Add Reward Form */}
+      {showAddForm && isAdmin && (
+        <form onSubmit={handleAddReward} className="rounded-xl border border-amber-200 bg-amber-50 p-5 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">New Reward</h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                required
+                value={addForm.name}
+                onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Amazon Gift Card"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+              <select
+                value={addForm.category}
+                onChange={(e) => setAddForm((f) => ({ ...f, category: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              >
+                {REWARD_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Points Cost</label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={addForm.points_cost}
+                onChange={(e) => setAddForm((f) => ({ ...f, points_cost: parseInt(e.target.value) || 0 }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Quantity (blank = unlimited)</label>
+              <input
+                type="number"
+                min={0}
+                value={addForm.quantity_available}
+                onChange={(e) => setAddForm((f) => ({ ...f, quantity_available: e.target.value }))}
+                placeholder="Unlimited"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Image URL (optional)</label>
+              <input
+                type="text"
+                value={addForm.image_url}
+                onChange={(e) => setAddForm((f) => ({ ...f, image_url: e.target.value }))}
+                placeholder="https://..."
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+              <input
+                type="text"
+                value={addForm.description}
+                onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="Optional description"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={addingReward || !addForm.name}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
+            >
+              {addingReward ? "Adding..." : "Add Reward"}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Points Balance Banner */}
       <div className="rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white shadow-sm">

@@ -80,9 +80,9 @@ export function ChallengeDetailPage() {
     setJoining(true);
     try {
       await apiPost(`/challenges/${id}/join`);
-      fetchChallenge();
-    } catch {
-      // error
+      await fetchChallenge();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || "Failed to join challenge");
     } finally {
       setJoining(false);
     }
@@ -92,9 +92,10 @@ export function ChallengeDetailPage() {
     setRefreshing(true);
     try {
       await apiPost(`/challenges/${id}/refresh-progress`);
-      fetchChallenge();
-    } catch {
-      // error
+      await fetchChallenge();
+    } catch (err: any) {
+      console.error("Failed to refresh progress:", err);
+      alert(err.response?.data?.error?.message || "Failed to refresh progress. Please try again.");
     } finally {
       setRefreshing(false);
     }

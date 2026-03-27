@@ -132,6 +132,21 @@ export function BudgetListPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+
+    const totalAmount = Number(form.total_amount);
+    if (!totalAmount || totalAmount <= 0) {
+      toast.error("Please enter a valid budget amount");
+      return;
+    }
+    if (!form.period_start || !form.period_end) {
+      toast.error("Please select period start and end dates");
+      return;
+    }
+    if (form.period_end < form.period_start) {
+      toast.error("Period end date cannot be before start date");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const body = {
@@ -139,7 +154,7 @@ export function BudgetListPage() {
         owner_id: form.owner_id || user?.empcloudUserId || 1,
         department_id: form.department_id ? parseInt(form.department_id) : null,
         period: form.period,
-        total_amount: parseInt(form.total_amount),
+        total_amount: totalAmount,
         period_start: form.period_start,
         period_end: form.period_end,
       };

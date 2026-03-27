@@ -102,6 +102,13 @@ export function NominationProgramsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate end date >= start date
+    if (formData.end_date && formData.start_date && formData.end_date < formData.start_date) {
+      setError("End date cannot be before start date");
+      return;
+    }
+
     setFormLoading(true);
     setError(null);
 
@@ -343,9 +350,13 @@ export function NominationProgramsPage() {
                   <input
                     type="date"
                     value={formData.end_date}
+                    min={formData.start_date || undefined}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
+                  {formData.start_date && formData.end_date && formData.end_date < formData.start_date && (
+                    <p className="mt-1 text-xs text-red-500">End date must be on or after start date</p>
+                  )}
                 </div>
               </div>
 

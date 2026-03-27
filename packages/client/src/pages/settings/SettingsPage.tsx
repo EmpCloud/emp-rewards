@@ -70,6 +70,7 @@ export function SettingsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
 
   // Category form
   const [showCatForm, setShowCatForm] = useState(false);
@@ -354,10 +355,14 @@ export function SettingsPage() {
 
   async function saveCategory(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    if (!catForm.name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
+    setSavingCategory(true);
     try {
       const body = {
-        name: catForm.name,
+        name: catForm.name.trim(),
         description: catForm.description || null,
         icon: catForm.icon,
         color: catForm.color,
@@ -381,7 +386,7 @@ export function SettingsPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to save category");
     } finally {
-      setSaving(false);
+      setSavingCategory(false);
     }
   }
 
@@ -681,10 +686,10 @@ export function SettingsPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={savingCategory}
                     className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {saving ? "Saving..." : editingCat ? "Update" : "Create"}
+                    {savingCategory ? "Saving..." : editingCat ? "Update" : "Create"}
                   </button>
                 </div>
               </form>

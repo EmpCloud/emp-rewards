@@ -95,9 +95,12 @@ export function SendKudosPage() {
 
     setSubmitting(true);
     try {
+      // Only send category_id if it's a valid UUID (server-stored category);
+      // skip default/hardcoded categories that are not real DB records.
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedCategory);
       await apiPost("/kudos", {
         receiver_id: selectedRecipient.id,
-        category_id: selectedCategory || undefined,
+        category_id: isUUID ? selectedCategory : undefined,
         message: message.trim(),
         visibility,
         is_anonymous: isAnonymous,
@@ -140,7 +143,7 @@ export function SendKudosPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
+      <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 overflow-visible">
         {/* Recipient search */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Recipient</label>
@@ -164,8 +167,8 @@ export function SendKudosPage() {
               </button>
             </div>
           ) : (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <div className="relative z-10">
+              <Search className="absolute left-3 top-[13px] h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search employees by name or email..."
@@ -175,14 +178,36 @@ export function SendKudosPage() {
                   setShowDropdown(true);
                 }}
                 onFocus={() => setShowDropdown(true)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                 className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
               />
+              {/* Dropdown for search results */}
+              {showDropdown && recipients.length > 0 && (
+                <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {recipients.map((emp) => (
+                    <li key={emp.id}>
+                      <button
+                        type="button"
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-amber-50"
+                        onMouseDown={() => {
+                          setSelectedRecipient(emp);
+                          setShowDropdown(false);
+                        }}
+                      >
+                        <span className="font-medium text-gray-900">{emp.first_name} {emp.last_name}</span>
+                        {emp.email && <span className="ml-2 text-xs text-gray-400">{emp.email}</span>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p className="mt-1 text-xs text-gray-400">
                 Enter the Employee ID number directly if search is unavailable
               </p>
               {/* Manual ID entry fallback */}
               <div className="mt-2 flex items-center gap-2">
                 <input
+                  id="manual-employee-id"
                   type="number"
                   placeholder="Or enter Employee ID"
                   className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
@@ -204,8 +229,8 @@ export function SendKudosPage() {
                 />
                 <button
                   type="button"
-                  onClick={(e) => {
-                    const input = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                  onClick={() => {
+                    const input = document.getElementById("manual-employee-id") as HTMLInputElement;
                     const val = parseInt(input?.value, 10);
                     if (val > 0) {
                       setSelectedRecipient({

@@ -73,23 +73,23 @@ export function MilestoneRulesPage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const payload = {
+        name: form.name,
+        description: form.description || null,
+        trigger_type: form.trigger_type,
+        trigger_value: Number(form.trigger_value),
+        reward_points: Number(form.reward_points),
+        is_active: form.is_active,
+      };
       if (editingId) {
-        await apiPut(`/milestones/rules/${editingId}`, {
-          ...form,
-          trigger_value: Number(form.trigger_value),
-          reward_points: Number(form.reward_points),
-        });
+        await apiPut(`/milestones/rules/${editingId}`, payload);
       } else {
-        await apiPost("/milestones/rules", {
-          ...form,
-          trigger_value: Number(form.trigger_value),
-          reward_points: Number(form.reward_points),
-        });
+        await apiPost("/milestones/rules", payload);
       }
       resetForm();
-      fetchRules();
-    } catch {
-      // error
+      await fetchRules();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || `Failed to ${editingId ? "update" : "create"} rule`);
     } finally {
       setSaving(false);
     }
