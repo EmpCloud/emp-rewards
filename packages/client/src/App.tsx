@@ -1,114 +1,9 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { isLoggedIn, useAuthStore, extractSSOToken } from "@/lib/auth-store";
 import { apiPost } from "@/api/client";
-
-// Layouts (eagerly loaded)
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-
-// Lazy-loaded pages
-const LoginPage = lazy(() =>
-  import("@/pages/auth/LoginPage").then((m) => ({ default: m.LoginPage })),
-);
-const DashboardPage = lazy(() =>
-  import("@/pages/dashboard/DashboardPage").then((m) => ({ default: m.DashboardPage })),
-);
-
-// Feed
-const FeedPage = lazy(() =>
-  import("@/pages/feed/FeedPage").then((m) => ({ default: m.FeedPage })),
-);
-
-// Celebrations
-const CelebrationPage = lazy(() =>
-  import("@/pages/celebrations/CelebrationPage").then((m) => ({ default: m.CelebrationPage })),
-);
-
-// Kudos
-const SendKudosPage = lazy(() =>
-  import("@/pages/kudos/SendKudosPage").then((m) => ({ default: m.SendKudosPage })),
-);
-const KudosDetailPage = lazy(() =>
-  import("@/pages/kudos/KudosDetailPage").then((m) => ({ default: m.KudosDetailPage })),
-);
-const MyKudosPage = lazy(() =>
-  import("@/pages/kudos/MyKudosPage").then((m) => ({ default: m.MyKudosPage })),
-);
-
-// Leaderboard
-const LeaderboardPage = lazy(() =>
-  import("@/pages/leaderboard/LeaderboardPage").then((m) => ({ default: m.LeaderboardPage })),
-);
-
-// Badges
-const BadgeListPage = lazy(() =>
-  import("@/pages/badges/BadgeListPage").then((m) => ({ default: m.BadgeListPage })),
-);
-const BadgeDetailPage = lazy(() =>
-  import("@/pages/badges/BadgeDetailPage").then((m) => ({ default: m.BadgeDetailPage })),
-);
-const MyBadgesPage = lazy(() =>
-  import("@/pages/badges/MyBadgesPage").then((m) => ({ default: m.MyBadgesPage })),
-);
-
-// Rewards
-const RewardCatalogPage = lazy(() =>
-  import("@/pages/rewards/RewardCatalogPage").then((m) => ({ default: m.RewardCatalogPage })),
-);
-const RewardDetailPage = lazy(() =>
-  import("@/pages/rewards/RewardDetailPage").then((m) => ({ default: m.RewardDetailPage })),
-);
-
-// Redemptions
-const RedemptionListPage = lazy(() =>
-  import("@/pages/redemptions/RedemptionListPage").then((m) => ({ default: m.RedemptionListPage })),
-);
-const RedemptionDetailPage = lazy(() =>
-  import("@/pages/redemptions/RedemptionDetailPage").then((m) => ({ default: m.RedemptionDetailPage })),
-);
-
-// Nominations
-const NominationProgramsPage = lazy(() =>
-  import("@/pages/nominations/NominationProgramsPage").then((m) => ({ default: m.NominationProgramsPage })),
-);
-const NominationSubmitPage = lazy(() =>
-  import("@/pages/nominations/NominationSubmitPage").then((m) => ({ default: m.NominationSubmitPage })),
-);
-const NominationListPage = lazy(() =>
-  import("@/pages/nominations/NominationListPage").then((m) => ({ default: m.NominationListPage })),
-);
-
-// Budgets
-const BudgetListPage = lazy(() =>
-  import("@/pages/budgets/BudgetListPage").then((m) => ({ default: m.BudgetListPage })),
-);
-
-// Analytics
-const AnalyticsPage = lazy(() =>
-  import("@/pages/analytics/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })),
-);
-const ManagerDashboardPage = lazy(() =>
-  import("@/pages/analytics/ManagerDashboardPage").then((m) => ({ default: m.ManagerDashboardPage })),
-);
-
-// Challenges
-const ChallengeListPage = lazy(() =>
-  import("@/pages/challenges/ChallengeListPage").then((m) => ({ default: m.ChallengeListPage })),
-);
-const ChallengeDetailPage = lazy(() =>
-  import("@/pages/challenges/ChallengeDetailPage").then((m) => ({ default: m.ChallengeDetailPage })),
-);
-
-// Milestones
-const MilestoneRulesPage = lazy(() =>
-  import("@/pages/milestones/MilestoneRulesPage").then((m) => ({ default: m.MilestoneRulesPage })),
-);
-
-// Settings
-const SettingsPage = lazy(() =>
-  import("@/pages/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })),
-);
+import { AppRoutes } from "@/routes";
 
 function PageLoader() {
   return (
@@ -181,69 +76,11 @@ export default function App() {
     <SSOGate>
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Public auth */}
-        <Route path="/login" element={<LoginPage />} />
-
         {/* Root redirect */}
         <Route path="/" element={<AuthRedirect />} />
 
-        {/* Protected routes inside DashboardLayout */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-
-          {/* Feed */}
-          <Route path="/feed" element={<FeedPage />} />
-
-          {/* Celebrations */}
-          <Route path="/celebrations" element={<CelebrationPage />} />
-
-          {/* Kudos */}
-          <Route path="/kudos" element={<MyKudosPage />} />
-          <Route path="/kudos/send" element={<SendKudosPage />} />
-          <Route path="/kudos/:id" element={<KudosDetailPage />} />
-
-          {/* Leaderboard */}
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-
-          {/* Badges */}
-          <Route path="/badges" element={<BadgeListPage />} />
-          <Route path="/badges/mine" element={<MyBadgesPage />} />
-          <Route path="/badges/:id" element={<BadgeDetailPage />} />
-
-          {/* Rewards */}
-          <Route path="/rewards" element={<RewardCatalogPage />} />
-          <Route path="/rewards/:id" element={<RewardDetailPage />} />
-
-          {/* Redemptions */}
-          <Route path="/redemptions" element={<RedemptionListPage />} />
-          <Route path="/redemptions/:id" element={<RedemptionDetailPage />} />
-
-          {/* Nominations */}
-          <Route path="/nominations" element={<NominationProgramsPage />} />
-          <Route path="/nominations/submit" element={<NominationSubmitPage />} />
-          <Route path="/nominations/list" element={<NominationListPage />} />
-
-          {/* Budgets */}
-          <Route path="/budgets" element={<BudgetListPage />} />
-
-          {/* Challenges */}
-          <Route path="/challenges" element={<ChallengeListPage />} />
-          <Route path="/challenges/:id" element={<ChallengeDetailPage />} />
-
-          {/* Milestones */}
-          <Route path="/milestones" element={<MilestoneRulesPage />} />
-
-          {/* Analytics */}
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/analytics/manager/:managerId" element={<ManagerDashboardPage />} />
-          <Route path="/analytics/managers" element={<ManagerDashboardPage />} />
-
-          {/* Settings */}
-          <Route path="/settings" element={<SettingsPage />} />
-        </Route>
-
-        {/* 404 */}
-        <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-900">Page Not Found</h1></div>} />
+        {/* All app routes */}
+        <AppRoutes />
       </Routes>
     </Suspense>
     </SSOGate>
