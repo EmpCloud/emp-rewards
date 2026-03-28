@@ -22,7 +22,14 @@ import {
 import { isLoggedIn, getUser, useAuthStore } from "@/lib/auth-store";
 import { cn, getInitials } from "@/lib/utils";
 
-const NAV_ITEMS = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: any;
+  adminOnly?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/feed", label: "Feed", icon: MessageSquare },
   { to: "/celebrations", label: "Celebrations", icon: PartyPopper },
@@ -34,10 +41,13 @@ const NAV_ITEMS = [
   { to: "/challenges", label: "Challenges", icon: Swords },
   { to: "/milestones", label: "Milestones", icon: Target },
   { to: "/nominations", label: "Nominations", icon: Star },
-  { to: "/budgets", label: "Budgets", icon: Wallet },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/budgets", label: "Budgets", icon: Wallet, adminOnly: true },
+  { to: "/analytics", label: "Analytics", icon: BarChart3, adminOnly: true },
+  { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },
 ];
+
+type Role = "org_admin" | "hr_admin" | "hr_manager" | "employee";
+const ADMIN_ROLES: Role[] = ["org_admin", "hr_admin", "hr_manager"];
 
 export function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -73,7 +83,10 @@ export function DashboardLayout() {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.filter((item) => {
+            if (item.adminOnly && !ADMIN_ROLES.includes((user?.role || "employee") as Role)) return false;
+            return true;
+          }).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
