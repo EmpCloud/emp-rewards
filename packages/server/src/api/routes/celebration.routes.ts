@@ -15,6 +15,27 @@ const router = Router();
 router.use(authenticate);
 
 // ---------------------------------------------------------------------------
+// GET / — list all celebrations (alias for /feed) (#876)
+// ---------------------------------------------------------------------------
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const params = paginationSchema.parse(req.query);
+
+    // Auto-generate today's celebrations if not yet done
+    await celebrationService.generateTodayCelebrations(orgId);
+
+    const result = await celebrationService.getCelebrationFeed(orgId, {
+      page: params.page,
+      perPage: params.perPage,
+    });
+    return sendSuccess(res, result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /today — today's birthdays + anniversaries
 // ---------------------------------------------------------------------------
 router.get("/today", async (req: Request, res: Response, next: NextFunction) => {

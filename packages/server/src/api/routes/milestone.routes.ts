@@ -116,6 +116,20 @@ router.delete(
 );
 
 // ---------------------------------------------------------------------------
+// GET /history — Current user's milestone history (alias for /my-achievements) (#877)
+// ---------------------------------------------------------------------------
+router.get("/history", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const userId = req.user!.empcloudUserId;
+    const achievements = await milestoneService.getUserAchievements(orgId, userId);
+    return sendSuccess(res, achievements);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /my-achievements — Current user's milestone achievements
 // ---------------------------------------------------------------------------
 router.get("/my-achievements", async (req: Request, res: Response, next: NextFunction) => {

@@ -149,4 +149,65 @@ router.get("/managers", async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
+// ---------------------------------------------------------------------------
+// GET /team-comparison — alias for /managers (used by /manager/team-comparison) (#879)
+// ---------------------------------------------------------------------------
+router.get("/team-comparison", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const comparison = await analyticsService.getManagerComparison(orgId);
+    sendSuccess(res, comparison);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /recommendations — recognition recommendations for current user (#880)
+// ---------------------------------------------------------------------------
+router.get("/recommendations", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const managerId = req.user!.empcloudUserId;
+    const dashboard = await analyticsService.getManagerDashboard(orgId, managerId);
+
+    // Generate recommendations based on team data
+    const recommendations: any[] = [];
+    const teamMembers = dashboard.teamMembers || [];
+
+    // Find team members with low recognition
+    const lowRecognition = teamMembers.filter((m: any) => Number(m.kudos_received) === 0);
+    for (const member of lowRecognition.slice(0, 3)) {
+      recommendations.push({
+        type: "recognize",
+        priority: "high",
+        message: `${member.first_name} ${member.last_name} hasn't received any kudos this month. Consider recognizing their contributions.`,
+        user_id: member.user_id,
+      });
+    }
+
+    // If manager hasn't given enough kudos
+    if (dashboard.kudosGivenThisMonth < dashboard.teamSize) {
+      recommendations.push({
+        type: "engage",
+        priority: "medium",
+        message: `You've sent ${dashboard.kudosGivenThisMonth} kudos this month for a team of ${dashboard.teamSize}. Try to recognize each team member at least once per month.`,
+      });
+    }
+
+    // If team engagement is below org average
+    if (dashboard.engagementScore < dashboard.orgAverageEngagement) {
+      recommendations.push({
+        type: "improve",
+        priority: "medium",
+        message: `Your team's engagement score (${dashboard.engagementScore}) is below the org average (${dashboard.orgAverageEngagement}). Consider running a team challenge.`,
+      });
+    }
+
+    sendSuccess(res, { recommendations, teamSize: dashboard.teamSize, engagementScore: dashboard.engagementScore });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export { router as analyticsRoutes };

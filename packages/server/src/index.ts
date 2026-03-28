@@ -31,8 +31,13 @@ import { celebrationRoutes } from "./api/routes/celebration.routes";
 import { challengeRoutes } from "./api/routes/challenge.routes";
 import { milestoneRoutes } from "./api/routes/milestone.routes";
 import { authRoutes } from "./api/routes/auth.routes";
+import { authenticate } from "./api/middleware/auth.middleware";
 import { errorHandler } from "./api/middleware/error.middleware";
 import { apiLimiter, authLimiter } from "./api/middleware/rate-limit.middleware";
+import { sendSuccess } from "./utils/response";
+import * as pointsService from "./services/points/points.service";
+import * as badgeService from "./services/badge/badge.service";
+import * as kudosService from "./services/kudos/kudos.service";
 import { scheduleDailyCelebrationJob, stopDailyCelebrationJob } from "./jobs/celebration.jobs";
 import { swaggerUIHandler, openapiHandler } from "./api/docs";
 
@@ -100,6 +105,37 @@ v1.use("/push", pushRoutes);
 v1.use("/celebrations", celebrationRoutes);
 v1.use("/challenges", challengeRoutes);
 v1.use("/milestones", milestoneRoutes);
+v1.use("/teams", teamsRoutes); // alias — /teams -> /settings/teams (#881)
+
+// #885: GET /integration/user/:userId/summary — combined user rewards summary
+v1.get("/integration/user/:userId/summary", authenticate,
+  async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+      const orgId = req.user!.empcloudOrgId;
+      const userId = parseInt(String(req.params.userId));
+
+      const [balance, badges, received, sent] = await Promise.all([
+        pointsService.getBalance(orgId, userId),
+        badgeService.getUserBadges(orgId, userId),
+        kudosService.getReceivedKudos(orgId, userId, { page: 1, perPage: 5 }),
+        kudosService.getSentKudos(orgId, userId, { page: 1, perPage: 5 }),
+      ]);
+
+      sendSuccess(res, {
+        user_id: userId,
+        points: balance,
+        badges,
+        kudos: {
+          received_total: received.total,
+          sent_total: sent.total,
+          recent_received: received.data,
+          recent_sent: sent.data,
+        },
+      });
+    } catch (err) { next(err); }
+  },
+);
+
 v1.use("/auth", authLimiter, authRoutes);
 
 app.use("/api/v1", v1);
