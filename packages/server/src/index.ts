@@ -92,6 +92,7 @@ v1.use("/nominations", nominationRoutes);
 v1.use("/leaderboard", leaderboardRoutes);
 v1.use("/budgets", budgetRoutes);
 v1.use("/analytics", analyticsRoutes);
+v1.use("/manager", analyticsRoutes); // alias — clients calling /manager/dashboard get /analytics/manager/:id
 v1.use("/settings", settingsRoutes);
 v1.use("/slack", slackRoutes);
 v1.use("/settings/teams", teamsRoutes);

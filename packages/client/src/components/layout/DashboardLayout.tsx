@@ -18,6 +18,7 @@ import {
   PartyPopper,
   Swords,
   Target,
+  Bell,
 } from "lucide-react";
 import { isLoggedIn, getUser, useAuthStore } from "@/lib/auth-store";
 import { cn, getInitials } from "@/lib/utils";
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/challenges", label: "Challenges", icon: Swords },
   { to: "/milestones", label: "Milestones", icon: Target },
   { to: "/nominations", label: "Nominations", icon: Star },
+  { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/budgets", label: "Budgets", icon: Wallet, adminOnly: true },
   { to: "/analytics", label: "Analytics", icon: BarChart3, adminOnly: true },
   { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },

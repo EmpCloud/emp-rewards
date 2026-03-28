@@ -100,6 +100,11 @@ const MilestoneRulesPage = lazy(() =>
   import("@/pages/milestones/MilestoneRulesPage").then((m) => ({ default: m.MilestoneRulesPage })),
 );
 
+// Notifications
+const NotificationsPage = lazy(() =>
+  import("@/pages/notifications/NotificationsPage").then((m) => ({ default: m.NotificationsPage })),
+);
+
 // Settings
 const SettingsPage = lazy(() =>
   import("@/pages/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })),
@@ -161,6 +166,13 @@ export function AppRoutes() {
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/analytics/manager/:managerId" element={<ManagerDashboardPage />} />
         <Route path="/analytics/managers" element={<ManagerDashboardPage />} />
+
+        {/* Notifications */}
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/my/notifications" element={<NotificationsPage />} />
+
+        {/* Aliases for /my/ paths */}
+        <Route path="/my/redemptions" element={<RedemptionListPage />} />
 
         {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />

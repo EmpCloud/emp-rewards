@@ -15,6 +15,19 @@ const router = Router();
 router.use(authenticate);
 
 // ---------------------------------------------------------------------------
+// GET /dashboard — alias for overview (used by /manager/dashboard clients)
+// ---------------------------------------------------------------------------
+router.get("/dashboard", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = req.user!.empcloudOrgId;
+    const overview = await analyticsService.getOverview(orgId);
+    sendSuccess(res, overview);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /overview
 // ---------------------------------------------------------------------------
 router.get("/overview", async (req: Request, res: Response, next: NextFunction) => {
