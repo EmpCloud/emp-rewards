@@ -43,7 +43,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left brand panel — hidden on mobile */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-amber-500 to-orange-700 p-12">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700 p-12">
         <div className="max-w-md text-white">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -55,15 +55,15 @@ export function LoginPage() {
           <h1 className="text-4xl font-bold leading-tight">
             Recognize and reward your team
           </h1>
-          <p className="mt-4 text-lg text-amber-100">
+          <p className="mt-4 text-lg text-brand-100">
             Send kudos, award badges, track points, run nominations, and celebrate wins — all in one place.
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-3">
             {FEATURES.map((feature) => (
               <div key={feature} className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-amber-300" />
-                <span className="text-sm text-amber-100">{feature}</span>
+                <div className="h-2 w-2 rounded-full bg-brand-300" />
+                <span className="text-sm text-brand-100">{feature}</span>
               </div>
             ))}
           </div>
@@ -75,7 +75,7 @@ export function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600">
               <Trophy className="h-6 w-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">EMP Rewards</span>
@@ -96,7 +96,7 @@ export function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
@@ -111,7 +111,7 @@ export function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                   />
                   <button
                     type="button"
@@ -126,7 +126,7 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={loginMutation.isPending}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
               >
                 {loginMutation.isPending ? (
                   <>
