@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, Eye, EyeOff } from "lucide-react";
+import { Trophy, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLogin } from "@/api/hooks";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
+
+const FEATURES = [
+  "Kudos",
+  "Badges & awards",
+  "Leaderboards",
+  "Point system",
+  "Nominations",
+  "Gift cards",
+  "Recognition wall",
+  "Analytics",
+];
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -30,67 +41,108 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500">
-            <Trophy className="h-6 w-6 text-white" />
+    <div className="flex min-h-screen">
+      {/* Left brand panel — hidden on mobile */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-amber-500 to-orange-700 p-12">
+        <div className="max-w-md text-white">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold">EMP Rewards</span>
           </div>
-          <span className="text-xl font-bold text-gray-900">EMP Rewards</span>
-        </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-1 text-sm text-gray-500">Sign in to recognize your team</p>
+          <h1 className="text-4xl font-bold leading-tight">
+            Recognize and reward your team
+          </h1>
+          <p className="mt-4 text-lg text-amber-100">
+            Send kudos, award badges, track points, run nominations, and celebrate wins — all in one place.
+          </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative mt-1">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+          <div className="mt-10 grid grid-cols-2 gap-3">
+            {FEATURES.map((feature) => (
+              <div key={feature} className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-amber-300" />
+                <span className="text-sm text-amber-100">{feature}</span>
               </div>
-            </div>
-            <button
-              type="submit"
-              disabled={loginMutation.isPending}
-              className="w-full rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-            >
-              {loginMutation.isPending ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
+            ))}
+          </div>
+        </div>
+      </div>
 
-          <div className="mt-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
-            <p className="font-medium">Demo credentials:</p>
-            <p>ananya@technova.in / Welcome@123</p>
+      {/* Right login panel */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-sm">
+          {/* Mobile-only logo */}
+          <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600">
+              <Trophy className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">EMP Rewards</span>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+            <p className="mt-1 text-sm text-gray-500">Sign in to recognize your team</p>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="relative mt-1">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loginMutation.isPending}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                {loginMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
+              </button>
+            </form>
+
+            <div className="mt-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
+              <p className="font-medium">Demo credentials:</p>
+              <p>ananya@technova.in / Welcome@123</p>
+            </div>
           </div>
         </div>
       </div>
