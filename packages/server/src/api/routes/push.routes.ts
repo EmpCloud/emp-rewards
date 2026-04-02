@@ -40,7 +40,7 @@ router.get("/vapid-key", async (_req: Request, res: Response, next: NextFunction
   try {
     const publicKey = pushService.getVapidPublicKey();
     if (!publicKey) {
-      throw new AppError(503, "VAPID_NOT_CONFIGURED", "Push notifications are not configured. VAPID keys are missing.");
+      throw new AppError(503, "VAPID_NOT_CONFIGURED", "Push notifications are not yet set up for this organization. Please contact your administrator to configure VAPID keys.");
     }
     sendSuccess(res, { publicKey });
   } catch (err) {
@@ -101,7 +101,7 @@ router.post("/test", async (req: Request, res: Response, next: NextFunction) => 
     const result = await pushService.testPush(userId);
 
     if (result.total === 0) {
-      throw new AppError(400, "NO_SUBSCRIPTION", "No push subscriptions found. Please enable notifications in your browser first.");
+      throw new AppError(400, "NO_SUBSCRIPTION", "No push subscriptions found. Please enable browser notifications first, then try again.");
     }
 
     sendSuccess(res, {

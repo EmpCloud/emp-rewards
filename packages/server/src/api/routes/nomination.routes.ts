@@ -7,6 +7,7 @@ import { authenticate, authorize } from "../middleware/auth.middleware";
 import * as nominationService from "../../services/nomination/nomination.service";
 import {
   createNominationProgramSchema,
+  updateNominationProgramSchema,
   submitNominationSchema,
   reviewNominationSchema,
   paginationSchema,
@@ -76,7 +77,7 @@ router.put(
     try {
       const orgId = req.user!.empcloudOrgId;
       const { id } = idParamSchema.parse(req.params);
-      const parsed = createNominationProgramSchema.partial().safeParse(req.body);
+      const parsed = updateNominationProgramSchema.safeParse(req.body);
       if (!parsed.success) {
         throw new ValidationError("Invalid program data", {
           validation: parsed.error.errors.map((e) => e.message),

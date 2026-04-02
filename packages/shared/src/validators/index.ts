@@ -116,6 +116,17 @@ export const createNominationProgramSchema = z.object({
   is_active: z.boolean().optional().default(true),
 });
 
+export const updateNominationProgramSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).optional().nullable(),
+  frequency: z.nativeEnum(NominationFrequency).optional(),
+  nominations_per_user: z.number().int().positive().optional(),
+  points_awarded: z.number().int().min(0).optional(),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  is_active: z.boolean().optional(),
+});
+
 export const submitNominationSchema = z.object({
   program_id: z.string().uuid(),
   nominee_id: z.number().int().positive(),

@@ -128,7 +128,7 @@ export async function getDepartmentParticipation(orgId: number) {
        COUNT(DISTINCT k.receiver_id) as active_receivers,
        COUNT(k.id) as total_kudos
      FROM empcloud.users u
-     LEFT JOIN empcloud.departments d ON d.id = u.department_id
+     LEFT JOIN empcloud.organization_departments d ON d.id = u.department_id AND d.organization_id = u.organization_id
      LEFT JOIN kudos k ON (k.sender_id = u.id OR k.receiver_id = u.id) AND k.organization_id = ?
      WHERE u.organization_id = ? AND u.status = 1
      GROUP BY u.department_id, d.name

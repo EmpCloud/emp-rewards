@@ -67,7 +67,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 // ---------------------------------------------------------------------------
 router.put(
   "/",
-  authorize("org_admin", "hr_admin"),
+  authorize("org_admin", "hr_admin", "super_admin"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = updateSettingsSchema.safeParse(req.body);
@@ -109,7 +109,7 @@ router.get("/categories", async (req: Request, res: Response, next: NextFunction
 // ---------------------------------------------------------------------------
 router.post(
   "/categories",
-  authorize("org_admin", "hr_admin"),
+  authorize("org_admin", "hr_admin", "super_admin"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = createCategorySchema.safeParse(req.body);
@@ -137,7 +137,7 @@ router.post(
 // ---------------------------------------------------------------------------
 router.put(
   "/categories/:id",
-  authorize("org_admin", "hr_admin"),
+  authorize("org_admin", "hr_admin", "super_admin"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = updateCategorySchema.safeParse(req.body);
@@ -165,7 +165,7 @@ router.put(
 // ---------------------------------------------------------------------------
 router.delete(
   "/categories/:id",
-  authorize("org_admin", "hr_admin"),
+  authorize("org_admin", "hr_admin", "super_admin"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
