@@ -73,10 +73,8 @@ vi.mock("../../services/badge/badge.service", () => ({
   awardBadge: vi.fn().mockResolvedValue({ id: "ub-1" }),
 }));
 
-// Mock kudos service for slash-command
-vi.mock("../../services/kudos/kudos.service", () => ({
-  sendKudos: vi.fn().mockResolvedValue({ id: "k-1", points: 10 }),
-}));
+// Note: kudos service is NOT mocked — we test it directly
+// Slash-command tests only cover paths that don't reach kudos service
 
 // Mock logger
 vi.mock("../../utils/logger", () => ({
@@ -98,6 +96,26 @@ vi.mock("../../config", () => ({
 
 // Mock uuid
 vi.mock("uuid", () => ({ v4: vi.fn(() => "uuid-mock-001") }));
+
+// Mock bcryptjs for auth service
+const mockBcryptCompare = vi.fn().mockResolvedValue(true);
+const mockBcryptHash = vi.fn().mockResolvedValue("$2a$12$hashed");
+vi.mock("bcryptjs", () => ({
+  default: { compare: (...args: any[]) => mockBcryptCompare(...args), hash: (...args: any[]) => mockBcryptHash(...args) },
+  compare: (...args: any[]) => mockBcryptCompare(...args),
+  hash: (...args: any[]) => mockBcryptHash(...args),
+}));
+
+// Mock jsonwebtoken for auth service
+const mockJwtSign = vi.fn().mockReturnValue("mock-jwt-token");
+const mockJwtVerify = vi.fn().mockReturnValue({ userId: 1, type: "refresh" });
+const mockJwtDecode = vi.fn().mockReturnValue(null);
+vi.mock("jsonwebtoken", () => ({
+  default: { sign: (...args: any[]) => mockJwtSign(...args), verify: (...args: any[]) => mockJwtVerify(...args), decode: (...args: any[]) => mockJwtDecode(...args) },
+  sign: (...args: any[]) => mockJwtSign(...args),
+  verify: (...args: any[]) => mockJwtVerify(...args),
+  decode: (...args: any[]) => mockJwtDecode(...args),
+}));
 
 // Mock fetch globally
 const mockFetch = vi.fn().mockResolvedValue({
@@ -1631,5 +1649,369 @@ describe("Slash Command Service (mock)", () => {
     const result = await slashService.handleSlashCommand(1, { ...basePayload, text: "nospace" });
     expect(result.response_type).toBe("ephemeral");
     expect(result.text).toContain("Could not parse");
+  });
+
+  it("handleSlashCommand — no message after mention", async () => {
+    const result = await slashService.handleSlashCommand(1, { ...basePayload, text: "@bob " });
+    expect(result.response_type).toBe("ephemeral");
+  });
+});
+
+// ===========================================================================
+// 13) KUDOS SERVICE — uncovered paths
+// ===========================================================================
+describe("Kudos Service (mock)", () => {
+  let kudosService: typeof import("../../services/kudos/kudos.service");
+
+  beforeEach(async () => {
+    kudosService = await import("../../services/kudos/kudos.service");
+  });
+
+  // no resetModules — mocks must persist
+
+  it("addReaction — adds reaction to kudos via raw INSERT", async () => {
+    mockDB.findById.mockResolvedValueOnce({ id: "k1", organization_id: 1 }); // kudos
+    await kudosService.addReaction(1, "k1", 10, "thumbsup");
+    expect(mockDB.raw).toHaveBeenCalled(); // uses INSERT IGNORE
+  });
+
+  it("removeReaction — removes existing reaction via deleteMany", async () => {
+    await kudosService.removeReaction(1, "k1", 10, "thumbsup");
+    expect(mockDB.deleteMany).toHaveBeenCalledWith("kudos_reactions", expect.objectContaining({
+      kudos_id: "k1",
+      user_id: 10,
+      reaction_type: "thumbsup",
+    }));
+  });
+
+  it("addComment — adds comment to kudos", async () => {
+    mockDB.findById.mockResolvedValueOnce({ id: "k1", organization_id: 1 }); // kudos
+    await kudosService.addComment(1, "k1", 10, "Great job!");
+    expect(mockDB.create).toHaveBeenCalled();
+  });
+
+  it("deleteComment — deletes own comment", async () => {
+    mockDB.findById.mockResolvedValueOnce({ id: "cm1", user_id: 10 }); // comment
+    await kudosService.deleteComment("cm1", 10);
+    expect(mockDB.delete).toHaveBeenCalledWith("kudos_comments", "cm1");
+  });
+
+  it("deleteComment — not found throws", async () => {
+    mockDB.findById.mockResolvedValueOnce(null);
+    await expect(kudosService.deleteComment("cm1", 10)).rejects.toThrow();
+  });
+
+  it("deleteComment — wrong user throws", async () => {
+    mockDB.findById.mockResolvedValueOnce({ id: "cm1", user_id: 20 });
+    await expect(kudosService.deleteComment("cm1", 10)).rejects.toThrow();
+  });
+
+  it("deleteKudos — success", async () => {
+    mockDB.findById.mockResolvedValueOnce({ id: "k1", organization_id: 1, sender_id: 10 });
+    await kudosService.deleteKudos(1, "k1", 10);
+    expect(mockDB.delete).toHaveBeenCalled();
+  });
+
+  it("deleteKudos — not found", async () => {
+    mockDB.findById.mockResolvedValueOnce(null);
+    await expect(kudosService.deleteKudos(1, "k1", 10)).rejects.toThrow();
+  });
+
+  it("getReceivedKudos — returns paginated results", async () => {
+    mockDB.raw.mockResolvedValueOnce([[{ id: "k1" }]]).mockResolvedValueOnce([[{ total: 1 }]]);
+    const result = await kudosService.getReceivedKudos(1, 10, {});
+    expect(result).toBeDefined();
+  });
+
+  it("getSentKudos — returns paginated results", async () => {
+    mockDB.raw.mockResolvedValueOnce([[{ id: "k1" }]]).mockResolvedValueOnce([[{ total: 1 }]]);
+    const result = await kudosService.getSentKudos(1, 10, {});
+    expect(result).toBeDefined();
+  });
+
+  it("getPublicFeed — returns paginated results", async () => {
+    mockDB.raw.mockResolvedValueOnce([[{ id: "k1" }]]).mockResolvedValueOnce([[{ total: 1 }]]);
+    const result = await kudosService.getPublicFeed(1, {});
+    expect(result).toBeDefined();
+  });
+});
+
+// ===========================================================================
+// 14) REWARD SERVICE — uncovered paths
+// ===========================================================================
+describe("Reward Service (mock)", () => {
+  let rewardService: typeof import("../../services/reward/reward.service");
+
+  beforeEach(async () => {
+    rewardService = await import("../../services/reward/reward.service");
+  });
+
+  // no resetModules — mocks must persist
+
+  it("createReward — creates reward catalog item", async () => {
+    await rewardService.createReward(1, {
+      name: "Gift Card",
+      description: "Amazon $50",
+      points_cost: 500,
+      category: "gift_cards",
+    } as any);
+    expect(mockDB.create).toHaveBeenCalledWith("reward_catalog", expect.objectContaining({
+      name: "Gift Card",
+    }));
+  });
+
+  it("listRewards — with filters", async () => {
+    mockDB.findMany.mockResolvedValueOnce({ data: [{ id: "r1" }], total: 1, page: 1, limit: 20, totalPages: 1 });
+    const result = await rewardService.listRewards(1, { category: "gift_cards" });
+    expect(result).toBeDefined();
+  });
+
+  it("getReward — found", async () => {
+    mockDB.findOne.mockResolvedValueOnce({ id: "r1", organization_id: 1, name: "Gift Card" });
+    const result = await rewardService.getReward(1, "r1");
+    expect(result.name).toBe("Gift Card");
+  });
+
+  it("getReward — not found", async () => {
+    mockDB.findOne.mockResolvedValueOnce(null);
+    await expect(rewardService.getReward(1, "r1")).rejects.toThrow();
+  });
+
+  it("updateReward — success", async () => {
+    mockDB.findOne.mockResolvedValueOnce({ id: "r1", organization_id: 1 });
+    mockDB.update.mockResolvedValueOnce({ id: "r1", name: "Updated" });
+    const result = await rewardService.updateReward(1, "r1", { name: "Updated" } as any);
+    expect(result.name).toBe("Updated");
+  });
+
+  it("deleteReward — success", async () => {
+    mockDB.findOne.mockResolvedValueOnce({ id: "r1", organization_id: 1 });
+    await rewardService.deleteReward(1, "r1");
+    expect(mockDB.update).toHaveBeenCalled(); // soft delete
+  });
+
+  it("redeemReward — success", async () => {
+    mockDB.findOne
+      .mockResolvedValueOnce({ id: "r1", organization_id: 1, points_cost: 100, quantity_available: 5, is_active: true }) // reward
+      .mockResolvedValueOnce({ id: "b1", current_balance: 500, total_redeemed: 100 }); // balance
+    await rewardService.redeemReward(1, 10, "r1");
+    expect(mockDB.create).toHaveBeenCalled();
+  });
+
+  it("redeemReward — insufficient points", async () => {
+    mockDB.findOne
+      .mockResolvedValueOnce({ id: "r1", organization_id: 1, points_cost: 1000, quantity_available: 5, is_active: true })
+      .mockResolvedValueOnce({ id: "b1", current_balance: 50, total_redeemed: 0 });
+    await expect(rewardService.redeemReward(1, 10, "r1")).rejects.toThrow();
+  });
+
+  it("redeemReward — out of stock", async () => {
+    mockDB.findOne.mockResolvedValueOnce({ id: "r1", organization_id: 1, points_cost: 100, quantity_available: 0, is_active: true });
+    await expect(rewardService.redeemReward(1, 10, "r1")).rejects.toThrow();
+  });
+
+  it("redeemReward — inactive reward", async () => {
+    mockDB.findOne.mockResolvedValueOnce({ id: "r1", organization_id: 1, points_cost: 100, is_active: false });
+    await expect(rewardService.redeemReward(1, 10, "r1")).rejects.toThrow();
+  });
+
+  it("redeemReward — reward not found", async () => {
+    mockDB.findOne.mockResolvedValueOnce(null);
+    await expect(rewardService.redeemReward(1, 10, "r1")).rejects.toThrow();
+  });
+});
+
+// ===========================================================================
+// 15) AUTH SERVICE
+// ===========================================================================
+describe("Auth Service (mock)", () => {
+  let authService: typeof import("../../services/auth/auth.service");
+  let empcloudMock: any;
+
+  beforeEach(async () => {
+    empcloudMock = await import("../../db/empcloud");
+    authService = await import("../../services/auth/auth.service");
+  });
+
+  // no resetModules — mocks must persist
+
+  it("login — success", async () => {
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", password: "$2a$12$hash", organization_id: 1,
+      role: "hr_admin", first_name: "Test", last_name: "User", status: 1,
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, name: "TestOrg", is_active: true });
+    const result = await authService.login("test@test.com", "password123");
+    expect(result.user.email).toBe("test@test.com");
+    expect(result.tokens.accessToken).toBeDefined();
+    expect(result.tokens.refreshToken).toBeDefined();
+  });
+
+  it("login — user not found", async () => {
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce(null);
+    await expect(authService.login("bad@test.com", "pass")).rejects.toThrow("Invalid email");
+  });
+
+  it("login — no password set", async () => {
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", password: null, organization_id: 1,
+    });
+    await expect(authService.login("test@test.com", "pass")).rejects.toThrow("Password not set");
+  });
+
+  it("login — wrong password", async () => {
+    mockBcryptCompare.mockResolvedValueOnce(false);
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", password: "$2a$12$hash", organization_id: 1,
+    });
+    await expect(authService.login("test@test.com", "wrong")).rejects.toThrow("Invalid email");
+  });
+
+  it("login — inactive org", async () => {
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", password: "$2a$12$hash", organization_id: 1,
+      role: "hr_admin", first_name: "Test", last_name: "User",
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, name: "TestOrg", is_active: false });
+    await expect(authService.login("test@test.com", "pass")).rejects.toThrow("inactive");
+  });
+
+  it("login — org not found", async () => {
+    mockBcryptCompare.mockResolvedValueOnce(true);
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", password: "$2a$12$hash", organization_id: 1,
+      role: "hr_admin", first_name: "Test", last_name: "User",
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce(null);
+    await expect(authService.login("test@test.com", "pass")).rejects.toThrow("inactive");
+  });
+
+  it("register — success", async () => {
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce(null);
+    (empcloudMock.createOrganization as any).mockResolvedValueOnce({ id: 1, name: "NewOrg" });
+    (empcloudMock.createUser as any).mockResolvedValueOnce({
+      id: 1, email: "new@test.com", first_name: "New", last_name: "User",
+      role: "hr_admin", organization_id: 1,
+    });
+    const result = await authService.register({
+      orgName: "NewOrg", firstName: "New", lastName: "User",
+      email: "new@test.com", password: "pass123",
+    });
+    expect(result.user.email).toBe("new@test.com");
+    expect(result.tokens.accessToken).toBeDefined();
+  });
+
+  it("register — duplicate email", async () => {
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce({ id: 1, email: "dup@test.com" });
+    await expect(authService.register({
+      orgName: "Org", firstName: "A", lastName: "B",
+      email: "dup@test.com", password: "pass",
+    })).rejects.toThrow("already exists");
+  });
+
+  it("register — with country", async () => {
+    (empcloudMock.findUserByEmail as any).mockResolvedValueOnce(null);
+    (empcloudMock.createOrganization as any).mockResolvedValueOnce({ id: 2, name: "USOrg" });
+    (empcloudMock.createUser as any).mockResolvedValueOnce({
+      id: 2, email: "us@test.com", first_name: "US", last_name: "User",
+      role: "hr_admin", organization_id: 2,
+    });
+    const result = await authService.register({
+      orgName: "USOrg", firstName: "US", lastName: "User",
+      email: "us@test.com", password: "pass", country: "US",
+    });
+    expect(result.user.orgName).toBe("USOrg");
+  });
+
+  it("ssoLogin — invalid token (decode returns null)", async () => {
+    mockJwtDecode.mockReturnValueOnce(null);
+    await expect(authService.ssoLogin("invalid-token")).rejects.toThrow("Invalid SSO");
+  });
+
+  it("ssoLogin — invalid token (decode returns string)", async () => {
+    mockJwtDecode.mockReturnValueOnce("just-a-string");
+    await expect(authService.ssoLogin("string-token")).rejects.toThrow("Invalid SSO");
+  });
+
+  it("ssoLogin — missing user id in token", async () => {
+    mockJwtDecode.mockReturnValueOnce({ sub: undefined });
+    await expect(authService.ssoLogin("token-no-sub")).rejects.toThrow("missing user");
+  });
+
+  it("ssoLogin — user not found", async () => {
+    mockJwtDecode.mockReturnValueOnce({ sub: "999" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce(null);
+    await expect(authService.ssoLogin("token")).rejects.toThrow("not found");
+  });
+
+  it("ssoLogin — inactive user", async () => {
+    mockJwtDecode.mockReturnValueOnce({ sub: "1" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({ id: 1, status: 0, organization_id: 1 });
+    await expect(authService.ssoLogin("token")).rejects.toThrow("not found or inactive");
+  });
+
+  it("ssoLogin — success", async () => {
+    mockJwtDecode.mockReturnValueOnce({ sub: "1" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({
+      id: 1, email: "sso@test.com", first_name: "SSO", last_name: "User",
+      role: "employee", organization_id: 1, status: 1,
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, name: "TestOrg", is_active: true });
+    const result = await authService.ssoLogin("valid-token");
+    expect(result.user.email).toBe("sso@test.com");
+  });
+
+  it("ssoLogin — inactive org", async () => {
+    mockJwtDecode.mockReturnValueOnce({ sub: "1" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({
+      id: 1, email: "sso@test.com", status: 1, organization_id: 1,
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, is_active: false });
+    await expect(authService.ssoLogin("token")).rejects.toThrow("inactive");
+  });
+
+  it("refreshToken — success", async () => {
+    mockJwtVerify.mockReturnValueOnce({ userId: 1, type: "refresh" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", first_name: "Test", last_name: "User",
+      role: "hr_admin", organization_id: 1, status: 1,
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, name: "TestOrg", is_active: true });
+    const result = await authService.refreshToken("valid-refresh-token");
+    expect(result.accessToken).toBeDefined();
+    expect(result.refreshToken).toBeDefined();
+  });
+
+  it("refreshToken — invalid token", async () => {
+    mockJwtVerify.mockImplementationOnce(() => { throw new Error("invalid"); });
+    await expect(authService.refreshToken("bad-token")).rejects.toThrow("Invalid or expired");
+  });
+
+  it("refreshToken — wrong token type", async () => {
+    mockJwtVerify.mockReturnValueOnce({ userId: 1, type: "access" });
+    await expect(authService.refreshToken("not-refresh")).rejects.toThrow("Invalid token type");
+  });
+
+  it("refreshToken — user not found", async () => {
+    mockJwtVerify.mockReturnValueOnce({ userId: 999, type: "refresh" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce(null);
+    await expect(authService.refreshToken("token")).rejects.toThrow("not found");
+  });
+
+  it("refreshToken — inactive user", async () => {
+    mockJwtVerify.mockReturnValueOnce({ userId: 1, type: "refresh" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({ id: 1, status: 0, organization_id: 1 });
+    await expect(authService.refreshToken("token")).rejects.toThrow("not found");
+  });
+
+  it("refreshToken — inactive org", async () => {
+    mockJwtVerify.mockReturnValueOnce({ userId: 1, type: "refresh" });
+    (empcloudMock.findUserById as any).mockResolvedValueOnce({
+      id: 1, email: "test@test.com", status: 1, organization_id: 1,
+    });
+    (empcloudMock.findOrgById as any).mockResolvedValueOnce({ id: 1, is_active: false });
+    await expect(authService.refreshToken("token")).rejects.toThrow("inactive");
   });
 });
