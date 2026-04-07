@@ -20,7 +20,7 @@ process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-jwt-secret-cov-100";
 process.env.LOG_LEVEL = "error";
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import knexLib, { Knex } from "knex";
 
 let db: Knex;
@@ -45,6 +45,9 @@ beforeAll(async () => {
   }
 });
 
+// Skip individual tests when DB is unavailable
+beforeEach((ctx) => { if (!dbAvailable) ctx.skip(); });
+
 afterAll(async () => {
   if (db && dbAvailable) {
     for (const id of createdCelebrationIds) {
@@ -65,7 +68,7 @@ afterAll(async () => {
 // =============================================================================
 // CELEBRATION SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Celebration service", () => {
+describe("Celebration service", () => {
   beforeAll(async () => {
     const { initDB } = await import("../../db/adapters");
     const { initEmpCloudDB } = await import("../../db/empcloud");
@@ -240,7 +243,7 @@ describe.skipIf(!dbAvailable)("Celebration service", () => {
 // =============================================================================
 // MILESTONE SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Milestone service", () => {
+describe("Milestone service", () => {
   it("listRules returns array", async () => {
     const { listRules } = await import("../../services/milestone/milestone.service");
     const result = await listRules(ORG);
@@ -319,7 +322,7 @@ describe.skipIf(!dbAvailable)("Milestone service", () => {
 // =============================================================================
 // TEAMS SERVICE — formatters are pure, config/send need DB
 // =============================================================================
-describe.skipIf(!dbAvailable)("Teams service", () => {
+describe("Teams service", () => {
   it("getTeamsConfig returns config or null", async () => {
     const { getTeamsConfig } = await import("../../services/teams/teams.service");
     const result = await getTeamsConfig(ORG);
@@ -417,7 +420,7 @@ describe.skipIf(!dbAvailable)("Teams service", () => {
 // =============================================================================
 // SLACK SERVICE — formatters + config
 // =============================================================================
-describe.skipIf(!dbAvailable)("Slack service", () => {
+describe("Slack service", () => {
   it("getSlackConfig returns config or null", async () => {
     const { getSlackConfig } = await import("../../services/slack/slack.service");
     const result = await getSlackConfig(ORG);
@@ -501,7 +504,7 @@ describe.skipIf(!dbAvailable)("Slack service", () => {
 // =============================================================================
 // SLASH COMMAND SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Slash command service", () => {
+describe("Slash command service", () => {
   it("handleSlashCommand returns usage for empty text", async () => {
     const { handleSlashCommand } = await import("../../services/slack/slash-command.service");
     const result = await handleSlashCommand(ORG, {
@@ -560,7 +563,7 @@ describe.skipIf(!dbAvailable)("Slash command service", () => {
 // =============================================================================
 // PUSH SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Push service", () => {
+describe("Push service", () => {
   it("getVapidPublicKey returns string", async () => {
     const { getVapidPublicKey } = await import("../../services/push/push.service");
     const key = getVapidPublicKey();
@@ -698,7 +701,7 @@ describe.skipIf(!dbAvailable)("Push service", () => {
 // =============================================================================
 // SETTINGS SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Settings service", () => {
+describe("Settings service", () => {
   it("getSettings returns settings for org", async () => {
     const { getSettings } = await import("../../services/settings/settings.service");
     try {
@@ -714,7 +717,7 @@ describe.skipIf(!dbAvailable)("Settings service", () => {
 // =============================================================================
 // LEADERBOARD SERVICE
 // =============================================================================
-describe.skipIf(!dbAvailable)("Leaderboard service", () => {
+describe("Leaderboard service", () => {
   it("getLeaderboard returns results", async () => {
     const { getLeaderboard } = await import("../../services/leaderboard/leaderboard.service");
     try {
