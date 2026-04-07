@@ -27,7 +27,7 @@ process.env.VAPID_SUBJECT = "mailto:test@empcloud.com";
 process.env.SLACK_WEBHOOK_URL = "";
 process.env.TEAMS_WEBHOOK_URL = "";
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 import { initDB, closeDB, getDB } from "../../db/adapters";
 import { initEmpCloudDB, closeEmpCloudDB } from "../../db/empcloud";
 
@@ -38,16 +38,25 @@ const ADMIN = 522;
 const U = String(Date.now()).slice(-6);
 
 let db: ReturnType<typeof getDB>;
+let dbReady = false;
 
 beforeAll(async () => {
-  await initDB();
-  await initEmpCloudDB();
-  db = getDB();
+  try {
+    await initDB();
+    await initEmpCloudDB();
+    db = getDB();
+    dbReady = true;
+  } catch {
+    // DB not available — tests will be skipped
+  }
 });
 
+beforeEach((ctx) => { if (!dbReady) ctx.skip(); });
+
 afterAll(async () => {
-  await closeEmpCloudDB();
-  await closeDB();
+  if (!dbReady) return;
+  try { await closeEmpCloudDB(); } catch {}
+  try { await closeDB(); } catch {}
 });
 
 // ============================================================================

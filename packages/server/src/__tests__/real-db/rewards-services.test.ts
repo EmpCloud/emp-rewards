@@ -4,7 +4,7 @@
 // Run: npx vitest run src/__tests__/real-db/rewards-services.test.ts
 // ============================================================================
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 import knex, { type Knex } from "knex";
 import { v4 as uuidv4 } from "uuid";
 
@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 // Raw knex connection (bypasses app singleton)
 // ---------------------------------------------------------------------------
 let db: Knex;
+let dbReady = false;
 const TEST_ORG_ID = 99900;
 const TEST_USER_1 = 99901;
 const TEST_USER_2 = 99902;
@@ -41,22 +42,32 @@ function trackId(table: string, id: string) {
 }
 
 beforeAll(async () => {
-  db = knex({
-    client: "mysql2",
-    connection: {
-      host: "localhost",
-      port: 3306,
-      user: "empcloud",
-      password: "EmpCloud2026",
-      database: "emp_rewards",
-    },
-    pool: { min: 1, max: 5 },
-  });
-  // Verify connection
-  await db.raw("SELECT 1");
+  try {
+    db = knex({
+      client: "mysql2",
+      connection: {
+        host: "localhost",
+        port: 3306,
+        user: "empcloud",
+        password: "EmpCloud2026",
+        database: "emp_rewards",
+      },
+      pool: { min: 1, max: 5 },
+    });
+    // Verify connection
+    await db.raw("SELECT 1");
+    dbReady = true;
+  } catch {
+    // DB not available — tests will be skipped
+  }
+});
+
+beforeEach((ctx) => {
+  if (!dbReady) ctx.skip();
 });
 
 afterAll(async () => {
+  if (!dbReady) return;
   // Cleanup in reverse dependency order
   const cleanupOrder = [
     "celebration_wishes",

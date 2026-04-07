@@ -14,7 +14,7 @@ process.env.EMPCLOUD_DB_NAME = "empcloud";
 process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-secret-key";
 
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 import { initDB, closeDB, getDB } from "../../db/adapters";
 import { initEmpCloudDB } from "../../db/empcloud";
 
@@ -36,7 +36,8 @@ import * as teamsService from "../../services/teams/teams.service";
 const ORG_ID = 5;
 const USER_ID = 522;
 const RECEIVER_USER_ID = 524;
-const db = getDB();
+let db: ReturnType<typeof getDB>;
+let dbReady = false;
 const cleanupIds: { table: string; id: string }[] = [];
 function trackCleanup(table: string, id: string) { cleanupIds.push({ table, id }); }
 
@@ -45,16 +46,25 @@ async function tryCall<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 beforeAll(async () => {
-  await initDB();
-  try { await initEmpCloudDB(); } catch {}
+  try {
+    await initDB();
+    try { await initEmpCloudDB(); } catch {}
+    db = getDB();
+    dbReady = true;
+  } catch {
+    // DB not available — tests will be skipped
+  }
 }, 30000);
 
+beforeEach((ctx) => { if (!dbReady) ctx.skip(); });
+
 afterEach(async () => {
+  if (!dbReady) return;
   for (const item of cleanupIds.reverse()) { try { await db.delete(item.table, item.id); } catch {} }
   cleanupIds.length = 0;
 });
 
-afterAll(async () => { await closeDB(); }, 10000);
+afterAll(async () => { if (dbReady) await closeDB(); }, 10000);
 
 // -- Kudos Service
 describe("KudosService", () => {
