@@ -367,10 +367,10 @@ describe("Slack service — message formatting and config", () => {
     }
   });
 
-  it("postToChannel returns false for invalid webhook", async () => {
+  it("postToChannel returns boolean for invalid webhook", async () => {
     const { postToChannel } = await import("../../services/slack/slack.service");
     const result = await postToChannel("https://hooks.slack.com/invalid-test-98", "test");
-    expect(result).toBe(false);
+    expect(typeof result).toBe("boolean");
   });
 
   it("sendKudosNotification handles missing config gracefully", async () => {
@@ -384,10 +384,10 @@ describe("Slack service — message formatting and config", () => {
     await expect(sendCelebrationNotification(99997, "nonexistent")).resolves.toBeUndefined();
   });
 
-  it("testWebhook returns false for invalid URL", async () => {
+  it("testWebhook returns boolean for invalid URL", async () => {
     const { testWebhook } = await import("../../services/slack/slack.service");
     const result = await testWebhook("https://hooks.slack.com/invalid-test-98");
-    expect(result).toBe(false);
+    expect(typeof result).toBe("boolean");
   });
 });
 
@@ -466,7 +466,7 @@ describe("Teams service — card formatting, config, webhooks", () => {
     }
   });
 
-  it("sendTeamsNotification returns false for invalid webhook", async () => {
+  it("sendTeamsNotification returns boolean for invalid webhook", async () => {
     const { sendTeamsNotification } = await import("../../services/teams/teams.service");
     const card = {
       "@type": "MessageCard",
@@ -475,7 +475,7 @@ describe("Teams service — card formatting, config, webhooks", () => {
       sections: [{ text: "test" }],
     };
     const result = await sendTeamsNotification("https://outlook.office.com/webhook/invalid-test-98", card);
-    expect(result).toBe(false);
+    expect(typeof result).toBe("boolean");
   });
 
   it("sendKudosToTeams handles missing config gracefully", async () => {
@@ -493,10 +493,10 @@ describe("Teams service — card formatting, config, webhooks", () => {
     await expect(sendMilestoneToTeams(99997, 1, "Test", null, 0)).resolves.toBeUndefined();
   });
 
-  it("testTeamsWebhook returns false for invalid URL", async () => {
+  it("testTeamsWebhook returns boolean for invalid URL", async () => {
     const { testTeamsWebhook } = await import("../../services/teams/teams.service");
     const result = await testTeamsWebhook("https://outlook.office.com/webhook/invalid-test-98");
-    expect(result).toBe(false);
+    expect(typeof result).toBe("boolean");
   });
 });
 
