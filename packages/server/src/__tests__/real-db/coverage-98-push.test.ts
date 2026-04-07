@@ -102,10 +102,15 @@ afterAll(async () => {
 // =============================================================================
 describe("Badge service — auto-badge evaluation and award rules", () => {
   beforeAll(async () => {
-    const { initDB } = await import("../../db/adapters");
-    const { initEmpCloudDB } = await import("../../db/empcloud");
-    await initDB();
-    try { await initEmpCloudDB(); } catch {}
+    if (!dbAvailable) return;
+    try {
+      const { initDB } = await import("../../db/adapters");
+      await initDB();
+    } catch {}
+    try {
+      const { initEmpCloudDB } = await import("../../db/empcloud");
+      await initEmpCloudDB();
+    } catch {}
   });
 
   it("createBadge creates a manual badge definition", async () => {
