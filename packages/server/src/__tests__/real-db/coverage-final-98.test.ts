@@ -61,6 +61,9 @@ beforeAll(async () => {
     await db.raw("SELECT 1");
     await empDb.raw("SELECT 1");
     dbAvailable = true;
+
+    // Pre-cleanup stale test snapshots
+    try { await db("leaderboard_snapshots").where("organization_id", ORG).where("period", "test").del(); } catch {}
   } catch {
     dbAvailable = false;
   }
@@ -112,7 +115,7 @@ afterAll(async () => {
   }
 
   // Extra cleanup
-  try { await db("leaderboard_snapshots").where("organization_id", ORG).where("period_key", "like", `%covfinal%`).del(); } catch {}
+  try { await db("leaderboard_snapshots").where("organization_id", ORG).where("period", "test").del(); } catch {}
 
   await db.destroy();
   await empDb.destroy();
@@ -440,7 +443,7 @@ describe("leaderboard.service — coverage gaps", () => {
   });
 
   it("should refresh leaderboard — insert new snapshots", async () => {
-    const periodKey = `covfinal-${TS}`;
+    const periodKey = `cf-${String(TS).slice(-16)}`;
 
     // Check if we have point balance data
     const [rows] = await db.raw(
