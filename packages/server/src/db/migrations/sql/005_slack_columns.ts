@@ -2,7 +2,7 @@
 // ADD SLACK COLUMNS TO recognition_settings
 // ============================================================================
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   const hasSlackWebhook = await knex.schema.hasColumn("recognition_settings", "slack_webhook_url");

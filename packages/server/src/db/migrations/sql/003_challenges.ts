@@ -3,7 +3,7 @@
 // Tables for team/individual challenges and participant tracking.
 // ============================================================================
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   // -------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // ADD TEAMS COLUMNS TO recognition_settings
 // ============================================================================
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   const hasTeamsWebhook = await knex.schema.hasColumn("recognition_settings", "teams_webhook_url");

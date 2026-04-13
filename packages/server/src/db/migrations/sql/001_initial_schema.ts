@@ -3,7 +3,7 @@
 // All 17 tables for the rewards & recognition module.
 // ============================================================================
 
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   // -------------------------------------------------------------------------
