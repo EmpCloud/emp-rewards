@@ -314,7 +314,16 @@ export function SettingsPage() {
       if (err.name === "NotAllowedError") {
         toast.error("Notification permission was denied. Please allow notifications in your browser settings.");
       } else {
-        toast.error(err.response?.data?.error?.message || "Failed to enable push notifications");
+        const rawMessage: string =
+          err.response?.data?.error?.message || err.message || "";
+        const lower = rawMessage.toLowerCase();
+        let friendly = "Unable to enable push notifications. Please try again later.";
+        if (lower.includes("vapid") || lower.includes("not configured")) {
+          friendly = "Push notifications are not configured yet. Please contact your administrator.";
+        } else if (lower.includes("already subscribed")) {
+          friendly = "You're already subscribed to push notifications.";
+        }
+        toast.error(friendly);
       }
     } finally {
       setSubscribingPush(false);
