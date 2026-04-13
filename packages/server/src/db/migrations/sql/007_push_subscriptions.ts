@@ -12,7 +12,7 @@ export async function up(knex: Knex): Promise<void> {
       t.string("id", 36).primary();
       t.integer("organization_id").unsigned().notNullable();
       t.integer("user_id").unsigned().notNullable();
-      t.text("endpoint").notNullable();
+      t.string("endpoint", 500).notNullable();
       t.string("keys_p256dh", 512).notNullable();
       t.string("keys_auth", 512).notNullable();
       t.timestamp("created_at").defaultTo(knex.fn.now());
