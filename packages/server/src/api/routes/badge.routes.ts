@@ -64,7 +64,7 @@ router.get("/my", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/user/:userId", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(req.params.userId as string, 10);
     const badges = await badgeService.getUserBadges(orgId, userId);
     return sendSuccess(res, badges);
   } catch (err) {
@@ -78,7 +78,7 @@ router.get("/user/:userId", async (req: Request, res: Response, next: NextFuncti
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const badge = await badgeService.getBadge(orgId, req.params.id);
+    const badge = await badgeService.getBadge(orgId, req.params.id as string);
     return sendSuccess(res, badge);
   } catch (err) {
     next(err);
@@ -95,7 +95,7 @@ router.put(
     try {
       const orgId = req.user!.empcloudOrgId;
       const data = createBadgeSchema.partial().parse(req.body);
-      const badge = await badgeService.updateBadge(orgId, req.params.id, data);
+      const badge = await badgeService.updateBadge(orgId, req.params.id as string, data);
       return sendSuccess(res, badge);
     } catch (err) {
       next(err);
@@ -112,7 +112,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
-      await badgeService.deleteBadge(orgId, req.params.id);
+      await badgeService.deleteBadge(orgId, req.params.id as string);
       return sendSuccess(res, { deleted: true });
     } catch (err) {
       next(err);

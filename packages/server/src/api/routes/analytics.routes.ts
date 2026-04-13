@@ -128,7 +128,7 @@ router.get("/budget-utilization", async (req: Request, res: Response, next: Next
 router.get("/manager/:managerId", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const managerId = parseInt(req.params.managerId);
+    const managerId = parseInt(req.params.managerId as string);
     const dashboard = await analyticsService.getManagerDashboard(orgId, managerId);
     sendSuccess(res, dashboard);
   } catch (err) {

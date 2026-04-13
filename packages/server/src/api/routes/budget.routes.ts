@@ -86,7 +86,7 @@ router.post(
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const budget = await budgetService.getBudget(orgId, req.params.id);
+    const budget = await budgetService.getBudget(orgId, req.params.id as string);
     sendSuccess(res, budget);
   } catch (err) {
     next(err);
@@ -113,7 +113,7 @@ router.put(
       }
 
       const orgId = req.user!.empcloudOrgId;
-      const budget = await budgetService.updateBudget(orgId, req.params.id, parsed.data);
+      const budget = await budgetService.updateBudget(orgId, req.params.id as string, parsed.data);
       sendSuccess(res, budget);
     } catch (err) {
       next(err);
@@ -127,7 +127,7 @@ router.put(
 router.get("/:id/usage", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const usage = await budgetService.getBudgetUsage(orgId, req.params.id);
+    const usage = await budgetService.getBudgetUsage(orgId, req.params.id as string);
     sendSuccess(res, usage);
   } catch (err) {
     next(err);

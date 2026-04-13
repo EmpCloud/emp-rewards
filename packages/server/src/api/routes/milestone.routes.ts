@@ -90,7 +90,7 @@ router.put(
     try {
       const orgId = req.user!.empcloudOrgId;
       const data = updateRuleSchema.parse(req.body);
-      const rule = await milestoneService.updateRule(orgId, req.params.id, data);
+      const rule = await milestoneService.updateRule(orgId, req.params.id as string, data);
       return sendSuccess(res, rule);
     } catch (err) {
       next(err);
@@ -107,7 +107,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
-      await milestoneService.deleteRule(orgId, req.params.id);
+      await milestoneService.deleteRule(orgId, req.params.id as string);
       return sendSuccess(res, { deleted: true });
     } catch (err) {
       next(err);
@@ -152,7 +152,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
-      const userId = parseInt(req.params.userId);
+      const userId = parseInt(req.params.userId as string);
       const awarded = await milestoneService.checkMilestones(orgId, userId);
       return sendSuccess(res, { awarded });
     } catch (err) {

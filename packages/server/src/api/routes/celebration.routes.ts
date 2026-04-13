@@ -93,8 +93,8 @@ router.get("/feed", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const celebration = await celebrationService.getCelebrationById(orgId, req.params.id);
-    const wishes = await celebrationService.getWishes(orgId, req.params.id);
+    const celebration = await celebrationService.getCelebrationById(orgId, req.params.id as string);
+    const wishes = await celebrationService.getWishes(orgId, req.params.id as string);
     return sendSuccess(res, { celebration, wishes });
   } catch (err) {
     next(err);
@@ -113,7 +113,7 @@ router.post("/:id/wish", async (req: Request, res: Response, next: NextFunction)
     const orgId = req.user!.empcloudOrgId;
     const userId = req.user!.empcloudUserId;
     const { message } = sendWishSchema.parse(req.body);
-    const wish = await celebrationService.sendWish(orgId, req.params.id, userId, message);
+    const wish = await celebrationService.sendWish(orgId, req.params.id as string, userId, message);
     return sendSuccess(res, wish, 201);
   } catch (err) {
     next(err);

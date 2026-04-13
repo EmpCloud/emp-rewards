@@ -37,7 +37,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/department/:deptId", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const departmentId = parseInt(req.params.deptId);
+    const departmentId = parseInt(req.params.deptId as string);
     const periodType = (req.query.period as string) || "monthly";
     const periodKey = (req.query.periodKey as string) || getCurrentPeriodKey(periodType);
 

@@ -55,7 +55,7 @@ export async function createReward(
   const reward = await db.create<RewardCatalogItem>(TABLE, {
     organization_id: orgId,
     ...data,
-  });
+  } as any);
   logger.info(`Reward created: ${reward.id} for org ${orgId}`);
   return reward;
 }
@@ -115,7 +115,7 @@ export async function updateReward(
   });
   if (!existing) throw new NotFoundError("Reward", id);
 
-  const updated = await db.update<RewardCatalogItem>(TABLE, id, data);
+  const updated = await db.update<RewardCatalogItem>(TABLE, id, data as any);
   logger.info(`Reward updated: ${id} for org ${orgId}`);
   return updated;
 }

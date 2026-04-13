@@ -63,7 +63,7 @@ export async function createProgram(
     organization_id: orgId,
     created_by: createdBy,
     ...data,
-  });
+  } as any);
   logger.info(`Nomination program created: ${program.id} for org ${orgId}`);
   return program;
 }
@@ -117,7 +117,7 @@ export async function updateProgram(
   });
   if (!existing) throw new NotFoundError("Nomination Program", id);
 
-  const updated = await db.update<NominationProgram>(PROGRAMS_TABLE, id, data);
+  const updated = await db.update<NominationProgram>(PROGRAMS_TABLE, id, data as any);
   logger.info(`Nomination program updated: ${id} for org ${orgId}`);
   return updated;
 }

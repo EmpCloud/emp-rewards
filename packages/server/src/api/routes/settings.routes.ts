@@ -152,7 +152,7 @@ router.put(
       }
 
       const orgId = req.user!.empcloudOrgId;
-      const category = await settingsService.updateCategory(orgId, req.params.id, parsed.data);
+      const category = await settingsService.updateCategory(orgId, req.params.id as string, parsed.data);
       sendSuccess(res, category);
     } catch (err) {
       next(err);
@@ -169,7 +169,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
-      await settingsService.deleteCategory(orgId, req.params.id);
+      await settingsService.deleteCategory(orgId, req.params.id as string);
       sendSuccess(res, { message: "Category deactivated" });
     } catch (err) {
       next(err);

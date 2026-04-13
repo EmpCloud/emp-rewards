@@ -73,7 +73,7 @@ router.post(
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const result = await challengeService.getChallenge(orgId, req.params.id);
+    const result = await challengeService.getChallenge(orgId, req.params.id as string);
     return sendSuccess(res, result);
   } catch (err) {
     next(err);
@@ -87,7 +87,7 @@ router.post("/:id/join", async (req: Request, res: Response, next: NextFunction)
   try {
     const orgId = req.user!.empcloudOrgId;
     const userId = req.user!.empcloudUserId;
-    const participant = await challengeService.joinChallenge(orgId, req.params.id, userId);
+    const participant = await challengeService.joinChallenge(orgId, req.params.id as string, userId);
     return sendSuccess(res, participant, 201);
   } catch (err) {
     next(err);
@@ -100,7 +100,7 @@ router.post("/:id/join", async (req: Request, res: Response, next: NextFunction)
 router.post("/:id/refresh-progress", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    await challengeService.updateProgress(orgId, req.params.id);
+    await challengeService.updateProgress(orgId, req.params.id as string);
     return sendSuccess(res, { refreshed: true });
   } catch (err) {
     next(err);
@@ -116,7 +116,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const orgId = req.user!.empcloudOrgId;
-      await challengeService.completeChallenge(orgId, req.params.id);
+      await challengeService.completeChallenge(orgId, req.params.id as string);
       return sendSuccess(res, { completed: true });
     } catch (err) {
       next(err);
@@ -130,7 +130,7 @@ router.post(
 router.get("/:id/leaderboard", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const leaderboard = await challengeService.getChallengeLeaderboard(orgId, req.params.id);
+    const leaderboard = await challengeService.getChallengeLeaderboard(orgId, req.params.id as string);
     return sendSuccess(res, leaderboard);
   } catch (err) {
     next(err);

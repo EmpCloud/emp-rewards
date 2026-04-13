@@ -87,7 +87,7 @@ router.get("/sent", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
-    const result = await kudosService.getKudos(orgId, req.params.id);
+    const result = await kudosService.getKudos(orgId, req.params.id as string);
     return sendSuccess(res, result);
   } catch (err) {
     next(err);
@@ -101,7 +101,7 @@ router.delete("/:id", async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = req.user!.empcloudOrgId;
     const userId = req.user!.empcloudUserId;
-    await kudosService.deleteKudos(orgId, req.params.id, userId);
+    await kudosService.deleteKudos(orgId, req.params.id as string, userId);
     return sendSuccess(res, { deleted: true });
   } catch (err) {
     next(err);
@@ -131,7 +131,7 @@ router.post("/:id/reactions", async (req: Request, res: Response, next: NextFunc
 router.delete("/:id/reactions/:reaction", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.empcloudUserId;
-    await kudosService.removeReaction(req.user!.empcloudOrgId, req.params.id, userId, req.params.reaction);
+    await kudosService.removeReaction(req.user!.empcloudOrgId, req.params.id as string, userId, req.params.reaction as string);
     return sendSuccess(res, { removed: true });
   } catch (err) {
     next(err);
@@ -161,7 +161,7 @@ router.post("/:id/comments", async (req: Request, res: Response, next: NextFunct
 router.delete("/:id/comments/:commentId", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.empcloudUserId;
-    await kudosService.deleteComment(req.params.commentId, userId);
+    await kudosService.deleteComment(req.params.commentId as string, userId);
     return sendSuccess(res, { deleted: true });
   } catch (err) {
     next(err);
