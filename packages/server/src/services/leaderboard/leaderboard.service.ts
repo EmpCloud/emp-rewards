@@ -32,6 +32,63 @@ interface LeaderboardResult {
 }
 
 // ---------------------------------------------------------------------------
+// Issue #19 — period_key was being stored on snapshots and used to scope
+// the leaderboard, but the kudos / badge count subqueries had no date
+// filter. So a "weekly" leaderboard showed all-time kudos sent / received,
+// which was wrong. Convert (periodType, periodKey) to a date range and
+// pass an extra optional date predicate into each count subquery.
+//
+// All-time => returns null => no date filter => behaviour unchanged.
+//
+// Returned bounds are half-open: [start, end). Empty period_key (or "all")
+// short-circuits to all-time.
+// ---------------------------------------------------------------------------
+function periodToDateRange(periodType: string, periodKey: string): { start: Date; end: Date } | null {
+  if (!periodKey || periodKey === "all" || periodType === "all_time") return null;
+
+  // weekly: "2026-W17"
+  const weeklyMatch = /^(\d{4})-W(\d{2})$/.exec(periodKey);
+  if (weeklyMatch) {
+    const year = Number(weeklyMatch[1]);
+    const week = Number(weeklyMatch[2]);
+    // Approx: same algorithm as getCurrentPeriodKey in routes — Jan 1 + (week-1)*7 days,
+    // walked back to that week's Sunday so the range is monday..sunday.
+    const startOfYear = new Date(year, 0, 1);
+    const start = new Date(startOfYear);
+    start.setDate(startOfYear.getDate() + (week - 1) * 7 - startOfYear.getDay());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+    return { start, end };
+  }
+
+  // monthly: "2026-04"
+  const monthlyMatch = /^(\d{4})-(\d{2})$/.exec(periodKey);
+  if (monthlyMatch) {
+    const year = Number(monthlyMatch[1]);
+    const month = Number(monthlyMatch[2]); // 1..12
+    return { start: new Date(year, month - 1, 1), end: new Date(year, month, 1) };
+  }
+
+  // quarterly: "2026-Q2"
+  const quarterlyMatch = /^(\d{4})-Q([1-4])$/.exec(periodKey);
+  if (quarterlyMatch) {
+    const year = Number(quarterlyMatch[1]);
+    const q = Number(quarterlyMatch[2]); // 1..4
+    const startMonth = (q - 1) * 3;
+    return { start: new Date(year, startMonth, 1), end: new Date(year, startMonth + 3, 1) };
+  }
+
+  // yearly: "2026"
+  const yearlyMatch = /^(\d{4})$/.exec(periodKey);
+  if (yearlyMatch) {
+    const year = Number(yearlyMatch[1]);
+    return { start: new Date(year, 0, 1), end: new Date(year + 1, 0, 1) };
+  }
+
+  return null; // unknown shape — treat as all-time so we don't accidentally hide everything
+}
+
+// ---------------------------------------------------------------------------
 // getLeaderboard — paginated leaderboard for a period
 // ---------------------------------------------------------------------------
 export async function getLeaderboard(
@@ -101,6 +158,10 @@ export async function getDepartmentLeaderboard(
 
   if (!rows || rows.length === 0) {
     // Compute live for department
+    // #19 — apply the same period-aware date filter as the global path.
+    const range = periodToDateRange(periodType, periodKey);
+    const dateClause = range ? `AND created_at >= ? AND created_at < ?` : "";
+    const dateParams: any[] = range ? [range.start, range.end] : [];
     const [liveRows] = await db.raw<any>(
       `SELECT
          pb.user_id,
@@ -111,13 +172,13 @@ export async function getDepartmentLeaderboard(
          u.first_name, u.last_name, u.email, u.designation, u.department_id
        FROM point_balances pb
        LEFT JOIN empcloud.users u ON u.id = pb.user_id
-       LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
-       LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
-       LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? GROUP BY user_id) be ON be.user_id = pb.user_id
+       LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
+       LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
+       LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? ${dateClause} GROUP BY user_id) be ON be.user_id = pb.user_id
        WHERE pb.organization_id = ? AND u.department_id = ? AND u.status = 1
        ORDER BY pb.total_earned DESC
        LIMIT 50`,
-      [orgId, orgId, orgId, orgId, departmentId],
+      [orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId, departmentId],
     );
 
     return (liveRows || []).map((row: any, idx: number) => ({
@@ -192,6 +253,11 @@ export async function refreshLeaderboard(
   const db = getDB();
 
   // Compute rankings from points and kudos data
+  // #19 — apply period-aware date filter so weekly / monthly / quarterly /
+  // yearly snapshots persist counts that match the period selector.
+  const range = periodToDateRange(periodType, periodKey);
+  const dateClause = range ? `AND created_at >= ? AND created_at < ?` : "";
+  const dateParams: any[] = range ? [range.start, range.end] : [];
   const [rows] = await db.raw<any>(
     `SELECT
        pb.user_id,
@@ -201,12 +267,12 @@ export async function refreshLeaderboard(
        COALESCE(be.cnt, 0) as badges_earned
      FROM point_balances pb
      LEFT JOIN empcloud.users u ON u.id = pb.user_id
-     LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
-     LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
-     LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? GROUP BY user_id) be ON be.user_id = pb.user_id
+     LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
+     LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
+     LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? ${dateClause} GROUP BY user_id) be ON be.user_id = pb.user_id
      WHERE pb.organization_id = ? AND u.status = 1
      ORDER BY pb.total_earned DESC`,
-    [orgId, orgId, orgId, orgId],
+    [orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId],
   );
 
   if (!rows || rows.length === 0) {
@@ -270,6 +336,11 @@ async function computeLiveLeaderboard(
   const db = getDB();
   const offset = (page - 1) * perPage;
 
+  // #19 — Build date-bounded count subqueries for the selected period.
+  const range = periodToDateRange(periodType, periodKey);
+  const dateClause = range ? `AND created_at >= ? AND created_at < ?` : "";
+  const dateParams: any[] = range ? [range.start, range.end] : [];
+
   const [rows] = await db.raw<any>(
     `SELECT
        pb.user_id,
@@ -280,13 +351,13 @@ async function computeLiveLeaderboard(
        u.first_name, u.last_name, u.email, u.designation, u.department_id
      FROM point_balances pb
      LEFT JOIN empcloud.users u ON u.id = pb.user_id
-     LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
-     LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
-     LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? GROUP BY user_id) be ON be.user_id = pb.user_id
+     LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
+     LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
+     LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? ${dateClause} GROUP BY user_id) be ON be.user_id = pb.user_id
      WHERE pb.organization_id = ? AND u.status = 1
      ORDER BY pb.total_earned DESC
      LIMIT ? OFFSET ?`,
-    [orgId, orgId, orgId, orgId, perPage, offset],
+    [orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId, perPage, offset],
   );
 
   const [countResult] = await db.raw<any>(
