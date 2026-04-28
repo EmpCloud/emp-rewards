@@ -31,6 +31,7 @@ import { celebrationRoutes } from "./api/routes/celebration.routes";
 import { challengeRoutes } from "./api/routes/challenge.routes";
 import { milestoneRoutes } from "./api/routes/milestone.routes";
 import { authRoutes } from "./api/routes/auth.routes";
+import { userRoutes } from "./api/routes/user.routes";
 import { authenticate } from "./api/middleware/auth.middleware";
 import { errorHandler } from "./api/middleware/error.middleware";
 import { apiLimiter, authLimiter } from "./api/middleware/rate-limit.middleware";
@@ -106,6 +107,7 @@ v1.use("/celebrations", celebrationRoutes);
 v1.use("/challenges", challengeRoutes);
 v1.use("/milestones", milestoneRoutes);
 v1.use("/teams", teamsRoutes); // alias — /teams -> /settings/teams (#881)
+v1.use("/users", userRoutes);
 
 // #885: GET /integration/user/:userId/summary — combined user rewards summary
 v1.get("/integration/user/:userId/summary", authenticate,
