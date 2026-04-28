@@ -186,11 +186,14 @@ async function attachReactionsToKudos<T extends Kudos>(
   const db = getDB();
   const kudosIds = result.data.map((k) => k.id);
   const placeholders = kudosIds.map(() => "?").join(",");
-  const [reactionsResult] = await db.raw<any>(
+  // mysql2 returns [rows, fields]; tests stub db.raw without a value so
+  // it returns undefined. Guard so an unexpected shape degrades to "no
+  // reactions" rather than throwing TypeError on the destructure.
+  const rawResult = await db.raw<any>(
     `SELECT * FROM kudos_reactions WHERE kudos_id IN (${placeholders}) ORDER BY created_at ASC`,
     kudosIds,
   );
-  const reactions: KudosReaction[] = reactionsResult || [];
+  const reactions: KudosReaction[] = Array.isArray(rawResult?.[0]) ? rawResult[0] : [];
   const byKudos = new Map<string, KudosReaction[]>();
   for (const r of reactions) {
     const arr = byKudos.get(r.kudos_id) ?? [];
