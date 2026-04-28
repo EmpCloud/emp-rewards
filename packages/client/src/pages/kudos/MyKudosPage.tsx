@@ -50,13 +50,22 @@ export function MyKudosPage() {
       // In production, the API would support filtering by sender_id/receiver_id
       const res = await apiGet<any>("/kudos", { page: p, perPage: 50 });
       if (res.success && res.data) {
-        const allKudos: KudosItem[] = res.data.data || [];
+        const allKudos: (KudosItem & { reactions?: Reaction[] })[] = res.data.data || [];
         const userId = user?.empcloudUserId;
         const filtered = allKudos.filter((k) =>
           t === "received" ? k.receiver_id === userId : k.sender_id === userId,
         );
         setKudosList(filtered);
         setTotalPages(res.data.totalPages || 1);
+        // #18 — The /kudos endpoint now includes reactions per kudos so the
+        // counts render on first paint instead of staying at 0 until the
+        // user clicks a reaction button (which is what triggered the
+        // lazy fetch in the old code).
+        const seedMap: Record<string, Reaction[]> = {};
+        for (const k of filtered) {
+          if (k.reactions) seedMap[k.id] = k.reactions;
+        }
+        setReactionsMap(seedMap);
       }
     } catch {
       // handled by interceptor

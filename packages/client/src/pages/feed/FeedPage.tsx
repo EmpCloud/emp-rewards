@@ -184,8 +184,19 @@ export function FeedPage() {
     try {
       const res = await apiGet<any>("/kudos", { page: p, perPage: 20 });
       if (res.success && res.data) {
-        setKudosList(res.data.data || []);
+        const items: (KudosItem & { reactions?: Reaction[] })[] = res.data.data || [];
+        setKudosList(items);
         setTotalPages(res.data.totalPages || 1);
+        // #17 — Reactions are now included in the list response. Seed the
+        // reactions map on the initial render so the like/clap/heart
+        // counts appear immediately, not only after the user opens the
+        // comment dropdown (which used to be the only thing that called
+        // fetchKudosDetail).
+        const seedMap: Record<string, Reaction[]> = {};
+        for (const k of items) {
+          if (k.reactions) seedMap[k.id] = k.reactions;
+        }
+        setReactionsMap(seedMap);
       }
     } catch {
       // handled by interceptor
