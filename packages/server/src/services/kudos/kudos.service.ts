@@ -168,24 +168,63 @@ export async function sendKudos(
 }
 
 // ---------------------------------------------------------------------------
-// listKudos — paginated, filter by visibility
+// attachReactionsToKudos — single batch fetch of reactions for a list of
+// kudos. Used by listKudos / getPublicFeed / getReceivedKudos / getSentKudos
+// so reaction counts render on the first page paint.
+//
+// Issues #17 and #18 — Without this, the client-side reactionsMap stays
+// empty until the user clicks a reaction button (or opens comments on the
+// feed), so the like / clap / heart counts show as "0" / label even when
+// reactions exist on the server.
+// ---------------------------------------------------------------------------
+async function attachReactionsToKudos<T extends Kudos>(
+  result: QueryResult<T>,
+): Promise<QueryResult<T & { reactions: KudosReaction[] }>> {
+  if (result.data.length === 0) {
+    return { ...result, data: [] as Array<T & { reactions: KudosReaction[] }> };
+  }
+  const db = getDB();
+  const kudosIds = result.data.map((k) => k.id);
+  const placeholders = kudosIds.map(() => "?").join(",");
+  // mysql2 returns [rows, fields]; tests stub db.raw without a value so
+  // it returns undefined. Guard so an unexpected shape degrades to "no
+  // reactions" rather than throwing TypeError on the destructure.
+  const rawResult = await db.raw<any>(
+    `SELECT * FROM kudos_reactions WHERE kudos_id IN (${placeholders}) ORDER BY created_at ASC`,
+    kudosIds,
+  );
+  const reactions: KudosReaction[] = Array.isArray(rawResult?.[0]) ? rawResult[0] : [];
+  const byKudos = new Map<string, KudosReaction[]>();
+  for (const r of reactions) {
+    const arr = byKudos.get(r.kudos_id) ?? [];
+    arr.push(r);
+    byKudos.set(r.kudos_id, arr);
+  }
+  return {
+    ...result,
+    data: result.data.map((k) => ({ ...k, reactions: byKudos.get(k.id) ?? [] })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// listKudos — paginated, filter by visibility, with reactions attached.
 // ---------------------------------------------------------------------------
 export async function listKudos(
   orgId: number,
   params: { page?: number; perPage?: number; visibility?: string },
-): Promise<QueryResult<Kudos>> {
+): Promise<QueryResult<Kudos & { reactions: KudosReaction[] }>> {
   const db = getDB();
   const filters: Record<string, any> = { organization_id: orgId };
   if (params.visibility) {
     filters.visibility = params.visibility;
   }
-
-  return db.findMany<Kudos>("kudos", {
+  const result = await db.findMany<Kudos>("kudos", {
     page: params.page || 1,
     limit: params.perPage || 20,
     sort: { field: "created_at", order: "desc" },
     filters,
   });
+  return attachReactionsToKudos(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -418,9 +457,9 @@ export async function getReceivedKudos(
   orgId: number,
   userId: number,
   params: { page?: number; perPage?: number },
-): Promise<QueryResult<Kudos>> {
+): Promise<QueryResult<Kudos & { reactions: KudosReaction[] }>> {
   const db = getDB();
-  return db.findMany<Kudos>("kudos", {
+  const result = await db.findMany<Kudos>("kudos", {
     page: params.page || 1,
     limit: params.perPage || 20,
     sort: { field: "created_at", order: "desc" },
@@ -429,6 +468,7 @@ export async function getReceivedKudos(
       receiver_id: userId,
     },
   });
+  return attachReactionsToKudos(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -438,9 +478,9 @@ export async function getSentKudos(
   orgId: number,
   userId: number,
   params: { page?: number; perPage?: number },
-): Promise<QueryResult<Kudos>> {
+): Promise<QueryResult<Kudos & { reactions: KudosReaction[] }>> {
   const db = getDB();
-  return db.findMany<Kudos>("kudos", {
+  const result = await db.findMany<Kudos>("kudos", {
     page: params.page || 1,
     limit: params.perPage || 20,
     sort: { field: "created_at", order: "desc" },
@@ -449,6 +489,7 @@ export async function getSentKudos(
       sender_id: userId,
     },
   });
+  return attachReactionsToKudos(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -457,9 +498,9 @@ export async function getSentKudos(
 export async function getPublicFeed(
   orgId: number,
   params: { page?: number; perPage?: number },
-): Promise<QueryResult<Kudos>> {
+): Promise<QueryResult<Kudos & { reactions: KudosReaction[] }>> {
   const db = getDB();
-  return db.findMany<Kudos>("kudos", {
+  const result = await db.findMany<Kudos>("kudos", {
     page: params.page || 1,
     limit: params.perPage || 20,
     sort: { field: "created_at", order: "desc" },
@@ -468,4 +509,5 @@ export async function getPublicFeed(
       visibility: KudosVisibility.PUBLIC,
     },
   });
+  return attachReactionsToKudos(result);
 }
