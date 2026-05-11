@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Heart, ThumbsUp, Award, MessageSquare, Loader2 } from "lucide-react";
 import { apiGet, apiPost, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
@@ -36,7 +37,20 @@ type Tab = "received" | "sent";
 
 export function MyKudosPage() {
   const user = getUser();
-  const [tab, setTab] = useState<Tab>("received");
+  // #16 — Honour ?tab=sent / ?tab=received deep-links from the dashboard
+  // cards so they open the matching tab directly instead of always
+  // landing on "received".
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab: Tab = searchParams.get("tab") === "sent" ? "sent" : "received";
+  const [tab, setTab] = useState<Tab>(initialTab);
+
+  // Keep the URL in sync so the back button + bookmarks behave correctly.
+  useEffect(() => {
+    if ((searchParams.get("tab") === "sent" ? "sent" : "received") !== tab) {
+      setSearchParams({ tab }, { replace: true });
+    }
+  }, [tab, searchParams, setSearchParams]);
+
   const [kudosList, setKudosList] = useState<KudosItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

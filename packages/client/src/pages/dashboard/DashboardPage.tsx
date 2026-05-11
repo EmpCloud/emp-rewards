@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Heart,
   Trophy,
@@ -77,6 +77,9 @@ export function DashboardPage() {
     })();
   }, [user?.empcloudUserId]);
 
+  // #16 — Each card deep-links to the page that explains its number.
+  // Points Balance → Rewards catalog (so users can spend); Kudos Sent /
+  // Received → My Kudos with the matching tab; Badges Earned → My Badges.
   const statCards = [
     {
       label: "Points Balance",
@@ -84,6 +87,8 @@ export function DashboardPage() {
       icon: Trophy,
       color: "bg-amber-50 text-amber-600",
       borderColor: "border-amber-200",
+      to: "/rewards",
+      ariaLabel: "View rewards you can redeem with your points",
     },
     {
       label: "Kudos Sent",
@@ -91,6 +96,8 @@ export function DashboardPage() {
       icon: Send,
       color: "bg-blue-50 text-blue-600",
       borderColor: "border-blue-200",
+      to: "/kudos?tab=sent",
+      ariaLabel: "View kudos you have sent",
     },
     {
       label: "Kudos Received",
@@ -98,6 +105,8 @@ export function DashboardPage() {
       icon: Heart,
       color: "bg-pink-50 text-pink-600",
       borderColor: "border-pink-200",
+      to: "/kudos?tab=received",
+      ariaLabel: "View kudos you have received",
     },
     {
       label: "Badges Earned",
@@ -105,6 +114,8 @@ export function DashboardPage() {
       icon: Award,
       color: "bg-purple-50 text-purple-600",
       borderColor: "border-purple-200",
+      to: "/badges/mine",
+      ariaLabel: "View badges you have earned",
     },
   ];
 
@@ -140,9 +151,14 @@ export function DashboardPage() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <div
+          <Link
             key={stat.label}
-            className={cn("rounded-lg border bg-white p-6", stat.borderColor)}
+            to={stat.to}
+            aria-label={stat.ariaLabel}
+            className={cn(
+              "block rounded-lg border bg-white p-6 transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+              stat.borderColor,
+            )}
           >
             <div className={cn("inline-flex rounded-lg p-2.5", stat.color)}>
               <stat.icon className="h-5 w-5" />
@@ -151,7 +167,7 @@ export function DashboardPage() {
               {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
             </p>
             <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
-          </div>
+          </Link>
         ))}
       </div>
 
