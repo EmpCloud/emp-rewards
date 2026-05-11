@@ -36,25 +36,28 @@ export function SendKudosPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Mock employee search — in production this would call empcloud API
+  // #15 — Real employee search via /users/search (cross-DB lookup of
+  // empcloud.users, scoped to the caller's org and excluding the caller
+  // themselves). Debounced so we don't hammer the endpoint on every
+  // keystroke. An empty query still hits the endpoint so the dropdown
+  // shows the org's first 20 employees on initial focus, which is the
+  // shape the issue asks for ("dropdown for employee's field").
   useEffect(() => {
-    if (recipientSearch.length < 2) {
-      setRecipients([]);
-      return;
-    }
-
     const timer = setTimeout(async () => {
       try {
-        // This would be an empcloud API call in production
-        // For now we simulate with a placeholder
-        const res = await apiGet<any>("/kudos", { page: 1, perPage: 5 });
-        // Simulate employees from any available data
-        setRecipients([]);
+        const res = await apiGet<any>("/users/search", {
+          q: recipientSearch.trim(),
+          limit: 20,
+        });
+        if (res.success && Array.isArray(res.data)) {
+          setRecipients(res.data);
+        } else {
+          setRecipients([]);
+        }
       } catch {
-        // silent
+        setRecipients([]);
       }
-    }, 300);
-
+    }, 200);
     return () => clearTimeout(timer);
   }, [recipientSearch]);
 
@@ -183,7 +186,7 @@ export function SendKudosPage() {
               />
               {/* Dropdown for search results */}
               {showDropdown && recipients.length > 0 && (
-                <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
                   {recipients.map((emp) => (
                     <li key={emp.id}>
                       <button
@@ -194,12 +197,24 @@ export function SendKudosPage() {
                           setShowDropdown(false);
                         }}
                       >
-                        <span className="font-medium text-gray-900">{emp.first_name} {emp.last_name}</span>
-                        {emp.email && <span className="ml-2 text-xs text-gray-400">{emp.email}</span>}
+                        <span className="font-medium text-gray-900">
+                          {emp.first_name} {emp.last_name}
+                        </span>
+                        {emp.designation && (
+                          <span className="ml-2 text-xs text-gray-500">{emp.designation}</span>
+                        )}
+                        {emp.email && (
+                          <span className="ml-2 text-xs text-gray-400">{emp.email}</span>
+                        )}
                       </button>
                     </li>
                   ))}
                 </ul>
+              )}
+              {showDropdown && recipientSearch.length > 0 && recipients.length === 0 && (
+                <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 shadow-lg">
+                  No matching employees found.
+                </div>
               )}
               <p className="mt-1 text-xs text-gray-400">
                 Enter the Employee ID number directly if search is unavailable
