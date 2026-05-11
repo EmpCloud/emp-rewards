@@ -141,7 +141,12 @@ router.put(
     try {
       const orgId = req.user!.empcloudOrgId;
       const { id } = idParamSchema.parse(req.params);
-      const notes = req.body.notes as string | undefined;
+      // Issue #20 — The frontend calls PUT without a JSON body
+      // (apiPut(`/redemptions/${id}/fulfill`)), so req.body may be
+      // undefined. Defensive optional chain prevents the route from
+      // crashing on `req.body.notes` — admins can fulfill without a
+      // note from the list view, the detail page can still attach one.
+      const notes = req.body?.notes as string | undefined;
 
       const redemption = await redemptionService.fulfillRedemption(orgId, id, notes);
       const response: ApiResponse<typeof redemption> = { success: true, data: redemption };

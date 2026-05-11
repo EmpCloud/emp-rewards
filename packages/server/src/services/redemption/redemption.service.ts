@@ -201,7 +201,14 @@ export async function fulfillRedemption(
   const updated = await db.update<RewardRedemption>(TABLE, id, {
     status: "fulfilled" as RedemptionStatus,
     review_note: notes ?? redemption.review_note ?? null,
-    fulfilled_at: new Date().toISOString(),
+    // Issue #20 — Pass a Date object, not toISOString(). MySQL's strict
+    // mode rejects ISO 8601 with a Z suffix ("2026-04-28T05:56:37.480Z")
+    // for TIMESTAMP columns; the mysql2 driver converts a Date object
+    // into the canonical "YYYY-MM-DD HH:MM:SS.mmm" form that MySQL
+    // accepts. The route was returning a 500 with the generic "An
+    // unexpected error occurred" message because the underlying
+    // ER_TRUNCATED_WRONG_VALUE bubbled up from the driver.
+    fulfilled_at: new Date(),
   } as any);
 
   logger.info(`Redemption ${id} fulfilled`);

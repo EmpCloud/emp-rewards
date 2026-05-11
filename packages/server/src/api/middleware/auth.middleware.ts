@@ -57,6 +57,20 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const token = queryToken || header!.slice(7);
   try {
     const payload = jwt.verify(token, config.jwt.secret) as AuthPayload;
+    // Issue #21 — Tokens minted by EmpCloud SSO carry empcloudOrgId /
+    // empcloudUserId as strings (mysql2 returns BIGINT as string when the
+    // EmpCloud server signs the payload, jsonwebtoken preserves it). Every
+    // downstream service then does `entity.organization_id !== orgId`,
+    // which evaluates 1 !== "1" === true and throws NotFoundError. The
+    // list endpoints work because knex passes the value to MySQL which
+    // auto-coerces. Coerce here once so downstream code can keep using
+    // strict equality.
+    if (payload.empcloudOrgId != null) {
+      (payload as any).empcloudOrgId = Number(payload.empcloudOrgId);
+    }
+    if (payload.empcloudUserId != null) {
+      (payload as any).empcloudUserId = Number(payload.empcloudUserId);
+    }
     req.user = payload;
     next();
   } catch (err: any) {
