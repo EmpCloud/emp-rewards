@@ -5,6 +5,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { getDB } from "../../db/adapters";
+import { getEmpCloudDB } from "../../db/empcloud";
 import { KudosVisibility, PointTransactionType } from "@emp-rewards/shared";
 import type { Kudos, KudosReaction, KudosComment, RecognitionSettings } from "@emp-rewards/shared";
 import type { QueryResult } from "../../db/adapters/interface";
@@ -207,6 +208,56 @@ async function attachReactionsToKudos<T extends Kudos>(
 }
 
 // ---------------------------------------------------------------------------
+// attachUserNamesToKudos — batch-fetch sender + receiver display names from
+// the EmpCloud master DB and stamp `sender_name` / `receiver_name` onto each
+// row. The kudos table stores only numeric user ids; the My Kudos / feed UI
+// otherwise renders "User #3" instead of the person's name (#10, this
+// screenshot). EmpCloud is the source of truth for user identity, so the
+// names are joined at read time rather than denormalized into the kudos
+// row at write time (avoids stale data after a profile rename).
+//
+// Falls through gracefully when the EmpCloud DB is unreachable — names
+// just stay undefined and the client falls back to the old "User #<id>"
+// label.
+// ---------------------------------------------------------------------------
+async function attachUserNamesToKudos<T extends Kudos>(
+  result: QueryResult<T>,
+): Promise<QueryResult<T & { sender_name?: string; receiver_name?: string }>> {
+  if (result.data.length === 0) {
+    return { ...result, data: [] as Array<T & { sender_name?: string; receiver_name?: string }> };
+  }
+  const ids = new Set<number>();
+  for (const k of result.data) {
+    if (k.sender_id) ids.add(Number(k.sender_id));
+    if (k.receiver_id) ids.add(Number(k.receiver_id));
+  }
+  const idList = Array.from(ids).filter((n) => Number.isFinite(n) && n > 0);
+  const nameById: Record<string, string> = {};
+  if (idList.length > 0) {
+    try {
+      const ec = getEmpCloudDB();
+      const users = await ec("users")
+        .whereIn("id", idList)
+        .select("id", "first_name", "last_name");
+      for (const u of users as Array<{ id: number; first_name: string | null; last_name: string | null }>) {
+        const full = [u.first_name, u.last_name].filter(Boolean).join(" ").trim();
+        if (full) nameById[String(u.id)] = full;
+      }
+    } catch {
+      // EmpCloud unreachable — leave names empty, client falls back to "User #<id>".
+    }
+  }
+  return {
+    ...result,
+    data: result.data.map((k) => ({
+      ...k,
+      sender_name: nameById[String(k.sender_id)],
+      receiver_name: nameById[String(k.receiver_id)],
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // listKudos — paginated, filter by visibility, with reactions attached.
 // ---------------------------------------------------------------------------
 export async function listKudos(
@@ -224,7 +275,7 @@ export async function listKudos(
     sort: { field: "created_at", order: "desc" },
     filters,
   });
-  return attachReactionsToKudos(result);
+  return attachUserNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -468,7 +519,7 @@ export async function getReceivedKudos(
       receiver_id: userId,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachUserNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -489,7 +540,7 @@ export async function getSentKudos(
       sender_id: userId,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachUserNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -509,5 +560,5 @@ export async function getPublicFeed(
       visibility: KudosVisibility.PUBLIC,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachUserNamesToKudos(await attachReactionsToKudos(result));
 }
