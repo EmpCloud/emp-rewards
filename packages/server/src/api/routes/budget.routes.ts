@@ -18,20 +18,28 @@ router.use(authenticate);
 // ---------------------------------------------------------------------------
 // Schemas
 // ---------------------------------------------------------------------------
+// Accept a plain YYYY-MM-DD date OR a full ISO timestamp (the API echoes dates
+// back as ISO, so an edit round-trip would otherwise fail validation) and
+// normalize to the YYYY-MM-DD date part.
+const dateLike = z
+  .string()
+  .refine((v) => /^\d{4}-\d{2}-\d{2}/.test(v), "Use YYYY-MM-DD format")
+  .transform((v) => v.slice(0, 10));
+
 const createBudgetSchema = z.object({
   budget_type: z.enum(["manager", "department"]),
   owner_id: z.number().int().positive(),
   department_id: z.number().int().positive().optional().nullable(),
   period: z.enum(["monthly", "quarterly", "annual"]),
-  total_amount: z.number().positive("Budget amount must be positive"),
-  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format"),
-  period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format"),
+  total_amount: z.coerce.number().positive("Budget amount must be positive"),
+  period_start: dateLike,
+  period_end: dateLike,
 });
 
 const updateBudgetSchema = z.object({
-  total_amount: z.number().positive().optional(),
-  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  total_amount: z.coerce.number().positive().optional(),
+  period_start: dateLike.optional(),
+  period_end: dateLike.optional(),
   is_active: z.boolean().optional(),
 });
 
@@ -115,6 +123,23 @@ router.put(
       const orgId = req.user!.empcloudOrgId;
       const budget = await budgetService.updateBudget(orgId, req.params.id as string, parsed.data);
       sendSuccess(res, budget);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// DELETE /:id — delete budget (admin only)
+// ---------------------------------------------------------------------------
+router.delete(
+  "/:id",
+  authorize("org_admin", "hr_admin", "hr_manager"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = req.user!.empcloudOrgId;
+      await budgetService.deleteBudget(orgId, req.params.id as string);
+      sendSuccess(res, { message: "Budget deleted" });
     } catch (err) {
       next(err);
     }

@@ -115,6 +115,17 @@ export async function updateBudget(
 }
 
 // ---------------------------------------------------------------------------
+// deleteBudget
+// ---------------------------------------------------------------------------
+export async function deleteBudget(orgId: number, id: string): Promise<void> {
+  const db = getDB();
+  // getBudget enforces org ownership (throws NotFound if it isn't this org's).
+  await getBudget(orgId, id);
+  await db.delete("recognition_budgets", id);
+  logger.info(`Budget deleted: id=${id} org=${orgId}`);
+}
+
+// ---------------------------------------------------------------------------
 // getBudgetUsage — detailed spend breakdown
 // ---------------------------------------------------------------------------
 export async function getBudgetUsage(orgId: number, id: string) {
