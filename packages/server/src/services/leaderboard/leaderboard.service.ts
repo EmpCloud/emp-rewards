@@ -88,6 +88,29 @@ function periodToDateRange(periodType: string, periodKey: string): { start: Date
   return null; // unknown shape — treat as all-time so we don't accidentally hide everything
 }
 
+// Points source for the ranking. All-time uses the cumulative point_balances
+// balance; a specific period sums positive point_transactions within the range,
+// so the leaderboard actually changes when the period selector changes.
+function buildPeriodPoints(range: { start: Date; end: Date } | null): {
+  select: string;
+  join: string;
+  params: any[];
+} {
+  if (!range) {
+    return { select: "pb.total_earned", join: "", params: [] };
+  }
+  return {
+    select: "COALESCE(ptp.earned, 0)",
+    join: `LEFT JOIN (
+             SELECT user_id, SUM(amount) as earned
+             FROM point_transactions
+             WHERE amount > 0 AND created_at >= ? AND created_at < ?
+             GROUP BY user_id
+           ) ptp ON ptp.user_id = pb.user_id`,
+    params: [range.start, range.end],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // getLeaderboard — paginated leaderboard for a period
 // ---------------------------------------------------------------------------
@@ -221,12 +244,17 @@ export async function getMyRank(
     };
   }
 
-  // Compute live rank
+  // Compute live rank — period-aware, matching computeLiveLeaderboard so the
+  // "Your Rank" card lines up with the table for the selected period.
+  const range = periodToDateRange(periodType, periodKey);
+  const pts = buildPeriodPoints(range);
   const [pointRows] = await db.raw<any>(
-    `SELECT user_id, total_earned FROM point_balances
-     WHERE organization_id = ?
-     ORDER BY total_earned DESC`,
-    [orgId],
+    `SELECT pb.user_id, ${pts.select} as points
+     FROM point_balances pb
+     ${pts.join}
+     WHERE pb.organization_id = ?
+     ORDER BY points DESC`,
+    [...pts.params, orgId],
   );
 
   const allUsers = pointRows || [];
@@ -234,7 +262,7 @@ export async function getMyRank(
 
   return {
     rank: myIdx >= 0 ? myIdx + 1 : 0,
-    total_points: myIdx >= 0 ? Number(allUsers[myIdx].total_earned) : 0,
+    total_points: myIdx >= 0 ? Number(allUsers[myIdx].points) : 0,
     kudos_received: 0,
     kudos_sent: 0,
     badges_earned: 0,
@@ -341,23 +369,29 @@ async function computeLiveLeaderboard(
   const dateClause = range ? `AND created_at >= ? AND created_at < ?` : "";
   const dateParams: any[] = range ? [range.start, range.end] : [];
 
+  // For a specific period, rank by points EARNED within that period (summed
+  // from point_transactions), not the all-time balance — otherwise every
+  // period shows the same ranking. All-time keeps using the cumulative balance.
+  const pts = buildPeriodPoints(range);
+
   const [rows] = await db.raw<any>(
     `SELECT
        pb.user_id,
-       pb.total_earned as total_points,
+       ${pts.select} as total_points,
        COALESCE(kr.cnt, 0) as kudos_received,
        COALESCE(ks.cnt, 0) as kudos_sent,
        COALESCE(be.cnt, 0) as badges_earned,
        u.first_name, u.last_name, u.email, u.designation, u.department_id
      FROM point_balances pb
      LEFT JOIN empcloud.users u ON u.id = pb.user_id
+     ${pts.join}
      LEFT JOIN (SELECT receiver_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY receiver_id) kr ON kr.receiver_id = pb.user_id
      LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
      LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? ${dateClause} GROUP BY user_id) be ON be.user_id = pb.user_id
      WHERE pb.organization_id = ? AND u.status = 1
-     ORDER BY pb.total_earned DESC
+     ORDER BY total_points DESC
      LIMIT ? OFFSET ?`,
-    [orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId, perPage, offset],
+    [...pts.params, orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId, perPage, offset],
   );
 
   const [countResult] = await db.raw<any>(
