@@ -8,6 +8,7 @@ interface Budget {
   id: string;
   budget_type: string;
   owner_id: number;
+  owner_name?: string;
   department_id: number | null;
   period: string;
   total_amount: number;
@@ -17,6 +18,15 @@ interface Budget {
   period_end: string;
   is_active: boolean;
   created_at: string;
+}
+
+// Format an ISO date string as "May 30, 2026" (or "—" if missing/invalid).
+function fmtDate(d?: string): string {
+  if (!d) return "—";
+  const dt = new Date(d);
+  return isNaN(dt.getTime())
+    ? "—"
+    : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 interface BudgetListData {
@@ -65,8 +75,14 @@ function BudgetCard({
           <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${budget.budget_type === "manager" ? "bg-amber-100" : "bg-orange-100"}`}>
             <Wallet className={`h-4 w-4 ${budget.budget_type === "manager" ? "text-amber-600" : "text-orange-600"}`} />
           </div>
-          <div>
-            <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-gray-700">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {budget.owner_name ||
+                (budget.budget_type === "department"
+                  ? `Department ${budget.department_id ?? ""}`.trim()
+                  : `Owner #${budget.owner_id}`)}
+            </p>
+            <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium capitalize text-gray-600">
               {budget.budget_type}
             </span>
           </div>
@@ -115,7 +131,7 @@ function BudgetCard({
 
       <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
         <span className="capitalize">{budget.period}</span>
-        <span>{budget.period_start} to {budget.period_end}</span>
+        <span>{fmtDate(budget.period_start)} – {fmtDate(budget.period_end)}</span>
       </div>
     </div>
   );

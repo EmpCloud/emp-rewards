@@ -29,6 +29,7 @@ export class KnexAdapter implements IDBAdapter {
         user: config.user,
         password: config.password,
         database: config.database,
+        charset: "utf8mb4",
       },
       pool: config.pool || { min: 2, max: 10 },
       migrations: {
@@ -53,6 +54,7 @@ export class KnexAdapter implements IDBAdapter {
           port: conn.port,
           user: conn.user,
           password: conn.password,
+          charset: "utf8mb4",
         },
       });
       await bootstrap.raw(

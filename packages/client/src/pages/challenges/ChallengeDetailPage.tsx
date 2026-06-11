@@ -171,7 +171,9 @@ export function ChallengeDetailPage() {
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{challenge.target_value}</p>
-            <p className="text-xs text-gray-500">{METRIC_LABELS[challenge.metric] || challenge.metric}</p>
+            <p className="text-xs text-gray-500">
+              Target ({METRIC_LABELS[challenge.metric] || challenge.metric})
+            </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{participantCount}</p>

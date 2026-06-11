@@ -206,6 +206,43 @@ async function attachReactionsToKudos<T extends Kudos>(
   };
 }
 
+// Resolve sender/receiver ids to names from empcloud.users in one batched query,
+// stamping sender_name / receiver_name onto each kudos. Anonymous kudos keep the
+// sender name hidden. The UI otherwise falls back to "User #<id>".
+async function attachNamesToKudos<T extends Kudos>(
+  result: QueryResult<T>,
+): Promise<QueryResult<T & { sender_name?: string; receiver_name?: string }>> {
+  if (result.data.length === 0) {
+    return { ...result, data: [] as Array<T & { sender_name?: string; receiver_name?: string }> };
+  }
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const ids = [
+    ...new Set(
+      result.data
+        .flatMap((k) => [k.sender_id, k.receiver_id])
+        .filter((id): id is number => typeof id === "number"),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (ids.length > 0) {
+    const users = await empDb("users")
+      .whereIn("id", ids)
+      .select("id", "first_name", "last_name");
+    for (const u of users) {
+      nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+    }
+  }
+  return {
+    ...result,
+    data: result.data.map((k) => ({
+      ...k,
+      sender_name: k.is_anonymous ? undefined : nameById.get(k.sender_id),
+      receiver_name: nameById.get(k.receiver_id),
+    })),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // listKudos — paginated, filter by visibility, with reactions attached.
 // ---------------------------------------------------------------------------
@@ -224,7 +261,7 @@ export async function listKudos(
     sort: { field: "created_at", order: "desc" },
     filters,
   });
-  return attachReactionsToKudos(result);
+  return attachNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -250,11 +287,32 @@ export async function getKudos(
     `SELECT * FROM kudos_comments WHERE kudos_id = ? ORDER BY created_at ASC`,
     [id],
   );
+  const comments: any[] = commentsResult || [];
+
+  // Resolve names from empcloud for the kudos parties and every commenter.
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const userIds = [
+    ...new Set(
+      [kudos.sender_id, kudos.receiver_id, ...comments.map((c) => c.user_id)].filter(
+        (uid): uid is number => typeof uid === "number",
+      ),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (userIds.length > 0) {
+    const users = await empDb("users").whereIn("id", userIds).select("id", "first_name", "last_name");
+    for (const u of users) nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+  }
 
   return {
-    kudos,
+    kudos: {
+      ...kudos,
+      sender_name: kudos.is_anonymous ? undefined : nameById.get(kudos.sender_id),
+      receiver_name: nameById.get(kudos.receiver_id),
+    } as any,
     reactions: reactionsResult || [],
-    comments: commentsResult || [],
+    comments: comments.map((c) => ({ ...c, user_name: nameById.get(c.user_id) })),
   };
 }
 
@@ -468,7 +526,7 @@ export async function getReceivedKudos(
       receiver_id: userId,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -489,7 +547,7 @@ export async function getSentKudos(
       sender_id: userId,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachNamesToKudos(await attachReactionsToKudos(result));
 }
 
 // ---------------------------------------------------------------------------
@@ -509,5 +567,5 @@ export async function getPublicFeed(
       visibility: KudosVisibility.PUBLIC,
     },
   });
-  return attachReactionsToKudos(result);
+  return attachNamesToKudos(await attachReactionsToKudos(result));
 }

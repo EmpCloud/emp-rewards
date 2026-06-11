@@ -249,7 +249,7 @@ export function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={departments} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-              <XAxis type="number" tick={{ fontSize: 11 }} stroke="#9ca3af" domain={[0, 100]} unit="%" />
+              <XAxis type="number" tick={{ fontSize: 11 }} stroke="#9ca3af" domain={[0, 100]} allowDataOverflow unit="%" />
               <YAxis dataKey="department_name" type="category" width={120} tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <Tooltip
                 contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}

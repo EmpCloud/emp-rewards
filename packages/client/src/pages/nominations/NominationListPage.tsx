@@ -16,6 +16,9 @@ import { apiGet, apiPut } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import type { Nomination, NominationProgram, PaginatedResponse } from "@emp-rewards/shared";
 
+// The list endpoint enriches each nomination with the resolved names.
+type NominationWithNames = Nomination & { nominator_name?: string; nominee_name?: string };
+
 const STATUS_STYLES: Record<string, string> = {
   submitted: "bg-amber-50 text-amber-700 border-amber-200",
   under_review: "bg-blue-50 text-blue-700 border-blue-200",
@@ -43,7 +46,7 @@ export function NominationListPage() {
   const isAdmin =
     user?.role === "org_admin" || user?.role === "hr_admin" || user?.role === "super_admin";
 
-  const [nominations, setNominations] = useState<Nomination[]>([]);
+  const [nominations, setNominations] = useState<NominationWithNames[]>([]);
   const [programs, setPrograms] = useState<NominationProgram[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
@@ -72,7 +75,7 @@ export function NominationListPage() {
       if (activeTab !== "all") params.status = activeTab;
       if (programFilter !== "all") params.programId = programFilter;
 
-      const res = await apiGet<PaginatedResponse<Nomination>>("/nominations", params);
+      const res = await apiGet<PaginatedResponse<NominationWithNames>>("/nominations", params);
       if (res.data) {
         setNominations(res.data.data);
         setTotalPages(res.data.totalPages);
@@ -252,10 +255,10 @@ export function NominationListPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">
-                        User #{nom.nominator_id}
+                        {nom.nominator_name || `User #${nom.nominator_id}`}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">
-                        User #{nom.nominee_id}
+                        {nom.nominee_name || `User #${nom.nominee_id}`}
                       </td>
                       <td className="max-w-xs px-6 py-4">
                         <p className="truncate text-sm text-gray-600">{nom.reason}</p>

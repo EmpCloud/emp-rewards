@@ -32,13 +32,26 @@ interface MilestoneAchievement {
   trigger_value?: number;
 }
 
-const CRITERIA_LABELS: Record<string, string> = {
-  manual: "Manual Award",
-  auto_kudos_count: "kudos received",
-  auto_tenure: "months of tenure",
-  auto_points: "points earned",
-  auto_kudos_streak: "day streak",
-};
+// Human-readable unlock requirement for a badge. Covers both the
+// BadgeCriteriaType enum and the milestone-style trigger vocabulary that
+// some badge rows use (points_total, kudos_received, work_anniversary, …).
+function describeCriteria(type: string, value: number): string {
+  switch (type) {
+    case "manual": return "Awarded manually by an admin";
+    case "auto_kudos_count": return `Receive ${value} kudos`;
+    case "auto_tenure": return `Reach ${value} months of tenure`;
+    case "auto_points": return `Earn ${value} total points`;
+    case "auto_kudos_streak": return `Send kudos ${value} days in a row`;
+    case "points_total": return `Earn ${value} total points`;
+    case "kudos_received": return `Receive ${value} kudos`;
+    case "kudos_count": return `Receive ${value} kudos`;
+    case "work_anniversary": return `Complete ${value} work anniversary${value === 1 ? "" : "s"}`;
+    case "badges_count": return `Earn ${value} badges`;
+    case "first_kudos": return "Receive your first kudos";
+    case "referral_hired": return "Get a referral hired";
+    default: return `${value} ${type.replace(/_/g, " ")} needed`;
+  }
+}
 
 const BADGE_ICONS = [
   { icon: Award, earnedColor: "bg-amber-100 text-amber-600", lockedColor: "bg-gray-100 text-gray-400" },
@@ -184,7 +197,7 @@ export function MyBadgesPage() {
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-gray-500">
-                          {badge.criteria_value} {CRITERIA_LABELS[badge.criteria_type] || badge.criteria_type} needed
+                          {describeCriteria(badge.criteria_type, badge.criteria_value ?? 0)}
                         </span>
                       </div>
                       <div className="h-1.5 w-full rounded-full bg-gray-200">

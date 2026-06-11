@@ -85,7 +85,58 @@ export async function getTrends(orgId: number, params: { interval?: string; mont
     [orgId, months],
   );
 
-  return rows || [];
+  // Zero-fill: the query only emits periods that have kudos, so a single active
+  // week shows one lonely point. Build the full ordered window and merge, so the
+  // chart shows a continuous line (weeks/months with no kudos render as 0).
+  const byPeriod = new Map<string, { kudos_count: number; points_total: number }>();
+  for (const r of rows || []) {
+    byPeriod.set(r.period, {
+      kudos_count: Number(r.kudos_count) || 0,
+      points_total: Number(r.points_total) || 0,
+    });
+  }
+  const labels = buildPeriodLabels(interval, months);
+  return labels.map((period) => ({
+    period,
+    kudos_count: byPeriod.get(period)?.kudos_count ?? 0,
+    points_total: byPeriod.get(period)?.points_total ?? 0,
+  }));
+}
+
+// Build the ordered list of period labels covering the last `months` months,
+// formatted to match the SQL DATE_FORMAT (%x-W%v for weeks, %Y-%m for months).
+function buildPeriodLabels(interval: string, months: number): string[] {
+  const labels: string[] = [];
+  const now = new Date();
+  if (interval === "month") {
+    for (let i = months - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      labels.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    }
+  } else {
+    // ~4.345 weeks per month; cover the window in 7-day steps back from today.
+    const weeks = Math.max(1, Math.round(months * 4.345));
+    const seen = new Set<string>();
+    for (let i = weeks - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 7 * 86400000);
+      const label = isoWeekLabel(d);
+      if (!seen.has(label)) {
+        seen.add(label);
+        labels.push(label);
+      }
+    }
+  }
+  return labels;
+}
+
+// ISO week label "%x-W%v" — ISO year + zero-padded ISO week number.
+function isoWeekLabel(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,13 +170,17 @@ export async function getCategoryBreakdown(orgId: number) {
 export async function getDepartmentParticipation(orgId: number) {
   const db = getDB();
 
+  // active_participants counts DEPARTMENT MEMBERS who sent or received a kudos.
+  // (Counting k.sender_id/k.receiver_id directly fanned in people outside the
+  // department, so participationRate could exceed 100%.) u.id is guaranteed to
+  // be a department member, so the participant count can never exceed
+  // total_employees and the rate stays within 0–100%.
   const [rows] = await db.raw<any>(
     `SELECT
        u.department_id,
        COALESCE(d.name, 'No Department') as department_name,
        COUNT(DISTINCT u.id) as total_employees,
-       COUNT(DISTINCT k.sender_id) as active_senders,
-       COUNT(DISTINCT k.receiver_id) as active_receivers,
+       COUNT(DISTINCT CASE WHEN (k.sender_id = u.id OR k.receiver_id = u.id) THEN u.id END) as active_participants,
        COUNT(k.id) as total_kudos
      FROM empcloud.users u
      LEFT JOIN empcloud.organization_departments d ON d.id = u.department_id AND d.organization_id = u.organization_id
@@ -139,7 +194,7 @@ export async function getDepartmentParticipation(orgId: number) {
   return (rows || []).map((row: any) => ({
     ...row,
     participationRate: row.total_employees > 0
-      ? Math.round(((Number(row.active_senders) + Number(row.active_receivers)) / (Number(row.total_employees) * 2)) * 100)
+      ? Math.min(100, Math.round((Number(row.active_participants) / Number(row.total_employees)) * 100))
       : 0,
   }));
 }

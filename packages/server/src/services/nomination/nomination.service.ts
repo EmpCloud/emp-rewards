@@ -205,8 +205,29 @@ export async function listNominations(
       : { field: "created_at", order: "desc" },
   });
 
+  // Enrich with nominator/nominee names from empcloud (UI otherwise shows
+  // "User #<id>").
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const ids = [
+    ...new Set(
+      result.data
+        .flatMap((n) => [n.nominator_id, n.nominee_id])
+        .filter((id): id is number => typeof id === "number"),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (ids.length > 0) {
+    const users = await empDb("users").whereIn("id", ids).select("id", "first_name", "last_name");
+    for (const u of users) nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+  }
+
   return {
-    data: result.data,
+    data: result.data.map((n) => ({
+      ...n,
+      nominator_name: nameById.get(n.nominator_id),
+      nominee_name: nameById.get(n.nominee_id),
+    })) as any,
     total: result.total,
     page: result.page,
     perPage: result.limit,

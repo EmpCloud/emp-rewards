@@ -221,11 +221,15 @@ export async function getMyRank(
     };
   }
 
-  // Compute live rank
+  // Compute live rank over the SAME population + ordering as the table
+  // (computeLiveLeaderboard): join empcloud.users, keep only active users, and
+  // use a deterministic tie-breaker so the banner rank matches the table rank.
   const [pointRows] = await db.raw<any>(
-    `SELECT user_id, total_earned FROM point_balances
-     WHERE organization_id = ?
-     ORDER BY total_earned DESC`,
+    `SELECT pb.user_id, pb.total_earned
+     FROM point_balances pb
+     LEFT JOIN empcloud.users u ON u.id = pb.user_id
+     WHERE pb.organization_id = ? AND u.status = 1
+     ORDER BY pb.total_earned DESC, pb.user_id ASC`,
     [orgId],
   );
 
@@ -355,7 +359,7 @@ async function computeLiveLeaderboard(
      LEFT JOIN (SELECT sender_id, COUNT(*) as cnt FROM kudos WHERE organization_id = ? ${dateClause} GROUP BY sender_id) ks ON ks.sender_id = pb.user_id
      LEFT JOIN (SELECT user_id, COUNT(*) as cnt FROM user_badges WHERE organization_id = ? ${dateClause} GROUP BY user_id) be ON be.user_id = pb.user_id
      WHERE pb.organization_id = ? AND u.status = 1
-     ORDER BY pb.total_earned DESC
+     ORDER BY pb.total_earned DESC, pb.user_id ASC
      LIMIT ? OFFSET ?`,
     [orgId, ...dateParams, orgId, ...dateParams, orgId, ...dateParams, orgId, perPage, offset],
   );
