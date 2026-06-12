@@ -45,6 +45,7 @@ interface ListNominationsParams {
   perPage?: number;
   programId?: string;
   status?: string;
+  nominatorId?: number;
   sort?: string;
   order?: "asc" | "desc";
 }
@@ -195,6 +196,7 @@ export async function listNominations(
 
   if (params.programId) filters.program_id = params.programId;
   if (params.status) filters.status = params.status;
+  if (params.nominatorId) filters.nominator_id = params.nominatorId;
 
   const result = await db.findMany<Nomination>(NOMINATIONS_TABLE, {
     page: params.page || 1,
