@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { Target, Plus, Trash2, Edit3, Loader2 } from "lucide-react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
@@ -89,7 +90,7 @@ export function MilestoneRulesPage() {
       resetForm();
       await fetchRules();
     } catch (err: any) {
-      alert(err.response?.data?.error?.message || `Failed to ${editingId ? "update" : "create"} rule`);
+      toast.error(err.response?.data?.error?.message || `Failed to ${editingId ? "update" : "create"} rule`);
     } finally {
       setSaving(false);
     }
