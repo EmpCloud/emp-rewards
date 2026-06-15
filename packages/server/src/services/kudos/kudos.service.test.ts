@@ -20,6 +20,20 @@ vi.mock("../../db/adapters", () => ({
   getDB: () => mockDB,
 }));
 
+// Mock the EmpCloud (master) DB used by kudos name-enrichment. The list/get
+// functions resolve sender/receiver ids to names via
+// empDb("users").whereIn(...).select(...); return a chainable builder that
+// yields no rows by default — names stay undefined and the UI falls back to
+// "User #<id>", which is fine for these unit tests.
+const mockEmpUsers: any[] = [];
+const empQueryBuilder: any = {
+  whereIn: vi.fn(() => empQueryBuilder),
+  select: vi.fn(() => Promise.resolve(mockEmpUsers)),
+};
+vi.mock("../../db/empcloud", () => ({
+  getEmpCloudDB: () => () => empQueryBuilder,
+}));
+
 vi.mock("../../utils/logger", () => ({
   logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
