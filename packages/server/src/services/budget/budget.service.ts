@@ -62,12 +62,32 @@ export async function listBudgets(
     filters.is_active = params.isActive ? 1 : 0;
   }
 
-  return db.findMany<RecognitionBudget>("recognition_budgets", {
+  const result = await db.findMany<RecognitionBudget>("recognition_budgets", {
     page: params.page || 1,
     limit: params.perPage || 20,
     sort: { field: "created_at", order: "desc" },
     filters,
   });
+
+  // Enrich with the owner's name so the card can show a meaningful title
+  // instead of only the budget_type word.
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const ownerIds = [
+    ...new Set(
+      result.data.map((b) => b.owner_id).filter((id): id is number => typeof id === "number"),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (ownerIds.length > 0) {
+    const users = await empDb("users").whereIn("id", ownerIds).select("id", "first_name", "last_name");
+    for (const u of users) nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+  }
+
+  return {
+    ...result,
+    data: result.data.map((b) => ({ ...b, owner_name: nameById.get(b.owner_id) })) as any,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +132,17 @@ export async function updateBudget(
   const updated = await db.update<RecognitionBudget>("recognition_budgets", id, updateData as any);
   logger.info(`Budget updated: id=${id} org=${orgId}`);
   return updated;
+}
+
+// ---------------------------------------------------------------------------
+// deleteBudget
+// ---------------------------------------------------------------------------
+export async function deleteBudget(orgId: number, id: string): Promise<void> {
+  const db = getDB();
+  // getBudget enforces org ownership (throws NotFound if it isn't this org's).
+  await getBudget(orgId, id);
+  await db.delete("recognition_budgets", id);
+  logger.info(`Budget deleted: id=${id} org=${orgId}`);
 }
 
 // ---------------------------------------------------------------------------

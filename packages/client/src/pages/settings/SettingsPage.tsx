@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Settings, Plus, Pencil, Trash2, X, Check, Palette, MessageSquare, Hash, Zap, ExternalLink, CheckCircle2, XCircle, Loader2, Bell, BellRing } from "lucide-react";
 import { apiGet, apiPut, apiPost, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import toast from "react-hot-toast";
 
 interface RecognitionSettings {
@@ -399,8 +400,9 @@ export function SettingsPage() {
     }
   }
 
+  const [confirmCatId, setConfirmCatId] = useState<string | null>(null);
   async function deleteCategory(id: string) {
-    if (!confirm("Deactivate this category? It can be reactivated later.")) return;
+    setConfirmCatId(null);
     try {
       await apiDelete(`/settings/categories/${id}`);
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, is_active: false } : c)));
@@ -749,7 +751,7 @@ export function SettingsPage() {
                     </button>
                     {cat.is_active && (
                       <button
-                        onClick={() => deleteCategory(cat.id)}
+                        onClick={() => setConfirmCatId(cat.id)}
                         className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -1243,6 +1245,16 @@ export function SettingsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmCatId}
+        title="Deactivate Category?"
+        message="This category will no longer appear in the Send Kudos form. You can reactivate it later."
+        confirmLabel="Deactivate"
+        tone="danger"
+        onConfirm={() => confirmCatId && deleteCategory(confirmCatId)}
+        onCancel={() => setConfirmCatId(null)}
+      />
     </div>
   );
 }

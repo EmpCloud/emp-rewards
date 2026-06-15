@@ -3,6 +3,7 @@ import { ShoppingCart, Loader2, CheckCircle, XCircle, Package, Clock, AlertCircl
 import { Link } from "react-router-dom";
 import { apiGet, apiPut } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import type { RewardRedemption, PaginatedResponse, RedemptionStatus } from "@emp-rewards/shared";
 
 const STATUS_TABS: { label: string; value: string }[] = [
@@ -85,8 +86,9 @@ export function RedemptionListPage() {
     }
   };
 
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const handleCancel = async (id: string) => {
-    if (!confirm("Cancel this redemption? Your points will be refunded.")) return;
+    setConfirmCancelId(null);
     setActionLoading(id);
     setError(null);
     try {
@@ -257,7 +259,7 @@ export function RedemptionListPage() {
                               )}
                               {!isAdmin && r.status === "pending" && (
                                 <button
-                                  onClick={() => handleCancel(r.id)}
+                                  onClick={() => setConfirmCancelId(r.id)}
                                   className="rounded bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
                                 >
                                   Cancel
@@ -303,6 +305,17 @@ export function RedemptionListPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmCancelId}
+        title="Cancel Redemption?"
+        message="This redemption will be cancelled and your points refunded to your balance."
+        confirmLabel="Cancel Redemption"
+        cancelLabel="Keep It"
+        tone="danger"
+        onConfirm={() => confirmCancelId && handleCancel(confirmCancelId)}
+        onCancel={() => setConfirmCancelId(null)}
+      />
     </div>
   );
 }

@@ -28,6 +28,7 @@ export async function initEmpCloudDB(): Promise<Knex> {
       user: dbConfig.user,
       password: dbConfig.password,
       database: dbConfig.name,
+      charset: "utf8mb4",
     },
     pool: { min: 2, max: 10 },
   });

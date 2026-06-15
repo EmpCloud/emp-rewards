@@ -61,27 +61,18 @@ export function SendKudosPage() {
     return () => clearTimeout(timer);
   }, [recipientSearch]);
 
-  // Fetch categories
+  // Fetch the org's configured recognition categories (active only) so the
+  // form matches Settings > Categories instead of a stale hardcoded list.
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiGet<any>("/badges");
-        // Categories would come from a settings/categories endpoint
-        // For now we use static categories
+        const res = await apiGet<Category[]>("/settings/categories");
+        if (res.success && Array.isArray(res.data)) setCategories(res.data);
       } catch {
-        // silent
+        // silent — form shows an empty category state
       }
     })();
   }, []);
-
-  const DEFAULT_CATEGORIES = [
-    { id: "teamwork", name: "Teamwork", icon: "users", color: "#3B82F6", description: "Collaboration", points_multiplier: 1 },
-    { id: "innovation", name: "Innovation", icon: "lightbulb", color: "#F59E0B", description: "Creative thinking", points_multiplier: 1.5 },
-    { id: "leadership", name: "Leadership", icon: "star", color: "#8B5CF6", description: "Guiding others", points_multiplier: 1.5 },
-    { id: "customer-focus", name: "Customer Focus", icon: "heart", color: "#EF4444", description: "Going above and beyond", points_multiplier: 1 },
-    { id: "excellence", name: "Excellence", icon: "award", color: "#10B981", description: "Exceptional work", points_multiplier: 2 },
-    { id: "mentoring", name: "Mentoring", icon: "book-open", color: "#6366F1", description: "Helping others grow", points_multiplier: 1 },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,7 +261,7 @@ export function SendKudosPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {DEFAULT_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
@@ -284,15 +275,13 @@ export function SendKudosPage() {
               >
                 <span
                   className="flex h-6 w-6 items-center justify-center rounded-md text-xs"
-                  style={{ backgroundColor: `${cat.color}20`, color: cat.color }}
+                  style={{ backgroundColor: `${cat.color ?? "#6B7280"}20`, color: cat.color ?? "#6B7280" }}
                 >
                   {cat.name[0]}
                 </span>
                 <div>
                   <p className="font-medium text-gray-900">{cat.name}</p>
-                  {cat.points_multiplier > 1 && (
-                    <p className="text-xs text-amber-600">{cat.points_multiplier}x points</p>
-                  )}
+                  <p className="text-xs text-amber-600">{Number(cat.points_multiplier ?? 1)}x points</p>
                 </div>
               </button>
             ))}

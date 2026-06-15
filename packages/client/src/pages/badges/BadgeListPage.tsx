@@ -3,6 +3,7 @@ import { Award, Plus, Edit2, Trash2, Loader2, Star, Trophy } from "lucide-react"
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface Badge {
   id: string;
@@ -126,13 +127,15 @@ export function BadgeListPage() {
     }
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to deactivate this badge?")) return;
     try {
       await apiDelete(`/badges/${id}`);
       await fetchBadges();
     } catch {
       // silent
+    } finally {
+      setConfirmDeleteId(null);
     }
   };
 
@@ -308,7 +311,7 @@ export function BadgeListPage() {
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(badge.id)}
+                        onClick={() => setConfirmDeleteId(badge.id)}
                         className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -339,6 +342,16 @@ export function BadgeListPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        title="Deactivate Badge?"
+        message="The badge will no longer be awarded. You can reactivate it later by editing it."
+        confirmLabel="Deactivate"
+        tone="danger"
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   );
 }

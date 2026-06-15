@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Wallet, Plus, X, ChevronDown, DollarSign, TrendingUp } from "lucide-react";
-import { apiGet, apiPost } from "@/api/client";
+import { Wallet, Plus, X, ChevronDown, DollarSign, TrendingUp, Pencil, Trash2, Loader2 } from "lucide-react";
+import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
 
@@ -8,6 +8,7 @@ interface Budget {
   id: string;
   budget_type: string;
   owner_id: number;
+  owner_name?: string;
   department_id: number | null;
   period: string;
   total_amount: number;
@@ -17,6 +18,15 @@ interface Budget {
   period_end: string;
   is_active: boolean;
   created_at: string;
+}
+
+// Format an ISO date string as "May 30, 2026" (or "—" if missing/invalid).
+function fmtDate(d?: string): string {
+  if (!d) return "—";
+  const dt = new Date(d);
+  return isNaN(dt.getTime())
+    ? "—"
+    : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 interface BudgetListData {
@@ -43,7 +53,17 @@ function ProgressBar({ spent, total }: { spent: number; total: number }) {
   );
 }
 
-function BudgetCard({ budget }: { budget: Budget }) {
+function BudgetCard({
+  budget,
+  isAdmin,
+  onEdit,
+  onDelete,
+}: {
+  budget: Budget;
+  isAdmin: boolean;
+  onEdit: (b: Budget) => void;
+  onDelete: (b: Budget) => void;
+}) {
   const remaining = Number(budget.remaining_amount);
   const spent = Number(budget.spent_amount);
   const total = Number(budget.total_amount);
@@ -55,15 +75,41 @@ function BudgetCard({ budget }: { budget: Budget }) {
           <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${budget.budget_type === "manager" ? "bg-amber-100" : "bg-orange-100"}`}>
             <Wallet className={`h-4 w-4 ${budget.budget_type === "manager" ? "text-amber-600" : "text-orange-600"}`} />
           </div>
-          <div>
-            <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-gray-700">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {budget.owner_name ||
+                (budget.budget_type === "department"
+                  ? `Department ${budget.department_id ?? ""}`.trim()
+                  : `Owner #${budget.owner_id}`)}
+            </p>
+            <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium capitalize text-gray-600">
               {budget.budget_type}
             </span>
           </div>
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${budget.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
-          {budget.is_active ? "Active" : "Inactive"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${budget.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+            {budget.is_active ? "Active" : "Inactive"}
+          </span>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => onEdit(budget)}
+                title="Edit budget"
+                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-amber-600"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => onDelete(budget)}
+                title="Delete budget"
+                className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
@@ -85,7 +131,7 @@ function BudgetCard({ budget }: { budget: Budget }) {
 
       <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
         <span className="capitalize">{budget.period}</span>
-        <span>{budget.period_start} to {budget.period_end}</span>
+        <span>{fmtDate(budget.period_start)} – {fmtDate(budget.period_end)}</span>
       </div>
     </div>
   );
@@ -99,6 +145,13 @@ export function BudgetListPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Edit / delete state
+  const [editing, setEditing] = useState<Budget | null>(null);
+  const [editForm, setEditForm] = useState({ total_amount: "", period_start: "", period_end: "", is_active: true });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deleting, setDeleting] = useState<Budget | null>(null);
+  const [deletingBusy, setDeletingBusy] = useState(false);
 
   // Form state
   const [form, setForm] = useState({
@@ -182,6 +235,64 @@ export function BudgetListPage() {
       period_start: "",
       period_end: "",
     });
+  }
+
+  function openEdit(b: Budget) {
+    setEditing(b);
+    setEditForm({
+      total_amount: String(b.total_amount),
+      // backend stores dates; trim any time portion to YYYY-MM-DD for the date input
+      period_start: (b.period_start || "").slice(0, 10),
+      period_end: (b.period_end || "").slice(0, 10),
+      is_active: b.is_active,
+    });
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    const total = Number(editForm.total_amount);
+    if (!total || total <= 0) {
+      toast.error("Please enter a valid budget amount");
+      return;
+    }
+    if (editForm.period_end < editForm.period_start) {
+      toast.error("Period end date cannot be before start date");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const res = await apiPut<Budget>(`/budgets/${editing.id}`, {
+        total_amount: total,
+        period_start: editForm.period_start,
+        period_end: editForm.period_end,
+        is_active: editForm.is_active,
+      });
+      if (res.success && res.data) {
+        setBudgets((prev) => prev.map((b) => (b.id === editing.id ? res.data! : b)));
+        toast.success("Budget updated");
+        setEditing(null);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to update budget");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleting) return;
+    setDeletingBusy(true);
+    try {
+      await apiDelete(`/budgets/${deleting.id}`);
+      setBudgets((prev) => prev.filter((b) => b.id !== deleting.id));
+      toast.success("Budget deleted");
+      setDeleting(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to delete budget");
+    } finally {
+      setDeletingBusy(false);
+    }
   }
 
   // Summary stats
@@ -320,7 +431,13 @@ export function BudgetListPage() {
       ) : budgets.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {budgets.map((budget) => (
-            <BudgetCard key={budget.id} budget={budget} />
+            <BudgetCard
+              key={budget.id}
+              budget={budget}
+              isAdmin={!!isAdmin}
+              onEdit={openEdit}
+              onDelete={setDeleting}
+            />
           ))}
         </div>
       ) : (
@@ -335,6 +452,113 @@ export function BudgetListPage() {
               <Plus className="h-4 w-4" /> Create your first budget
             </button>
           )}
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Budget</h3>
+              <button onClick={() => setEditing(null)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Total Amount (Points)</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={editForm.total_amount}
+                  onChange={(e) => setEditForm((f) => ({ ...f, total_amount: e.target.value }))}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Spent so far: {Number(editing.spent_amount).toLocaleString()}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">Period Start</label>
+                  <input
+                    type="date"
+                    value={editForm.period_start}
+                    onChange={(e) => setEditForm((f) => ({ ...f, period_start: e.target.value }))}
+                    required
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">Period End</label>
+                  <input
+                    type="date"
+                    value={editForm.period_end}
+                    onChange={(e) => setEditForm((f) => ({ ...f, period_end: e.target.value }))}
+                    required
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={editForm.is_active}
+                  onChange={(e) => setEditForm((f) => ({ ...f, is_active: e.target.checked }))}
+                  className="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                />
+                Active
+              </label>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditing(null)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit}
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {savingEdit && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm */}
+      {deleting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Delete Budget?</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              This permanently deletes the {deleting.budget_type} budget
+              {" "}({Number(deleting.total_amount).toLocaleString()} points). This cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleting(null)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deletingBusy}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deletingBusy && <Loader2 className="h-4 w-4 animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

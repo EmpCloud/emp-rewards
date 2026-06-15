@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Swords, Trophy, Clock, Users, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
@@ -82,7 +83,7 @@ export function ChallengeDetailPage() {
       await apiPost(`/challenges/${id}/join`);
       await fetchChallenge();
     } catch (err: any) {
-      alert(err.response?.data?.error?.message || "Failed to join challenge");
+      toast.error(err.response?.data?.error?.message || "Failed to join challenge");
     } finally {
       setJoining(false);
     }
@@ -95,7 +96,7 @@ export function ChallengeDetailPage() {
       await fetchChallenge();
     } catch (err: any) {
       console.error("Failed to refresh progress:", err);
-      alert(err.response?.data?.error?.message || "Failed to refresh progress. Please try again.");
+      toast.error(err.response?.data?.error?.message || "Failed to refresh progress. Please try again.");
     } finally {
       setRefreshing(false);
     }
@@ -171,7 +172,9 @@ export function ChallengeDetailPage() {
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{challenge.target_value}</p>
-            <p className="text-xs text-gray-500">{METRIC_LABELS[challenge.metric] || challenge.metric}</p>
+            <p className="text-xs text-gray-500">
+              Target ({METRIC_LABELS[challenge.metric] || challenge.metric})
+            </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{participantCount}</p>

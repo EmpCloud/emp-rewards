@@ -128,12 +128,16 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     const pagination = paginationSchema.parse(req.query);
     const programId = req.query.programId as string | undefined;
     const status = req.query.status as string | undefined;
+    const nominatorIdRaw = Number(req.query.nominatorId);
+    const nominatorId =
+      Number.isInteger(nominatorIdRaw) && nominatorIdRaw > 0 ? nominatorIdRaw : undefined;
 
     const result = await nominationService.listNominations(orgId, {
       page: pagination.page,
       perPage: pagination.perPage,
       programId,
       status,
+      nominatorId,
       sort: pagination.sort,
       order: pagination.order,
     });

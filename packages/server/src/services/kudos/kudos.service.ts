@@ -301,11 +301,32 @@ export async function getKudos(
     `SELECT * FROM kudos_comments WHERE kudos_id = ? ORDER BY created_at ASC`,
     [id],
   );
+  const comments: any[] = commentsResult || [];
+
+  // Resolve names from empcloud for the kudos parties and every commenter.
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const userIds = [
+    ...new Set(
+      [kudos.sender_id, kudos.receiver_id, ...comments.map((c) => c.user_id)].filter(
+        (uid): uid is number => typeof uid === "number",
+      ),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (userIds.length > 0) {
+    const users = await empDb("users").whereIn("id", userIds).select("id", "first_name", "last_name");
+    for (const u of users) nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+  }
 
   return {
-    kudos,
+    kudos: {
+      ...kudos,
+      sender_name: kudos.is_anonymous ? undefined : nameById.get(kudos.sender_id),
+      receiver_name: nameById.get(kudos.receiver_id),
+    } as any,
     reactions: reactionsResult || [],
-    comments: commentsResult || [],
+    comments: comments.map((c) => ({ ...c, user_name: nameById.get(c.user_id) })),
   };
 }
 

@@ -13,6 +13,8 @@ export function RewardCatalogPage() {
   const [balance, setBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  // Redeem confirmation modal (replaces the native confirm())
+  const [confirmReward, setConfirmReward] = useState<{ id: string; name: string; points_cost: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -90,9 +92,9 @@ export function RewardCatalogPage() {
     }
   };
 
+  // Called from the confirmation modal — the modal has already confirmed intent.
   const handleRedeem = async (rewardId: string, rewardName: string) => {
-    if (!confirm(`Redeem "${rewardName}"? Points will be deducted from your balance.`)) return;
-
+    setConfirmReward(null);
     setRedeemingId(rewardId);
     setError(null);
     setSuccess(null);
@@ -349,7 +351,7 @@ export function RewardCatalogPage() {
                   </div>
 
                   <button
-                    onClick={() => handleRedeem(reward.id, reward.name)}
+                    onClick={() => setConfirmReward({ id: reward.id, name: reward.name, points_cost: reward.points_cost })}
                     disabled={!canAfford || outOfStock || isRedeeming}
                     className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       !canAfford || outOfStock
@@ -397,6 +399,50 @@ export function RewardCatalogPage() {
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* Redeem confirmation modal (replaces the native confirm dialog) */}
+      {confirmReward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Redeem Reward?</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              You're about to redeem <span className="font-semibold">{confirmReward.name}</span>.
+            </p>
+            <div className="mt-4 space-y-1.5 rounded-lg bg-amber-50 p-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Cost</span>
+                <span className="font-semibold text-amber-700">
+                  {confirmReward.points_cost.toLocaleString()} pts
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Your balance</span>
+                <span className="font-medium text-gray-900">{balance.toLocaleString()} pts</span>
+              </div>
+              <div className="flex justify-between border-t border-amber-100 pt-1.5">
+                <span className="text-gray-600">Balance after</span>
+                <span className="font-semibold text-gray-900">
+                  {(balance - confirmReward.points_cost).toLocaleString()} pts
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmReward(null)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRedeem(confirmReward.id, confirmReward.name)}
+                className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+              >
+                Confirm Redeem
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

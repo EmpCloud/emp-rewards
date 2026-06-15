@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Swords, Users, Clock, Trophy, Plus, Loader2 } from "lucide-react";
@@ -86,7 +87,7 @@ export function ChallengeListPage() {
   async function handleCreate() {
     // Validate end date >= start date
     if (form.start_date && form.end_date && form.end_date < form.start_date) {
-      alert("End date cannot be before start date");
+      toast.error("End date cannot be before start date");
       return;
     }
     setCreating(true);

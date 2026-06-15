@@ -45,6 +45,7 @@ interface ListNominationsParams {
   perPage?: number;
   programId?: string;
   status?: string;
+  nominatorId?: number;
   sort?: string;
   order?: "asc" | "desc";
 }
@@ -195,6 +196,7 @@ export async function listNominations(
 
   if (params.programId) filters.program_id = params.programId;
   if (params.status) filters.status = params.status;
+  if (params.nominatorId) filters.nominator_id = params.nominatorId;
 
   const result = await db.findMany<Nomination>(NOMINATIONS_TABLE, {
     page: params.page || 1,
@@ -205,8 +207,29 @@ export async function listNominations(
       : { field: "created_at", order: "desc" },
   });
 
+  // Enrich with nominator/nominee names from empcloud (UI otherwise shows
+  // "User #<id>").
+  const { getEmpCloudDB } = await import("../../db/empcloud");
+  const empDb = getEmpCloudDB();
+  const ids = [
+    ...new Set(
+      result.data
+        .flatMap((n) => [n.nominator_id, n.nominee_id])
+        .filter((id): id is number => typeof id === "number"),
+    ),
+  ];
+  const nameById = new Map<number, string>();
+  if (ids.length > 0) {
+    const users = await empDb("users").whereIn("id", ids).select("id", "first_name", "last_name");
+    for (const u of users) nameById.set(u.id, `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim());
+  }
+
   return {
-    data: result.data,
+    data: result.data.map((n) => ({
+      ...n,
+      nominator_name: nameById.get(n.nominator_id),
+      nominee_name: nameById.get(n.nominee_id),
+    })) as any,
     total: result.total,
     page: result.page,
     perPage: result.limit,
