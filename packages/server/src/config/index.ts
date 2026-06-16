@@ -37,7 +37,9 @@ export const config = {
   // JWT
   jwt: {
     secret: process.env.JWT_SECRET || "change-this-in-production",
-    accessExpiry: process.env.JWT_ACCESS_EXPIRY || "15m",
+    // Access token lasts 2h; refresh token (7d) keeps the session alive
+    // across access-token expiries via the client's silent refresh.
+    accessExpiry: process.env.JWT_ACCESS_EXPIRY || "2h",
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
   },
 
