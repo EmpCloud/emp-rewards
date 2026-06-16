@@ -5,11 +5,13 @@ import {
   Trophy,
   Award,
   Gift,
-  ThumbsUp,
   ArrowRight,
   Loader2,
   TrendingUp,
+  TrendingDown,
   Send,
+  Coins,
+  Sparkles,
 } from "lucide-react";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
@@ -60,7 +62,6 @@ export function DashboardPage() {
         if (kudosRes.success && kudosRes.data) {
           const allKudos: KudosItem[] = kudosRes.data.data || [];
           setRecentKudos(allKudos.slice(0, 5));
-          // Count sent/received for current user
           const userId = user?.empcloudUserId;
           setKudosSentCount(allKudos.filter((k) => k.sender_id === userId).length);
           setKudosReceivedCount(allKudos.filter((k) => k.receiver_id === userId).length);
@@ -77,25 +78,13 @@ export function DashboardPage() {
     })();
   }, [user?.empcloudUserId]);
 
-  // #16 — Each card deep-links to the page that explains its number.
-  // Points Balance → Rewards catalog (so users can spend); Kudos Sent /
-  // Received → My Kudos with the matching tab; Badges Earned → My Badges.
+  // Each card deep-links to the page that explains its number.
   const statCards = [
-    {
-      label: "Points Balance",
-      value: balance?.current_balance ?? 0,
-      icon: Trophy,
-      color: "bg-amber-50 text-amber-600",
-      borderColor: "border-amber-200",
-      to: "/rewards",
-      ariaLabel: "View rewards you can redeem with your points",
-    },
     {
       label: "Kudos Sent",
       value: kudosSentCount,
       icon: Send,
-      color: "bg-blue-50 text-blue-600",
-      borderColor: "border-blue-200",
+      iconClass: "bg-blue-50 text-blue-600 ring-blue-100",
       to: "/kudos?tab=sent",
       ariaLabel: "View kudos you have sent",
     },
@@ -103,8 +92,7 @@ export function DashboardPage() {
       label: "Kudos Received",
       value: kudosReceivedCount,
       icon: Heart,
-      color: "bg-pink-50 text-pink-600",
-      borderColor: "border-pink-200",
+      iconClass: "bg-pink-50 text-pink-600 ring-pink-100",
       to: "/kudos?tab=received",
       ariaLabel: "View kudos you have received",
     },
@@ -112,8 +100,7 @@ export function DashboardPage() {
       label: "Badges Earned",
       value: myBadgeCount,
       icon: Award,
-      color: "bg-purple-50 text-purple-600",
-      borderColor: "border-purple-200",
+      iconClass: "bg-purple-50 text-purple-600 ring-purple-100",
       to: "/badges/mine",
       ariaLabel: "View badges you have earned",
     },
@@ -130,84 +117,114 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
             Welcome back, {user?.firstName || "there"}!
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Here is your recognition overview and activity summary.
+            Here's your recognition overview and activity summary.
           </p>
         </div>
         <button
           onClick={() => navigate("/kudos/send")}
-          className="hidden sm:inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600 hover:shadow-amber-500/40"
         >
           <Heart className="h-4 w-4" />
           Send Kudos
         </button>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <Link
-            key={stat.label}
-            to={stat.to}
-            aria-label={stat.ariaLabel}
-            className={cn(
-              "block rounded-lg border bg-white p-6 transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
-              stat.borderColor,
-            )}
-          >
-            <div className={cn("inline-flex rounded-lg p-2.5", stat.color)}>
-              <stat.icon className="h-5 w-5" />
+      {/* ── Top row: points hero + stat cards ──────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        {/* Points hero — the celebratory centerpiece */}
+        <Link
+          to="/rewards"
+          aria-label="View rewards you can redeem with your points"
+          className="group relative col-span-1 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 p-6 text-white shadow-lg shadow-amber-500/30 transition hover:shadow-xl hover:shadow-amber-500/40 lg:col-span-5"
+        >
+          {/* Decorative coins */}
+          <Coins className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 text-white/10" />
+          <Sparkles className="pointer-events-none absolute right-6 bottom-5 h-6 w-6 text-white/30" />
+
+          <div className="relative">
+            <div className="flex items-center gap-2 text-sm font-medium text-amber-50">
+              <Trophy className="h-4 w-4" />
+              Points Balance
             </div>
-            <p className="mt-4 text-2xl font-bold text-gray-900">
-              {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
-            </p>
-            <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
-          </Link>
-        ))}
+            <div className="mt-3 flex items-end gap-2">
+              <span className="text-5xl font-extrabold leading-none tracking-tight">
+                {(balance?.current_balance ?? 0).toLocaleString()}
+              </span>
+              <span className="mb-1 text-lg font-semibold text-amber-50">pts</span>
+            </div>
+
+            {balance && (
+              <div className="mt-5 flex items-center gap-5 text-sm">
+                <span className="inline-flex items-center gap-1.5 text-amber-50">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="font-semibold">{Number(balance.total_earned).toLocaleString()}</span>
+                  <span className="text-amber-100/80">earned</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-amber-50">
+                  <TrendingDown className="h-4 w-4" />
+                  <span className="font-semibold">{Number(balance.total_redeemed).toLocaleString()}</span>
+                  <span className="text-amber-100/80">spent</span>
+                </span>
+              </div>
+            )}
+
+            <div className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25">
+              <Gift className="h-4 w-4" />
+              Redeem rewards
+              <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+            </div>
+          </div>
+        </Link>
+
+        {/* Stat cards */}
+        <div className="col-span-1 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-7">
+          {statCards.map((stat) => (
+            <Link
+              key={stat.label}
+              to={stat.to}
+              aria-label={stat.ariaLabel}
+              className="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            >
+              <div
+                className={cn(
+                  "inline-flex h-10 w-10 items-center justify-center rounded-xl ring-4",
+                  stat.iconClass,
+                )}
+              >
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold tracking-tight text-gray-900">
+                  {stat.value.toLocaleString()}
+                </p>
+                <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
+                  {stat.label}
+                  <ArrowRight className="h-3 w-3 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
-      {/* Points summary */}
-      {balance && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-amber-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Points Summary</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg bg-green-50 p-4 text-center">
-              <p className="text-xl font-bold text-green-700">
-                {Number(balance.total_earned).toLocaleString()}
-              </p>
-              <p className="text-xs text-green-600 mt-1">Total Earned</p>
-            </div>
-            <div className="rounded-lg bg-red-50 p-4 text-center">
-              <p className="text-xl font-bold text-red-700">
-                {Number(balance.total_redeemed).toLocaleString()}
-              </p>
-              <p className="text-xs text-red-600 mt-1">Total Spent</p>
-            </div>
-            <div className="rounded-lg bg-amber-50 p-4 text-center">
-              <p className="text-xl font-bold text-amber-700">
-                {Number(balance.current_balance).toLocaleString()}
-              </p>
-              <p className="text-xs text-amber-600 mt-1">Current Balance</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent kudos feed */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+      {/* ── Recent activity ────────────────────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            Recent Activity
+          </h2>
           <button
             onClick={() => navigate("/feed")}
-            className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700"
+            className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition hover:text-amber-700"
           >
             View all
             <ArrowRight className="h-4 w-4" />
@@ -215,53 +232,60 @@ export function DashboardPage() {
         </div>
 
         {recentKudos.length === 0 ? (
-          <div className="py-8 text-center">
-            <Gift className="mx-auto h-10 w-10 text-gray-300" />
+          <div className="px-6 py-12 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
+              <Gift className="h-6 w-6 text-amber-400" />
+            </div>
             <p className="mt-3 text-sm text-gray-500">
               No activity yet. Start by sending kudos to a teammate!
             </p>
             <button
               onClick={() => navigate("/kudos/send")}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
             >
               <Heart className="h-4 w-4" />
               Send Your First Kudos
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <ul className="divide-y divide-gray-50">
             {recentKudos.map((kudos) => (
-              <div
-                key={kudos.id}
-                className="flex items-start gap-3 rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/kudos/${kudos.id}`)}
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
-                  {kudos.is_anonymous
-                    ? "?"
-                    : getInitials(kudos.sender_name || `User ${kudos.sender_id}`)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">
-                    <span className="font-medium">
-                      {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
-                    </span>
-                    {" recognized "}
-                    <span className="font-medium">
-                      {kudos.receiver_name || `User #${kudos.receiver_id}`}
-                    </span>
-                  </p>
-                  <p className="text-sm text-gray-500 truncate">{kudos.message}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-400">{formatDate(kudos.created_at)}</span>
-                    {kudos.points > 0 && (
-                      <span className="text-xs text-amber-600 font-medium">+{kudos.points} pts</span>
-                    )}
+              <li key={kudos.id}>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/kudos/${kudos.id}`)}
+                  className="flex w-full items-start gap-3 px-6 py-4 text-left transition hover:bg-amber-50/40"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-sm font-semibold text-amber-700">
+                    {kudos.is_anonymous
+                      ? "?"
+                      : getInitials(kudos.sender_name || `User ${kudos.sender_id}`)}
                   </div>
-                </div>
-              </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-semibold">
+                        {kudos.is_anonymous
+                          ? "Anonymous"
+                          : kudos.sender_name || `User #${kudos.sender_id}`}
+                      </span>
+                      <span className="text-gray-500"> recognized </span>
+                      <span className="font-semibold">
+                        {kudos.receiver_name || `User #${kudos.receiver_id}`}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 truncate text-sm text-gray-500">{kudos.message}</p>
+                    <p className="mt-1 text-xs text-gray-400">{formatDate(kudos.created_at)}</p>
+                  </div>
+                  {kudos.points > 0 && (
+                    <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      <Coins className="h-3 w-3" />
+                      +{kudos.points}
+                    </span>
+                  )}
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </div>
