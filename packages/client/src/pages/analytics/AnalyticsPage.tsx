@@ -4,7 +4,7 @@ import {
   Heart, Sparkles, Trophy, Crown, Medal, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import {
-  AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { apiGet } from "@/api/client";
@@ -499,60 +499,28 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Department Participation — gradient bar fill, no axis labels on
-          the right edge to maximise the bar area. */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="mb-4">
+      {/* Department Participation — a compact metrics table (departments,
+          headcount, active senders/receivers, and a participation rate with
+          an inline bar). A table reads far better than a bar chart here
+          because participation rates cluster near the top, where equal-length
+          amber bars carry almost no signal. Sorted by participation desc. */}
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-5 py-4">
           <h3 className="text-sm font-semibold text-gray-900">Department Participation</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             Share of employees per department who have sent or received kudos
           </p>
         </div>
         {departments.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={departments} layout="vertical" margin={{ top: 10, right: 30, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="deptGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#fbbf24" />
-                  <stop offset="100%" stopColor="#f59e0b" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 11 }}
-                stroke="#9ca3af"
-                tickLine={false}
-                domain={[0, 100]}
-                unit="%"
-              />
-              <YAxis
-                dataKey="department_name"
-                type="category"
-                width={120}
-                tick={{ fontSize: 12, fill: "#374151" }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                cursor={{ fill: "rgba(245, 158, 11, 0.06)" }}
-                contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
-                formatter={(value: any) => [`${value}%`, "Participation"]}
-              />
-              <Bar
-                dataKey="participationRate"
-                fill="url(#deptGradient)"
-                radius={[0, 6, 6, 0]}
-                background={{ fill: "rgba(148, 163, 184, 0.14)", radius: 6 }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <DepartmentTable departments={departments} />
         ) : (
-          <EmptyChart
-            icon={BarChart3}
-            title="No department data yet"
-            hint="Once kudos flow across departments, participation rates plot here."
-          />
+          <div className="p-5">
+            <EmptyChart
+              icon={BarChart3}
+              title="No department data yet"
+              hint="Once kudos flow across departments, participation rates plot here."
+            />
+          </div>
         )}
       </div>
 
@@ -642,6 +610,60 @@ function TopUserList({
           })}
         </ol>
       )}
+    </div>
+  );
+}
+
+// Participation rate → colour band. High engagement reads green, mid amber,
+// low rose — so a glance down the column surfaces which departments are
+// lagging, which a single-colour bar chart couldn't convey.
+function participationTone(rate: number) {
+  if (rate >= 80) return { bar: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400" };
+  if (rate >= 60) return { bar: "bg-amber-500", text: "text-amber-700 dark:text-amber-400" };
+  return { bar: "bg-rose-500", text: "text-rose-700 dark:text-rose-400" };
+}
+
+function DepartmentTable({ departments }: { departments: DeptParticipation[] }) {
+  const rows = [...departments].sort((a, b) => b.participationRate - a.participationRate);
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] text-sm">
+        <thead>
+          <tr className="border-b border-gray-200 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            <th className="px-5 py-2.5 font-semibold">Department</th>
+            <th className="px-3 py-2.5 text-right font-semibold">Employees</th>
+            <th className="px-3 py-2.5 text-right font-semibold">Senders</th>
+            <th className="px-3 py-2.5 text-right font-semibold">Receivers</th>
+            <th className="px-5 py-2.5 font-semibold">Participation</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((d) => {
+            const tone = participationTone(d.participationRate);
+            return (
+              <tr key={d.department_name} className="hover:bg-gray-50">
+                <td className="px-5 py-3 font-medium text-gray-900">{d.department_name}</td>
+                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.total_employees}</td>
+                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.active_senders}</td>
+                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.active_receivers}</td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className={`h-full rounded-full ${tone.bar}`}
+                        style={{ width: `${Math.min(100, Math.max(0, d.participationRate))}%` }}
+                      />
+                    </div>
+                    <span className={`w-10 shrink-0 text-right text-xs font-semibold tabular-nums ${tone.text}`}>
+                      {d.participationRate}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
