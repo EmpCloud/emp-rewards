@@ -121,16 +121,28 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// GET / — List nominations (admin view with filters)
+// GET / — List nominations. Admins (org_admin / hr_admin / super_admin) see
+// the whole org so they can review; everyone else is scoped to the
+// nominations they themselves submitted (the page is "nominations you have
+// submitted"). Scoping is enforced server-side so a non-admin can't widen it
+// by omitting/forging the nominatorId query param.
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.user!.empcloudOrgId;
     const pagination = paginationSchema.parse(req.query);
     const programId = req.query.programId as string | undefined;
     const status = req.query.status as string | undefined;
-    const nominatorIdRaw = Number(req.query.nominatorId);
-    const nominatorId =
-      Number.isInteger(nominatorIdRaw) && nominatorIdRaw > 0 ? nominatorIdRaw : undefined;
+
+    const isAdmin = ["org_admin", "hr_admin", "super_admin"].includes(req.user!.role);
+    let nominatorId: number | undefined;
+    if (isAdmin) {
+      // Admins may optionally filter by a specific nominator.
+      const raw = Number(req.query.nominatorId);
+      nominatorId = Number.isInteger(raw) && raw > 0 ? raw : undefined;
+    } else {
+      // Non-admins only ever see their own nominations.
+      nominatorId = req.user!.empcloudUserId;
+    }
 
     const result = await nominationService.listNominations(orgId, {
       page: pagination.page,
