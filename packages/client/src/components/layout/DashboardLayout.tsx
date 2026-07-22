@@ -31,22 +31,51 @@ interface NavItem {
   adminOnly?: boolean;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/feed", label: "Feed", icon: MessageSquare },
-  { to: "/celebrations", label: "Celebrations", icon: PartyPopper },
-  { to: "/kudos", label: "Kudos", icon: Heart },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/badges", label: "Badges", icon: Award },
-  { to: "/rewards", label: "Rewards", icon: Gift },
-  { to: "/redemptions", label: "Redemptions", icon: ShoppingCart },
-  { to: "/challenges", label: "Challenges", icon: Swords },
-  { to: "/milestones", label: "Milestones", icon: Target },
-  { to: "/nominations", label: "Nominations", icon: Star },
-  { to: "/notifications", label: "Notifications", icon: Bell },
-  { to: "/budgets", label: "Budgets", icon: Wallet, adminOnly: true },
-  { to: "/analytics", label: "Analytics", icon: BarChart3, adminOnly: true },
-  { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },
+interface NavSection {
+  title?: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/feed", label: "Feed", icon: MessageSquare },
+    ],
+  },
+  {
+    title: "Recognition",
+    items: [
+      { to: "/celebrations", label: "Celebrations", icon: PartyPopper },
+      { to: "/kudos", label: "Kudos", icon: Heart },
+      { to: "/nominations", label: "Nominations", icon: Star },
+      { to: "/badges", label: "Badges", icon: Award },
+    ],
+  },
+  {
+    title: "Rewards",
+    items: [
+      { to: "/rewards", label: "Rewards", icon: Gift },
+      { to: "/redemptions", label: "Redemptions", icon: ShoppingCart },
+      { to: "/challenges", label: "Challenges", icon: Swords },
+      { to: "/milestones", label: "Milestones", icon: Target },
+    ],
+  },
+  {
+    title: "Standings",
+    items: [
+      { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+      { to: "/notifications", label: "Notifications", icon: Bell },
+    ],
+  },
+  {
+    title: "Admin",
+    items: [
+      { to: "/budgets", label: "Budgets", icon: Wallet, adminOnly: true },
+      { to: "/analytics", label: "Analytics", icon: BarChart3, adminOnly: true },
+      { to: "/settings", label: "Settings", icon: Settings, adminOnly: true },
+    ],
+  },
 ];
 
 type Role = "super_admin" | "org_admin" | "hr_admin" | "hr_manager" | "employee";
@@ -87,27 +116,40 @@ export function DashboardLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {NAV_ITEMS.filter((item) => {
-            if (item.adminOnly && !ADMIN_ROLES.includes((user?.role || "employee") as Role)) return false;
-            return true;
-          }).map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )
-              }
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          {NAV_SECTIONS.map((section, si) => {
+            const isAdmin = ADMIN_ROLES.includes((user?.role || "employee") as Role);
+            const items = section.items.filter((item) => !item.adminOnly || isAdmin);
+            if (items.length === 0) return null;
+            return (
+              <div key={section.title || si} className={si > 0 ? "mt-6" : ""}>
+                {section.title && (
+                  <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    {section.title}
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-brand-50 text-brand-700"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        )
+                      }
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         {/* User card */}
