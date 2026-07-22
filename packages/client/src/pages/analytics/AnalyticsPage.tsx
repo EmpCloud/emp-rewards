@@ -627,13 +627,23 @@ function DepartmentTable({ departments }: { departments: DeptParticipation[] }) 
   const rows = [...departments].sort((a, b) => b.participationRate - a.participationRate);
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] text-sm">
+      <table className="w-full min-w-[620px] table-fixed text-sm">
+        {/* Fixed column widths so the three numeric columns are evenly
+            distributed instead of collapsing to their content and dumping all
+            slack into the last column. */}
+        <colgroup>
+          <col className="w-[28%]" />
+          <col className="w-[13%]" />
+          <col className="w-[13%]" />
+          <col className="w-[13%]" />
+          <col className="w-[33%]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-gray-200 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">
             <th className="px-5 py-2.5 font-semibold">Department</th>
-            <th className="px-3 py-2.5 text-right font-semibold">Employees</th>
-            <th className="px-3 py-2.5 text-right font-semibold">Senders</th>
-            <th className="px-3 py-2.5 text-right font-semibold">Receivers</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Employees</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Senders</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Receivers</th>
             <th className="px-5 py-2.5 font-semibold">Participation</th>
           </tr>
         </thead>
@@ -643,9 +653,9 @@ function DepartmentTable({ departments }: { departments: DeptParticipation[] }) 
             return (
               <tr key={d.department_name} className="hover:bg-gray-50">
                 <td className="px-5 py-3 font-medium text-gray-900">{d.department_name}</td>
-                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.total_employees}</td>
-                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.active_senders}</td>
-                <td className="px-3 py-3 text-right tabular-nums text-gray-600">{d.active_receivers}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.total_employees}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.active_senders}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.active_receivers}</td>
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
