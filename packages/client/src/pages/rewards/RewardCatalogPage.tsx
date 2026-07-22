@@ -102,10 +102,15 @@ export function RewardCatalogPage() {
     try {
       await apiPost(`/rewards/${rewardId}/redeem`);
       setSuccess(`Successfully redeemed "${rewardName}"!`);
+      // Auto-dismiss so a stale banner doesn't linger and look like it
+      // applies to the current (now-reduced) balance.
+      window.setTimeout(() => setSuccess(null), 4000);
       fetchBalance();
       fetchRewards();
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to redeem reward");
+      const msg = err.response?.data?.error?.message || "Failed to redeem reward";
+      setError(msg);
+      window.setTimeout(() => setError(null), 5000);
     } finally {
       setRedeemingId(null);
     }
