@@ -40,9 +40,9 @@ function PodiumCard({
   place: 1 | 2 | 3;
 }) {
   const colors = {
-    1: { bg: "bg-amber-50", border: "border-amber-400", icon: "text-amber-500", ring: "ring-amber-400" },
-    2: { bg: "bg-gray-50", border: "border-gray-400", icon: "text-gray-400", ring: "ring-gray-300" },
-    3: { bg: "bg-orange-50", border: "border-orange-400", icon: "text-orange-400", ring: "ring-orange-300" },
+    1: { bg: "bg-amber-50 dark:bg-amber-500/15", border: "border-amber-400", icon: "text-amber-500", ring: "ring-amber-400" },
+    2: { bg: "bg-gray-100 dark:bg-gray-700", border: "border-gray-400 dark:border-gray-500", icon: "text-gray-400", ring: "ring-gray-300 dark:ring-gray-500" },
+    3: { bg: "bg-orange-50 dark:bg-orange-500/15", border: "border-orange-400", icon: "text-orange-400", ring: "ring-orange-300" },
   };
   const c = colors[place];
   const heights = { 1: "h-36", 2: "h-28", 3: "h-24" };
@@ -54,7 +54,7 @@ function PodiumCard({
     <div className={`flex flex-col items-center ${place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3"}`}>
       <div className="relative mb-2">
         <div className={`flex h-16 w-16 items-center justify-center rounded-full ${c.bg} border-2 ${c.border} ring-2 ${c.ring}`}>
-          <User className="h-8 w-8 text-gray-400" />
+          <User className="h-8 w-8 text-gray-400 dark:text-gray-300" />
         </div>
         {place === 1 && (
           <Crown className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 text-amber-500" />
