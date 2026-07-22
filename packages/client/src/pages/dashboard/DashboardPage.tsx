@@ -173,27 +173,27 @@ export function DashboardPage() {
   const tier = tierFor(Number(balance?.total_earned ?? 0));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-amber-50 via-white to-white p-6 dark:border-gray-800 dark:from-amber-500/10 dark:via-transparent">
-        <Sparkles className="pointer-events-none absolute -right-4 -top-4 h-28 w-28 text-amber-500/10" />
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-amber-50 via-white to-white px-5 py-4 dark:border-gray-800 dark:from-amber-500/10 dark:via-transparent">
+        <Sparkles className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-amber-500/10" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-lg font-bold text-white shadow-sm shadow-amber-500/30">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-base font-bold text-white shadow-sm shadow-amber-500/30">
               {getInitials(displayName)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-[26px]">
+              <h1 className="text-xl font-bold tracking-tight text-gray-900">
                 Welcome back, {user?.firstName || "there"}!
               </h1>
-              <p className="mt-0.5 text-sm text-gray-500">
+              <p className="text-sm text-gray-500">
                 {roleLabel} · Here's your recognition overview.
               </p>
             </div>
           </div>
           <button
             onClick={() => navigate("/kudos/send")}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600 hover:shadow-amber-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600 hover:shadow-amber-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
           >
             <Heart className="h-4 w-4" />
             Send Kudos
@@ -207,10 +207,10 @@ export function DashboardPage() {
         <Link
           to="/rewards"
           aria-label="View rewards you can redeem with your points"
-          className="group relative col-span-1 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 p-6 text-white shadow-lg shadow-amber-500/30 transition hover:shadow-xl hover:shadow-amber-500/40 lg:col-span-5"
+          className="group relative col-span-1 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 p-5 text-white shadow-lg shadow-amber-500/30 transition hover:shadow-xl hover:shadow-amber-500/40 lg:col-span-5"
         >
-          <Coins className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 text-white/10" />
-          <Sparkles className="pointer-events-none absolute right-6 bottom-5 h-6 w-6 text-white/30" />
+          <Coins className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 text-white/10" />
+          <Sparkles className="pointer-events-none absolute right-5 bottom-4 h-5 w-5 text-white/30" />
 
           <div className="relative">
             <div className="flex items-center justify-between">
@@ -225,15 +225,15 @@ export function DashboardPage() {
               </span>
             </div>
 
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-5xl font-extrabold leading-none tracking-tight">
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-4xl font-extrabold leading-none tracking-tight">
                 {(balance?.current_balance ?? 0).toLocaleString()}
               </span>
-              <span className="mb-1 text-lg font-semibold text-amber-50">pts</span>
+              <span className="mb-0.5 text-base font-semibold text-amber-50">pts</span>
             </div>
 
             {balance && (
-              <div className="mt-5 flex items-center gap-5 text-sm">
+              <div className="mt-3 flex items-center gap-5 text-sm">
                 <span className="inline-flex items-center gap-1.5 text-amber-50">
                   <TrendingUp className="h-4 w-4" />
                   <span className="font-semibold">{Number(balance.total_earned).toLocaleString()}</span>
@@ -248,17 +248,17 @@ export function DashboardPage() {
             )}
 
             {/* Progress toward next tier */}
-            <div className="mt-5">
+            <div className="mt-4">
               <div className="mb-1 flex items-center justify-between text-xs text-amber-50/90">
                 <span>{tier.isMax ? "Top tier reached" : `Next: ${tier.nextName}`}</span>
                 {!tier.isMax && <span>{tier.toNext.toLocaleString()} pts to go</span>}
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/25">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/25">
                 <div className="h-full rounded-full bg-white" style={{ width: `${tier.progress}%` }} />
               </div>
             </div>
 
-            <div className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25">
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25">
               <Gift className="h-4 w-4" />
               Redeem rewards
               <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
@@ -266,23 +266,24 @@ export function DashboardPage() {
           </div>
         </Link>
 
-        {/* KPI cards — equal height, soft icon chip, big number, hover lift */}
-        <div className="col-span-1 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-7">
+        {/* KPI cards — compact horizontal layout; auto-rows so they size to
+            content instead of stretching to the tall points card. */}
+        <div className="col-span-1 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-7 lg:content-start lg:auto-rows-min">
           {statCards.map((stat) => (
             <Link
               key={stat.label}
               to={stat.to}
               aria-label={stat.ariaLabel}
-              className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="group flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
-              <div className={cn("inline-flex h-11 w-11 items-center justify-center rounded-xl", stat.iconClass)}>
+              <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", stat.iconClass)}>
                 <stat.icon className="h-5 w-5" />
               </div>
-              <div className="mt-4">
-                <p className="text-3xl font-bold tracking-tight text-gray-900">
+              <div className="min-w-0">
+                <p className="text-2xl font-bold tracking-tight text-gray-900">
                   {stat.value.toLocaleString()}
                 </p>
-                <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
+                <p className="flex items-center gap-1 text-sm text-gray-500">
                   {stat.label}
                   <ArrowRight className="h-3 w-3 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
                 </p>
@@ -293,17 +294,17 @@ export function DashboardPage() {
       </div>
 
       {/* ── Quick Actions ──────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">Quick Actions</h2>
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Quick Actions</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {QUICK_ACTIONS.map((a) => (
             <Link
               key={a.label}
               to={a.to}
-              className="group flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-4 text-center transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="group flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
-              <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl transition group-hover:scale-105", a.tone)}>
-                <a.icon className="h-5 w-5" />
+              <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition group-hover:scale-105", a.tone)}>
+                <a.icon className="h-[18px] w-[18px]" />
               </span>
               <span className="text-xs font-medium text-gray-700">{a.label}</span>
             </Link>
