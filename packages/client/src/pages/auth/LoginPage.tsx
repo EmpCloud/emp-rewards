@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Trophy, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Trophy, Eye, EyeOff, Loader2, Clock } from "lucide-react";
 import { useLogin } from "@/api/hooks";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
@@ -18,6 +18,8 @@ const FEATURES = [
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get("session") === "expired";
   const loginMutation = useLogin();
   const login = useAuthStore((s) => s.login);
   const [email, setEmail] = useState("");
@@ -84,6 +86,16 @@ export function LoginPage() {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
             <p className="mt-1 text-sm text-gray-500">Sign in to recognize your team</p>
+
+            {sessionExpired && (
+              <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-medium">Your session has expired</p>
+                  <p className="mt-0.5 text-amber-700">Please sign in again to continue.</p>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>

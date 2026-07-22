@@ -89,11 +89,12 @@ api.interceptors.response.use(
         return api(originalRequest);
       }
 
-      // Refresh failed — clear session and redirect to login
+      // Refresh failed — clear session and redirect to login with a flag so
+      // the login page can explain why the user was signed out.
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+      window.location.href = "/login?session=expired";
     }
     return Promise.reject(error);
   }
