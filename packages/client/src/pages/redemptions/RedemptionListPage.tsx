@@ -228,12 +228,28 @@ export function RedemptionListPage() {
                         {formatDate(r.created_at)}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {isActionLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                          ) : (
-                            <>
-                              {isAdmin && r.status === "pending" && (
+                        {(() => {
+                          // Which actions, if any, are available for this row.
+                          const canReview = isAdmin && r.status === "pending";
+                          const canFulfill = isAdmin && r.status === "approved";
+                          const canCancel = !isAdmin && r.status === "pending";
+                          const hasAction = canReview || canFulfill || canCancel;
+                          if (isActionLoading) {
+                            return (
+                              <div className="flex items-center justify-end">
+                                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                              </div>
+                            );
+                          }
+                          if (!hasAction) {
+                            // Terminal/no-op state (cancelled, rejected,
+                            // fulfilled, or an admin-only action) — show a
+                            // dash so the cell doesn't look empty/broken.
+                            return <span className="text-sm text-gray-300">—</span>;
+                          }
+                          return (
+                            <div className="flex items-center justify-end gap-2">
+                              {canReview && (
                                 <>
                                   <button
                                     onClick={() => handleAction(r.id, "approve")}
@@ -249,7 +265,7 @@ export function RedemptionListPage() {
                                   </button>
                                 </>
                               )}
-                              {isAdmin && r.status === "approved" && (
+                              {canFulfill && (
                                 <button
                                   onClick={() => handleAction(r.id, "fulfill")}
                                   className="rounded bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
@@ -257,7 +273,7 @@ export function RedemptionListPage() {
                                   Fulfill
                                 </button>
                               )}
-                              {!isAdmin && r.status === "pending" && (
+                              {canCancel && (
                                 <button
                                   onClick={() => setConfirmCancelId(r.id)}
                                   className="rounded bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
@@ -265,9 +281,9 @@ export function RedemptionListPage() {
                                   Cancel
                                 </button>
                               )}
-                            </>
-                          )}
-                        </div>
+                            </div>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );
