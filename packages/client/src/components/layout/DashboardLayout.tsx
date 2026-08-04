@@ -26,6 +26,8 @@ import { isLoggedIn, getUser, useAuthStore } from "@/lib/auth-store";
 import { cn, getInitials } from "@/lib/utils";
 import { BackToDashboard } from "@/components/BackToDashboard";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { tr } from "@/lib/i18n";
 
 interface NavItem {
   to: string;
@@ -137,7 +139,7 @@ export function DashboardLayout() {
             <Trophy className="h-5 w-5 text-white" />
           </div>
           {!collapsed && (
-            <span className="text-lg font-bold text-gray-900 truncate">EMP Rewards</span>
+            <span className="text-lg font-bold text-gray-900 truncate">{tr("EMP Rewards")}</span>
           )}
         </div>
 
@@ -154,7 +156,7 @@ export function DashboardLayout() {
                     si > 0 && <div className="mx-2 mb-2 border-t border-gray-100" />
                   ) : (
                     <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                      {section.title}
+                      {tr(section.title)}
                     </p>
                   ))}
                 <div className="space-y-1">
@@ -162,7 +164,7 @@ export function DashboardLayout() {
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      title={collapsed ? item.label : undefined}
+                      title={collapsed ? tr(item.label) : undefined}
                       className={({ isActive }) =>
                         cn(
                           "flex items-center rounded-lg text-sm font-medium transition-colors",
@@ -174,7 +176,7 @@ export function DashboardLayout() {
                       }
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && item.label}
+                      {!collapsed && tr(item.label)}
                     </NavLink>
                   ))}
                 </div>
@@ -200,12 +202,12 @@ export function DashboardLayout() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
-                <p className="text-xs text-gray-500">{roleLabel}</p>
+                <p className="text-xs text-gray-500">{tr(roleLabel)}</p>
               </div>
               <button
                 onClick={logout}
                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                title="Logout"
+                title={tr("Logout")}
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -224,8 +226,8 @@ export function DashboardLayout() {
         {/* Collapse / expand toggle on the sidebar edge */}
         <button
           onClick={toggleCollapsed}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? tr("Expand sidebar") : tr("Collapse sidebar")}
+          aria-label={collapsed ? tr("Expand sidebar") : tr("Collapse sidebar")}
           className="absolute top-20 -right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-700"
         >
           {collapsed ? (
@@ -260,6 +262,7 @@ export function DashboardLayout() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <LanguageSwitcher />
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
               {getInitials(displayName)}
             </div>

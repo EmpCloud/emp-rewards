@@ -1,9 +1,11 @@
 import { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { isLoggedIn, useAuthStore, extractSSOToken } from "@/lib/auth-store";
 import { apiPost } from "@/api/client";
 import { AppRoutes } from "@/routes";
+import { tr } from "@/lib/i18n";
 
 function PageLoader() {
   return (
@@ -63,7 +65,7 @@ function SSOGate({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <a href="/login" className="text-brand-600 underline">Go to login</a>
+          <a href="/login" className="text-brand-600 underline">{tr("Go to login")}</a>
         </div>
       </div>
     );
@@ -72,8 +74,9 @@ function SSOGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { i18n } = useTranslation();
   return (
-    <SSOGate>
+    <SSOGate key={i18n.resolvedLanguage || i18n.language}>
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Root redirect */}

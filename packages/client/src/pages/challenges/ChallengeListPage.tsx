@@ -5,6 +5,7 @@ import { Swords, Users, Clock, Trophy, Plus, Loader2 } from "lucide-react";
 import { apiGet, apiPost } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface Challenge {
   id: string;
@@ -87,7 +88,7 @@ export function ChallengeListPage() {
   async function handleCreate() {
     // Validate end date >= start date
     if (form.start_date && form.end_date && form.end_date < form.start_date) {
-      toast.error("End date cannot be before start date");
+      toast.error(tr("End date cannot be before start date"));
       return;
     }
     setCreating(true);
@@ -112,8 +113,8 @@ export function ChallengeListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Challenges</h1>
-          <p className="mt-1 text-sm text-gray-500">Compete with colleagues and earn rewards.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Challenges")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Compete with colleagues and earn rewards.")}</p>
         </div>
         {isAdmin && (
           <button
@@ -121,7 +122,8 @@ export function ChallengeListPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             <Plus className="h-4 w-4" />
-            New Challenge
+
+            {tr("New Challenge")}
           </button>
         )}
       </div>
@@ -129,44 +131,44 @@ export function ChallengeListPage() {
       {/* Create form */}
       {showCreate && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Create Challenge</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{tr("Create Challenge")}</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Title")}</label>
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                value={form.title}
+                value={tr(form.title)}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Challenge title"
+                placeholder={tr("Challenge title")}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Type")}</label>
               <select
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
               >
-                <option value="individual">Individual</option>
-                <option value="team">Team</option>
-                <option value="department">Department</option>
+                <option value="individual">{tr("Individual")}</option>
+                <option value="team">{tr("Team")}</option>
+                <option value="department">{tr("Department")}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Metric</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Metric")}</label>
               <select
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 value={form.metric}
                 onChange={(e) => setForm({ ...form, metric: e.target.value })}
               >
-                <option value="kudos_sent">Kudos Sent</option>
-                <option value="kudos_received">Kudos Received</option>
-                <option value="points_earned">Points Earned</option>
-                <option value="badges_earned">Badges Earned</option>
+                <option value="kudos_sent">{tr("Kudos Sent")}</option>
+                <option value="kudos_received">{tr("Kudos Received")}</option>
+                <option value="points_earned">{tr("Points Earned")}</option>
+                <option value="badges_earned">{tr("Badges Earned")}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Value</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Target Value")}</label>
               <input
                 type="number"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -175,7 +177,7 @@ export function ChallengeListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Start Date")}</label>
               <input
                 type="date"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -184,7 +186,7 @@ export function ChallengeListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("End Date")}</label>
               <input
                 type="date"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -193,11 +195,11 @@ export function ChallengeListPage() {
                 onChange={(e) => setForm({ ...form, end_date: e.target.value })}
               />
               {form.start_date && form.end_date && form.end_date < form.start_date && (
-                <p className="mt-1 text-xs text-red-500">End date must be on or after start date</p>
+                <p className="mt-1 text-xs text-red-500">{tr("End date must be on or after start date")}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reward Points</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Reward Points")}</label>
               <input
                 type="number"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -206,12 +208,12 @@ export function ChallengeListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Description")}</label>
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                value={form.description}
+                value={tr(form.description)}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Optional description"
+                placeholder={tr("Optional description")}
               />
             </div>
           </div>
@@ -220,7 +222,8 @@ export function ChallengeListPage() {
               onClick={() => setShowCreate(false)}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+
+              {tr("Cancel")}
             </button>
             <button
               onClick={handleCreate}
@@ -246,7 +249,7 @@ export function ChallengeListPage() {
                 : "text-gray-500 hover:text-gray-700",
             )}
           >
-            {t.label}
+            {tr(t.label)}
           </button>
         ))}
       </div>
@@ -284,9 +287,9 @@ export function ChallengeListPage() {
                     {c.status}
                   </span>
                 </div>
-                <h3 className="mt-3 text-base font-semibold text-gray-900">{c.title}</h3>
+                <h3 className="mt-3 text-base font-semibold text-gray-900">{tr(c.title)}</h3>
                 {c.description && (
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{c.description}</p>
+                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{tr(c.description)}</p>
                 )}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
@@ -294,19 +297,20 @@ export function ChallengeListPage() {
                     {TYPE_ICONS[c.type] || c.type}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                    Target: {c.target_value} {METRIC_LABELS[c.metric] || c.metric}
+
+                    {tr("Target:")} {c.target_value} {METRIC_LABELS[c.metric] || c.metric}
                   </span>
                   {c.reward_points > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
                       <Trophy className="h-3 w-3" />
-                      {c.reward_points} pts
+                      {c.reward_points}  {tr("pts")}
                     </span>
                   )}
                 </div>
                 {c.status === "active" && (
                   <div className="mt-3 flex items-center gap-1 text-xs text-gray-500">
                     <Clock className="h-3 w-3" />
-                    {days} day{days !== 1 ? "s" : ""} remaining
+                    {days}  {tr("day")}{days !== 1 ? "s" : ""}  {tr("remaining")}
                   </div>
                 )}
                 <div className="mt-2 text-xs text-gray-400">
@@ -323,7 +327,8 @@ export function ChallengeListPage() {
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Swords className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
-            No {tab} challenges found.
+
+            {tr("No")} {tab}  {tr("challenges found.")}
           </p>
         </div>
       )}

@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
-import { cn, formatDate, getInitials } from "@/lib/utils";
+import { cn, formatDate, getInitials, activeLocale } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface KudosItem {
   id: string;
@@ -120,10 +121,12 @@ export function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-            Welcome back, {user?.firstName || "there"}!
+
+            {tr("Welcome back,")} {user?.firstName || "there"}!
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Here's your recognition overview and activity summary.
+
+            {tr("Here's your recognition overview and activity summary.")}
           </p>
         </div>
         <button
@@ -131,7 +134,8 @@ export function DashboardPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600 hover:shadow-amber-500/40"
         >
           <Heart className="h-4 w-4" />
-          Send Kudos
+
+          {tr("Send Kudos")}
         </button>
       </div>
 
@@ -140,7 +144,7 @@ export function DashboardPage() {
         {/* Points hero — the celebratory centerpiece */}
         <Link
           to="/rewards"
-          aria-label="View rewards you can redeem with your points"
+          aria-label={tr("View rewards you can redeem with your points")}
           className="group relative col-span-1 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 p-6 text-white shadow-lg shadow-amber-500/30 transition hover:shadow-xl hover:shadow-amber-500/40 lg:col-span-5"
         >
           {/* Decorative coins */}
@@ -150,33 +154,35 @@ export function DashboardPage() {
           <div className="relative">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-50">
               <Trophy className="h-4 w-4" />
-              Points Balance
+
+              {tr("Points Balance")}
             </div>
             <div className="mt-3 flex items-end gap-2">
               <span className="text-5xl font-extrabold leading-none tracking-tight">
-                {(balance?.current_balance ?? 0).toLocaleString()}
+                {(balance?.current_balance ?? 0).toLocaleString(activeLocale())}
               </span>
-              <span className="mb-1 text-lg font-semibold text-amber-50">pts</span>
+              <span className="mb-1 text-lg font-semibold text-amber-50">{tr("pts")}</span>
             </div>
 
             {balance && (
               <div className="mt-5 flex items-center gap-5 text-sm">
                 <span className="inline-flex items-center gap-1.5 text-amber-50">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="font-semibold">{Number(balance.total_earned).toLocaleString()}</span>
-                  <span className="text-amber-100/80">earned</span>
+                  <span className="font-semibold">{Number(balance.total_earned).toLocaleString(activeLocale())}</span>
+                  <span className="text-amber-100/80">{tr("earned")}</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-amber-50">
                   <TrendingDown className="h-4 w-4" />
-                  <span className="font-semibold">{Number(balance.total_redeemed).toLocaleString()}</span>
-                  <span className="text-amber-100/80">spent</span>
+                  <span className="font-semibold">{Number(balance.total_redeemed).toLocaleString(activeLocale())}</span>
+                  <span className="text-amber-100/80">{tr("spent")}</span>
                 </span>
               </div>
             )}
 
             <div className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25">
               <Gift className="h-4 w-4" />
-              Redeem rewards
+
+              {tr("Redeem rewards")}
               <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
             </div>
           </div>
@@ -186,7 +192,7 @@ export function DashboardPage() {
         <div className="col-span-1 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-7">
           {statCards.map((stat) => (
             <Link
-              key={stat.label}
+              key={tr(stat.label)}
               to={stat.to}
               aria-label={stat.ariaLabel}
               className="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
@@ -201,10 +207,10 @@ export function DashboardPage() {
               </div>
               <div className="mt-4">
                 <p className="text-3xl font-bold tracking-tight text-gray-900">
-                  {stat.value.toLocaleString()}
+                  {stat.value.toLocaleString(activeLocale())}
                 </p>
                 <p className="mt-0.5 flex items-center gap-1 text-sm text-gray-500">
-                  {stat.label}
+                  {tr(stat.label)}
                   <ArrowRight className="h-3 w-3 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
                 </p>
               </div>
@@ -220,13 +226,15 @@ export function DashboardPage() {
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
               <Sparkles className="h-4 w-4" />
             </span>
-            Recent Activity
+
+            {tr("Recent Activity")}
           </h2>
           <button
             onClick={() => navigate("/feed")}
             className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition hover:text-amber-700"
           >
-            View all
+
+            {tr("View all")}
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -237,14 +245,16 @@ export function DashboardPage() {
               <Gift className="h-6 w-6 text-amber-400" />
             </div>
             <p className="mt-3 text-sm text-gray-500">
-              No activity yet. Start by sending kudos to a teammate!
+
+              {tr("No activity yet. Start by sending kudos to a teammate!")}
             </p>
             <button
               onClick={() => navigate("/kudos/send")}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
             >
               <Heart className="h-4 w-4" />
-              Send Your First Kudos
+
+              {tr("Send Your First Kudos")}
             </button>
           </div>
         ) : (
@@ -268,7 +278,7 @@ export function DashboardPage() {
                           ? "Anonymous"
                           : kudos.sender_name || `User #${kudos.sender_id}`}
                       </span>
-                      <span className="text-gray-500"> recognized </span>
+                      <span className="text-gray-500">  {tr("recognized")} </span>
                       <span className="font-semibold">
                         {kudos.receiver_name || `User #${kudos.receiver_id}`}
                       </span>

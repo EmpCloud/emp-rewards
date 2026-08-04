@@ -15,6 +15,7 @@ import {
 import { apiGet, apiPost } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate, getInitials } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -219,9 +220,10 @@ export function CelebrationPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Celebrations</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("Celebrations")}</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Birthdays, work anniversaries, and special moments across your organization.
+
+          {tr("Birthdays, work anniversaries, and special moments across your organization.")}
         </p>
       </div>
 
@@ -229,7 +231,7 @@ export function CelebrationPage() {
       <section>
         <div className="flex items-center gap-2 mb-4">
           <PartyPopper className="h-5 w-5 text-amber-500" />
-          <h2 className="text-lg font-semibold text-gray-900">Today</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{tr("Today")}</h2>
           {todayCelebrations.length > 0 && (
             <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
               {todayCelebrations.length}
@@ -240,7 +242,7 @@ export function CelebrationPage() {
         {todayCelebrations.length === 0 ? (
           <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
             <Calendar className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-2 text-sm text-gray-500">No celebrations today.</p>
+            <p className="mt-2 text-sm text-gray-500">{tr("No celebrations today.")}</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -281,7 +283,7 @@ export function CelebrationPage() {
 
                   {/* Title */}
                   <h3 className={cn("font-semibold text-base", style.accent)}>
-                    {celebration.title}
+                    {tr(celebration.title)}
                   </h3>
 
                   {/* User info */}
@@ -302,7 +304,7 @@ export function CelebrationPage() {
                   </div>
 
                   {celebration.description && (
-                    <p className="mt-2 text-sm text-gray-600">{celebration.description}</p>
+                    <p className="mt-2 text-sm text-gray-600">{tr(celebration.description)}</p>
                   )}
 
                   {/* Anniversary years */}
@@ -310,7 +312,7 @@ export function CelebrationPage() {
                     <div className="mt-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-2.5 py-1 text-xs font-medium text-amber-800">
                         <Trophy className="h-3 w-3" />
-                        {celebration.metadata.years} year
+                        {celebration.metadata.years}  {tr("year")}
                         {celebration.metadata.years !== 1 ? "s" : ""}
                       </span>
                     </div>
@@ -323,7 +325,7 @@ export function CelebrationPage() {
                       className="inline-flex items-center gap-1 rounded-full bg-white/60 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-white/80 transition-colors"
                     >
                       <Heart className="h-3.5 w-3.5" />
-                      {celebration.wish_count || 0} wish
+                      {celebration.wish_count || 0}  {tr("wish")}
                       {(celebration.wish_count || 0) !== 1 ? "es" : ""}
                       <ChevronRight
                         className={cn(
@@ -339,7 +341,8 @@ export function CelebrationPage() {
                     <div className="mt-3 space-y-2 border-t border-white/50 pt-3">
                       {wishes.length === 0 && (
                         <p className="text-xs text-gray-400">
-                          No wishes yet. Be the first!
+
+                          {tr("No wishes yet. Be the first!")}
                         </p>
                       )}
                       {wishes.map((wish) => (
@@ -367,7 +370,7 @@ export function CelebrationPage() {
                       <div className="flex items-center gap-2 pt-1">
                         <input
                           type="text"
-                          placeholder="Send a wish..."
+                          placeholder={tr("Send a wish...")}
                           value={wishInputs[celebration.id] || ""}
                           onChange={(e) =>
                             setWishInputs((prev) => ({
@@ -401,7 +404,7 @@ export function CelebrationPage() {
       <section>
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="h-5 w-5 text-amber-500" />
-          <h2 className="text-lg font-semibold text-gray-900">Upcoming (Next 7 Days)</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{tr("Upcoming (Next 7 Days)")}</h2>
           {upcomingCelebrations.length > 0 && (
             <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
               {upcomingCelebrations.length}
@@ -413,7 +416,8 @@ export function CelebrationPage() {
           <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
             <Calendar className="mx-auto h-10 w-10 text-gray-300" />
             <p className="mt-2 text-sm text-gray-500">
-              No upcoming celebrations in the next 7 days.
+
+              {tr("No upcoming celebrations in the next 7 days.")}
             </p>
           </div>
         ) : (
@@ -456,7 +460,7 @@ export function CelebrationPage() {
                         </div>
                       </div>
                       <h4 className="mt-1 text-sm font-medium text-gray-900">
-                        {celebration.title}
+                        {tr(celebration.title)}
                       </h4>
                       <div className="flex items-center gap-2 mt-1.5">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">

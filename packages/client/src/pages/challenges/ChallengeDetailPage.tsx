@@ -5,6 +5,7 @@ import { Swords, Trophy, Clock, Users, ArrowLeft, Loader2, CheckCircle2 } from "
 import { apiGet, apiPost } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface Challenge {
   id: string;
@@ -122,9 +123,10 @@ export function ChallengeDetailPage() {
   if (!challenge) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Challenge not found.</p>
+        <p className="text-gray-500">{tr("Challenge not found.")}</p>
         <Link to="/challenges" className="mt-2 text-brand-600 text-sm underline">
-          Back to Challenges
+
+          {tr("Back to Challenges")}
         </Link>
       </div>
     );
@@ -140,7 +142,8 @@ export function ChallengeDetailPage() {
       {/* Back link */}
       <Link to="/challenges" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
         <ArrowLeft className="h-4 w-4" />
-        Back to Challenges
+
+        {tr("Back to Challenges")}
       </Link>
 
       {/* Header card */}
@@ -151,8 +154,8 @@ export function ChallengeDetailPage() {
               <Swords className="h-6 w-6 text-brand-600" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{challenge.title}</h1>
-              <p className="text-sm text-gray-500">{challenge.description}</p>
+              <h1 className="text-xl font-bold text-gray-900">{tr(challenge.title)}</h1>
+              <p className="text-sm text-gray-500">{tr(challenge.description)}</p>
             </div>
           </div>
           <span
@@ -173,20 +176,21 @@ export function ChallengeDetailPage() {
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{challenge.target_value}</p>
             <p className="text-xs text-gray-500">
-              Target ({METRIC_LABELS[challenge.metric] || challenge.metric})
+
+              {tr("Target (")}{METRIC_LABELS[challenge.metric] || challenge.metric})
             </p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{participantCount}</p>
-            <p className="text-xs text-gray-500">Participants</p>
+            <p className="text-xs text-gray-500">{tr("Participants")}</p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-amber-600">{challenge.reward_points}</p>
-            <p className="text-xs text-gray-500">Reward Points</p>
+            <p className="text-xs text-gray-500">{tr("Reward Points")}</p>
           </div>
           <div className="rounded-lg bg-gray-50 p-3 text-center">
             <p className="text-lg font-bold text-gray-900">{daysLeft}</p>
-            <p className="text-xs text-gray-500">Days Left</p>
+            <p className="text-xs text-gray-500">{tr("Days Left")}</p>
           </div>
         </div>
 
@@ -208,7 +212,8 @@ export function ChallengeDetailPage() {
           {hasJoined && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-sm font-medium text-green-700">
               <CheckCircle2 className="h-4 w-4" />
-              Joined
+
+              {tr("Joined")}
             </span>
           )}
           <button
@@ -223,7 +228,8 @@ export function ChallengeDetailPage() {
               onClick={handleComplete}
               className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
             >
-              Complete Challenge
+
+              {tr("Complete Challenge")}
             </button>
           )}
         </div>
@@ -232,7 +238,7 @@ export function ChallengeDetailPage() {
       {/* Your progress */}
       {myProgress && (
         <div className="rounded-xl border border-brand-200 bg-brand-50 p-5">
-          <h3 className="text-sm font-semibold text-brand-800">Your Progress</h3>
+          <h3 className="text-sm font-semibold text-brand-800">{tr("Your Progress")}</h3>
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm font-medium text-brand-700">
@@ -252,7 +258,8 @@ export function ChallengeDetailPage() {
             </div>
             {myProgress.completed && (
               <p className="mt-2 text-sm font-medium text-green-700">
-                Completed {myProgress.completed_at ? formatDate(myProgress.completed_at) : ""}
+
+                {tr("Completed")} {myProgress.completed_at ? formatDate(myProgress.completed_at) : ""}
               </p>
             )}
           </div>
@@ -262,8 +269,8 @@ export function ChallengeDetailPage() {
       {/* Leaderboard */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">Leaderboard</h3>
-          <p className="text-xs text-gray-500">{participantCount} participants</p>
+          <h3 className="text-sm font-semibold text-gray-900">{tr("Leaderboard")}</h3>
+          <p className="text-xs text-gray-500">{participantCount}  {tr("participants")}</p>
         </div>
         <div className="divide-y divide-gray-100">
           {participants.map((p, idx) => {
@@ -311,7 +318,7 @@ export function ChallengeDetailPage() {
             );
           })}
           {participants.length === 0 && (
-            <p className="px-5 py-8 text-center text-sm text-gray-400">No participants yet. Be the first to join!</p>
+            <p className="px-5 py-8 text-center text-sm text-gray-400">{tr("No participants yet. Be the first to join!")}</p>
           )}
         </div>
       </div>

@@ -9,7 +9,8 @@ import {
 } from "recharts";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
-import { cn } from "@/lib/utils";
+import { cn, activeLocale } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface ManagerDashboard {
   teamSize: number;
@@ -55,7 +56,7 @@ function StatCard({ icon: Icon, label, value, sub, color }: { icon: any; label: 
         </div>
         <div>
           <p className="text-xs font-medium uppercase text-gray-500">{label}</p>
-          <p className="text-xl font-bold text-gray-900">{typeof value === "number" ? value.toLocaleString() : value}</p>
+          <p className="text-xl font-bold text-gray-900">{typeof value === "number" ? value.toLocaleString(activeLocale()) : value}</p>
           {sub && <p className="text-xs text-gray-400">{sub}</p>}
         </div>
       </div>
@@ -150,14 +151,14 @@ export function ManagerDashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manager Comparison</h1>
-          <p className="mt-1 text-sm text-gray-500">Team engagement scores across all managers.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Manager Comparison")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Team engagement scores across all managers.")}</p>
         </div>
 
         {/* Bar chart comparison */}
         {managers.length > 0 && (
           <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h3 className="mb-4 text-sm font-semibold text-gray-900">Engagement Score by Manager</h3>
+            <h3 className="mb-4 text-sm font-semibold text-gray-900">{tr("Engagement Score by Manager")}</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={managers} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -181,7 +182,7 @@ export function ManagerDashboardPage() {
         {/* Table */}
         <div className="rounded-xl border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-5 py-3">
-            <h3 className="text-sm font-semibold text-gray-900">Rankings</h3>
+            <h3 className="text-sm font-semibold text-gray-900">{tr("Rankings")}</h3>
           </div>
           <div className="divide-y divide-gray-100">
             {managers.map((m) => (
@@ -209,7 +210,7 @@ export function ManagerDashboardPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-amber-700">{m.engagementScore}</p>
-                  <p className="text-[10px] text-gray-400">{m.team_size} team members</p>
+                  <p className="text-[10px] text-gray-400">{m.team_size}  {tr("team members")}</p>
                 </div>
               </Link>
             ))}
@@ -223,7 +224,7 @@ export function ManagerDashboardPage() {
   if (!dashboard) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Dashboard data not available.</p>
+        <p className="text-gray-500">{tr("Dashboard data not available.")}</p>
       </div>
     );
   }
@@ -242,22 +243,23 @@ export function ManagerDashboardPage() {
       {/* Back link */}
       <Link to="/analytics/managers" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
         <ArrowLeft className="h-4 w-4" />
-        All Managers
+
+        {tr("All Managers")}
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Manager Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">Team recognition and engagement overview.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("Manager Dashboard")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{tr("Team recognition and engagement overview.")}</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Users} label="Team Size" value={dashboard.teamSize} color="bg-blue-500" />
-        <StatCard icon={Heart} label="Kudos Given (Month)" value={dashboard.kudosGivenThisMonth} color="bg-pink-500" />
-        <StatCard icon={Heart} label="Team Received (Month)" value={dashboard.teamKudosReceived} color="bg-amber-500" />
+        <StatCard icon={Users} label={tr("Team Size")} value={dashboard.teamSize} color="bg-blue-500" />
+        <StatCard icon={Heart} label={tr("Kudos Given (Month)")} value={dashboard.kudosGivenThisMonth} color="bg-pink-500" />
+        <StatCard icon={Heart} label={tr("Team Received (Month)")} value={dashboard.teamKudosReceived} color="bg-amber-500" />
         <StatCard
           icon={TrendingUp}
-          label="Engagement Score"
+          label={tr("Engagement Score")}
           value={dashboard.engagementScore}
           sub={`Org avg: ${dashboard.orgAverageEngagement}`}
           color="bg-green-500"
@@ -270,10 +272,12 @@ export function ManagerDashboardPage() {
           <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800">
-              Your team's recognition is {Math.abs(engagementDiff)}% below the organization average.
+
+              {tr("Your team's recognition is")} {Math.abs(engagementDiff)}{tr("% below the organization average.")}
             </p>
             <p className="mt-1 text-sm text-amber-700">
-              Consider sending more kudos to your team members and encouraging peer recognition.
+
+              {tr("Consider sending more kudos to your team members and encouraging peer recognition.")}
             </p>
           </div>
         </div>
@@ -283,7 +287,8 @@ export function ManagerDashboardPage() {
           <TrendingUp className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-green-800">
-              Great job! Your team's recognition is {engagementDiff}% above the organization average.
+
+              {tr("Great job! Your team's recognition is")} {engagementDiff}{tr("% above the organization average.")}
             </p>
           </div>
         </div>
@@ -293,7 +298,7 @@ export function ManagerDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Engagement comparison */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-4 text-sm font-semibold text-gray-900">Engagement vs Org Average</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-900">{tr("Engagement vs Org Average")}</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={comparisonData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -307,7 +312,7 @@ export function ManagerDashboardPage() {
 
         {/* Trend chart */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-4 text-sm font-semibold text-gray-900">Team Engagement Trend</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-900">{tr("Team Engagement Trend")}</h3>
           {dashboard.trends.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dashboard.trends}>
@@ -328,7 +333,8 @@ export function ManagerDashboardPage() {
             </ResponsiveContainer>
           ) : (
             <div className="flex h-[200px] items-center justify-center text-sm text-gray-400">
-              No trend data available
+
+              {tr("No trend data available")}
             </div>
           )}
         </div>
@@ -337,17 +343,17 @@ export function ManagerDashboardPage() {
       {/* Team members table */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">Team Members</h3>
-          <p className="text-xs text-gray-500">Individual recognition stats this month</p>
+          <h3 className="text-sm font-semibold text-gray-900">{tr("Team Members")}</h3>
+          <p className="text-xs text-gray-500">{tr("Individual recognition stats this month")}</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 text-left text-xs font-medium uppercase text-gray-500">
-                <th className="px-5 py-3">Employee</th>
-                <th className="px-5 py-3 text-center">Kudos Sent</th>
-                <th className="px-5 py-3 text-center">Kudos Received</th>
-                <th className="px-5 py-3 text-center">Total</th>
+                <th className="px-5 py-3">{tr("Employee")}</th>
+                <th className="px-5 py-3 text-center">{tr("Kudos Sent")}</th>
+                <th className="px-5 py-3 text-center">{tr("Kudos Received")}</th>
+                <th className="px-5 py-3 text-center">{tr("Total")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -367,7 +373,8 @@ export function ManagerDashboardPage() {
               {dashboard.teamMembers.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-400">
-                    No team members found
+
+                    {tr("No team members found")}
                   </td>
                 </tr>
               )}

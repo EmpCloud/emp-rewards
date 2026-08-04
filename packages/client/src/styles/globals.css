@@ -165,3 +165,10 @@
 @media print {
   .dark { background: white !important; color: black !important; }
 }
+
+[dir="rtl"] body { text-align: right; }
+[dir="rtl"] .lms-language-menu { right: auto; left: 0; }
+[dir="rtl"] .lms-language-option { text-align: right; }
+[dir="rtl"] .border-r { border-right-width: 0; border-left-width: 1px; }
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }

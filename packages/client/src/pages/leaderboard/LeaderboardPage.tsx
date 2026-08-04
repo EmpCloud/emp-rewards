@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Trophy, Medal, Crown, ChevronDown, User } from "lucide-react";
 import { apiGet } from "@/api/client";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 interface LeaderboardEntry {
   user_id: number;
@@ -69,8 +71,8 @@ function PodiumCard({
       )}
       <div className={`mt-2 flex ${heights[place]} w-24 flex-col items-center justify-end rounded-t-lg ${c.bg} border ${c.border} p-2`}>
         <Trophy className={`h-5 w-5 ${c.icon} mb-1`} />
-        <span className="text-lg font-bold text-gray-900">{entry.total_points.toLocaleString()}</span>
-        <span className="text-[10px] text-gray-500">points</span>
+        <span className="text-lg font-bold text-gray-900">{entry.total_points.toLocaleString(activeLocale())}</span>
+        <span className="text-[10px] text-gray-500">{tr("points")}</span>
       </div>
     </div>
   );
@@ -123,8 +125,8 @@ export function LeaderboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
-          <p className="mt-1 text-sm text-gray-500">Top recognized employees by period.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Leaderboard")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Top recognized employees by period.")}</p>
         </div>
         <div className="relative">
           <select
@@ -133,7 +135,7 @@ export function LeaderboardPage() {
             className="appearance-none rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-9 text-sm font-medium text-gray-700 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           >
             {PERIODS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
+              <option key={p.value} value={p.value}>{tr(p.label)}</option>
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -149,24 +151,24 @@ export function LeaderboardPage() {
                 <Medal className="h-5 w-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Your Rank</p>
+                <p className="text-sm font-medium text-gray-900">{tr("Your Rank")}</p>
                 <p className="text-xs text-gray-500">
-                  #{myRank.rank} of {myRank.totalParticipants} participants
+                  #{myRank.rank}  {tr("of")} {myRank.totalParticipants}  {tr("participants")}
                 </p>
               </div>
             </div>
             <div className="flex gap-6 text-center">
               <div>
-                <p className="text-lg font-bold text-amber-700">{myRank.total_points?.toLocaleString()}</p>
-                <p className="text-[10px] text-gray-500 uppercase">Points</p>
+                <p className="text-lg font-bold text-amber-700">{myRank.total_points?.toLocaleString(activeLocale())}</p>
+                <p className="text-[10px] text-gray-500 uppercase">{tr("Points")}</p>
               </div>
               <div>
                 <p className="text-lg font-bold text-amber-700">{myRank.kudos_received}</p>
-                <p className="text-[10px] text-gray-500 uppercase">Received</p>
+                <p className="text-[10px] text-gray-500 uppercase">{tr("Received")}</p>
               </div>
               <div>
                 <p className="text-lg font-bold text-amber-700">{myRank.kudos_sent}</p>
-                <p className="text-[10px] text-gray-500 uppercase">Sent</p>
+                <p className="text-[10px] text-gray-500 uppercase">{tr("Sent")}</p>
               </div>
             </div>
           </div>
@@ -196,12 +198,12 @@ export function LeaderboardPage() {
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500">Rank</th>
-                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500">Employee</th>
-                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right">Points</th>
-                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right sm:table-cell">Kudos Received</th>
-                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right md:table-cell">Kudos Sent</th>
-                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right md:table-cell">Badges</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500">{tr("Rank")}</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500">{tr("Employee")}</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right">{tr("Points")}</th>
+                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right sm:table-cell">{tr("Kudos Received")}</th>
+                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right md:table-cell">{tr("Kudos Sent")}</th>
+                    <th className="hidden px-4 py-3 text-xs font-medium uppercase text-gray-500 text-right md:table-cell">{tr("Badges")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -223,7 +225,7 @@ export function LeaderboardPage() {
                           )}
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-amber-700">
-                          {entry.total_points.toLocaleString()}
+                          {entry.total_points.toLocaleString(activeLocale())}
                         </td>
                         <td className="hidden px-4 py-3 text-right text-gray-600 sm:table-cell">
                           {entry.kudos_received}
@@ -246,7 +248,8 @@ export function LeaderboardPage() {
           {data && data.totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Showing {((page - 1) * 20) + 1}--{Math.min(page * 20, data.total)} of {data.total}
+
+                {tr("Showing")} {((page - 1) * 20) + 1}--{Math.min(page * 20, data.total)}  {tr("of")} {data.total}
               </p>
               <div className="flex gap-2">
                 <button
@@ -254,14 +257,16 @@ export function LeaderboardPage() {
                   disabled={page <= 1}
                   className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
-                  Previous
+
+                  {tr("Previous")}
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                   disabled={page >= data.totalPages}
                   className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
-                  Next
+
+                  {tr("Next")}
                 </button>
               </div>
             </div>
@@ -270,8 +275,8 @@ export function LeaderboardPage() {
           {entries.length === 0 && (
             <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
               <Trophy className="mx-auto h-12 w-12 text-gray-300" />
-              <p className="mt-3 text-sm text-gray-500">No leaderboard data for this period yet.</p>
-              <p className="mt-1 text-xs text-gray-400">Start sending kudos to populate the leaderboard!</p>
+              <p className="mt-3 text-sm text-gray-500">{tr("No leaderboard data for this period yet.")}</p>
+              <p className="mt-1 text-xs text-gray-400">{tr("Start sending kudos to populate the leaderboard!")}</p>
             </div>
           )}
         </>

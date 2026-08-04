@@ -15,6 +15,8 @@ import {
 import { apiGet, apiPost, apiPut } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import type { NominationProgram, PaginatedResponse, NominationFrequency } from "@emp-rewards/shared";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 const FREQUENCY_LABELS: Record<string, string> = {
   one_time: "One-time",
@@ -135,16 +137,17 @@ export function NominationProgramsPage() {
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    new Date(dateStr).toLocaleDateString(activeLocale(), { month: "short", day: "numeric", year: "numeric" });
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nomination Programs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Nomination Programs")}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Browse active nomination and award programs.
+
+            {tr("Browse active nomination and award programs.")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -152,7 +155,8 @@ export function NominationProgramsPage() {
             to="/nominations/list"
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            View Nominations
+
+            {tr("View Nominations")}
             <ChevronRight className="h-4 w-4" />
           </Link>
           {isAdmin && (
@@ -161,7 +165,8 @@ export function NominationProgramsPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
             >
               <Plus className="h-4 w-4" />
-              New Program
+
+              {tr("New Program")}
             </button>
           )}
         </div>
@@ -183,14 +188,15 @@ export function NominationProgramsPage() {
       ) : programs.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Crown className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No nomination programs yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No nomination programs yet.")}</p>
           {isAdmin && (
             <button
               onClick={openCreate}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
             >
               <Plus className="h-4 w-4" />
-              Create First Program
+
+              {tr("Create First Program")}
             </button>
           )}
         </div>
@@ -208,7 +214,8 @@ export function NominationProgramsPage() {
                 <div className="flex items-center gap-2">
                   {!program.is_active && (
                     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
-                      Inactive
+
+                      {tr("Inactive")}
                     </span>
                   )}
                   {isAdmin && (
@@ -224,7 +231,7 @@ export function NominationProgramsPage() {
 
               <h3 className="mt-4 text-lg font-semibold text-gray-900">{program.name}</h3>
               {program.description && (
-                <p className="mt-1 text-sm text-gray-500 line-clamp-2">{program.description}</p>
+                <p className="mt-1 text-sm text-gray-500 line-clamp-2">{tr(program.description)}</p>
               )}
 
               <div className="mt-4 space-y-2">
@@ -234,12 +241,12 @@ export function NominationProgramsPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="h-4 w-4 text-gray-400" />
-                  <span>{program.nominations_per_user} nomination(s) per person</span>
+                  <span>{program.nominations_per_user}  {tr("nomination(s) per person")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Coins className="h-4 w-4 text-amber-500" />
                   <span className="font-medium text-amber-600">
-                    {program.points_awarded.toLocaleString()} pts awarded
+                    {program.points_awarded.toLocaleString(activeLocale())}  {tr("pts awarded")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -256,7 +263,8 @@ export function NominationProgramsPage() {
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
                 >
                   <Award className="h-4 w-4" />
-                  Nominate
+
+                  {tr("Nominate")}
                 </Link>
               )}
             </div>
@@ -276,31 +284,31 @@ export function NominationProgramsPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <label className="block text-sm font-medium text-gray-700">{tr("Name")}</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  placeholder="Employee of the Month"
+                  placeholder={tr("Employee of the Month")}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">{tr("Description")}</label>
                 <textarea
-                  value={formData.description}
+                  value={tr(formData.description)}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  placeholder="Recognize outstanding employees..."
+                  placeholder={tr("Recognize outstanding employees...")}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                  <label className="block text-sm font-medium text-gray-700">{tr("Frequency")}</label>
                   <select
                     value={formData.frequency}
                     onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
@@ -312,7 +320,7 @@ export function NominationProgramsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Noms per User</label>
+                  <label className="block text-sm font-medium text-gray-700">{tr("Noms per User")}</label>
                   <input
                     type="number"
                     min={1}
@@ -324,7 +332,7 @@ export function NominationProgramsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Points Awarded to Winner</label>
+                <label className="block text-sm font-medium text-gray-700">{tr("Points Awarded to Winner")}</label>
                 <input
                   type="number"
                   min={0}
@@ -336,7 +344,7 @@ export function NominationProgramsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Start Date</label>
+                  <label className="block text-sm font-medium text-gray-700">{tr("Start Date")}</label>
                   <input
                     type="date"
                     required
@@ -346,7 +354,7 @@ export function NominationProgramsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">End Date (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">{tr("End Date (optional)")}</label>
                   <input
                     type="date"
                     value={formData.end_date}
@@ -355,7 +363,7 @@ export function NominationProgramsPage() {
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                   {formData.start_date && formData.end_date && formData.end_date < formData.start_date && (
-                    <p className="mt-1 text-xs text-red-500">End date must be on or after start date</p>
+                    <p className="mt-1 text-xs text-red-500">{tr("End date must be on or after start date")}</p>
                   )}
                 </div>
               </div>
@@ -368,7 +376,7 @@ export function NominationProgramsPage() {
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
+                  <span className="text-sm text-gray-700">{tr("Active")}</span>
                 </label>
               )}
 
@@ -378,7 +386,8 @@ export function NominationProgramsPage() {
                   onClick={() => setShowCreateModal(false)}
                   className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+
+                  {tr("Cancel")}
                 </button>
                 <button
                   type="submit"

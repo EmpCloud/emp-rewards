@@ -4,6 +4,7 @@ import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { tr } from "@/lib/i18n";
 
 interface Badge {
   id: string;
@@ -143,9 +144,10 @@ export function BadgeListPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Badges</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Badges")}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Browse all available badges and achievements.
+
+            {tr("Browse all available badges and achievements.")}
           </p>
         </div>
         {isAdmin && (
@@ -154,7 +156,8 @@ export function BadgeListPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            Create Badge
+
+            {tr("Create Badge")}
           </button>
         )}
       </div>
@@ -168,18 +171,18 @@ export function BadgeListPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Name")}</label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   maxLength={100}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  placeholder="e.g., Team Player"
+                  placeholder={tr("e.g., Team Player")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Points Awarded</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Points Awarded")}</label>
                 <input
                   type="number"
                   value={formPointsAwarded}
@@ -191,35 +194,35 @@ export function BadgeListPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Description")}</label>
               <textarea
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 maxLength={500}
                 rows={2}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 resize-none"
-                placeholder="What does this badge represent?"
+                placeholder={tr("What does this badge represent?")}
               />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Criteria Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Criteria Type")}</label>
                 <select
                   value={formCriteriaType}
                   onChange={(e) => setFormCriteriaType(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 >
-                  <option value="manual">Manual Award</option>
-                  <option value="auto_kudos_count">Auto: Kudos Received Count</option>
-                  <option value="auto_points">Auto: Points Earned</option>
-                  <option value="auto_kudos_streak">Auto: Kudos Streak (days)</option>
-                  <option value="auto_tenure">Auto: Tenure (months)</option>
+                  <option value="manual">{tr("Manual Award")}</option>
+                  <option value="auto_kudos_count">{tr("Auto: Kudos Received Count")}</option>
+                  <option value="auto_points">{tr("Auto: Points Earned")}</option>
+                  <option value="auto_kudos_streak">{tr("Auto: Kudos Streak (days)")}</option>
+                  <option value="auto_tenure">{tr("Auto: Tenure (months)")}</option>
                 </select>
               </div>
               {formCriteriaType !== "manual" && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Criteria Value</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Criteria Value")}</label>
                   <input
                     type="number"
                     value={formCriteriaValue}
@@ -261,7 +264,8 @@ export function BadgeListPage() {
                 }}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                Cancel
+
+                {tr("Cancel")}
               </button>
             </div>
           </form>
@@ -276,14 +280,15 @@ export function BadgeListPage() {
       ) : badges.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Award className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No badges defined yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No badges defined yet.")}</p>
           {isAdmin && (
             <button
               onClick={openCreate}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
             >
               <Plus className="h-4 w-4" />
-              Create First Badge
+
+              {tr("Create First Badge")}
             </button>
           )}
         </div>
@@ -322,7 +327,7 @@ export function BadgeListPage() {
 
                 <h3 className="mt-3 text-base font-semibold text-gray-900">{badge.name}</h3>
                 {badge.description && (
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{badge.description}</p>
+                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{tr(badge.description)}</p>
                 )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -333,7 +338,7 @@ export function BadgeListPage() {
                   {badge.points_awarded > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
                       <Trophy className="h-3 w-3" />
-                      +{badge.points_awarded} pts
+                      +{badge.points_awarded}  {tr("pts")}
                     </span>
                   )}
                 </div>
@@ -345,7 +350,7 @@ export function BadgeListPage() {
 
       <ConfirmDialog
         open={!!confirmDeleteId}
-        title="Deactivate Badge?"
+        title={tr("Deactivate Badge?")}
         message="The badge will no longer be awarded. You can reactivate it later by editing it."
         confirmLabel="Deactivate"
         tone="danger"

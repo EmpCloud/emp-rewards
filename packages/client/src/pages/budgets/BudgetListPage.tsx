@@ -3,6 +3,8 @@ import { Wallet, Plus, X, ChevronDown, DollarSign, TrendingUp, Pencil, Trash2, L
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 interface Budget {
   id: string;
@@ -26,7 +28,7 @@ function fmtDate(d?: string): string {
   const dt = new Date(d);
   return isNaN(dt.getTime())
     ? "—"
-    : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    : dt.toLocaleDateString(activeLocale(), { month: "short", day: "numeric", year: "numeric" });
 }
 
 interface BudgetListData {
@@ -43,8 +45,8 @@ function ProgressBar({ spent, total }: { spent: number; total: number }) {
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
-        <span className="text-gray-500">{pct}% used</span>
-        <span className="font-medium text-gray-700">{spent.toLocaleString()} / {total.toLocaleString()}</span>
+        <span className="text-gray-500">{pct}{tr("% used")}</span>
+        <span className="font-medium text-gray-700">{spent.toLocaleString(activeLocale())} / {total.toLocaleString(activeLocale())}</span>
       </div>
       <div className="h-2 w-full rounded-full bg-gray-200">
         <div className={`h-2 rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
@@ -95,14 +97,14 @@ function BudgetCard({
             <>
               <button
                 onClick={() => onEdit(budget)}
-                title="Edit budget"
+                title={tr("Edit budget")}
                 className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-amber-600"
               >
                 <Pencil className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onDelete(budget)}
-                title="Delete budget"
+                title={tr("Delete budget")}
                 className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 className="h-4 w-4" />
@@ -114,16 +116,16 @@ function BudgetCard({
 
       <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div>
-          <p className="text-lg font-bold text-gray-900">{total.toLocaleString()}</p>
-          <p className="text-[10px] uppercase text-gray-500">Allocated</p>
+          <p className="text-lg font-bold text-gray-900">{total.toLocaleString(activeLocale())}</p>
+          <p className="text-[10px] uppercase text-gray-500">{tr("Allocated")}</p>
         </div>
         <div>
-          <p className="text-lg font-bold text-amber-700">{spent.toLocaleString()}</p>
-          <p className="text-[10px] uppercase text-gray-500">Spent</p>
+          <p className="text-lg font-bold text-amber-700">{spent.toLocaleString(activeLocale())}</p>
+          <p className="text-[10px] uppercase text-gray-500">{tr("Spent")}</p>
         </div>
         <div>
-          <p className="text-lg font-bold text-emerald-700">{remaining.toLocaleString()}</p>
-          <p className="text-[10px] uppercase text-gray-500">Remaining</p>
+          <p className="text-lg font-bold text-emerald-700">{remaining.toLocaleString(activeLocale())}</p>
+          <p className="text-[10px] uppercase text-gray-500">{tr("Remaining")}</p>
         </div>
       </div>
 
@@ -188,15 +190,15 @@ export function BudgetListPage() {
 
     const totalAmount = Number(form.total_amount);
     if (!totalAmount || totalAmount <= 0) {
-      toast.error("Please enter a valid budget amount");
+      toast.error(tr("Please enter a valid budget amount"));
       return;
     }
     if (!form.period_start || !form.period_end) {
-      toast.error("Please select period start and end dates");
+      toast.error(tr("Please select period start and end dates"));
       return;
     }
     if (form.period_end < form.period_start) {
-      toast.error("Period end date cannot be before start date");
+      toast.error(tr("Period end date cannot be before start date"));
       return;
     }
 
@@ -214,7 +216,7 @@ export function BudgetListPage() {
       const res = await apiPost<Budget>("/budgets", body);
       if (res.success && res.data) {
         setBudgets((prev) => [res.data!, ...prev]);
-        toast.success("Budget created successfully");
+        toast.success(tr("Budget created successfully"));
         setShowForm(false);
         resetForm();
       }
@@ -253,11 +255,11 @@ export function BudgetListPage() {
     if (!editing) return;
     const total = Number(editForm.total_amount);
     if (!total || total <= 0) {
-      toast.error("Please enter a valid budget amount");
+      toast.error(tr("Please enter a valid budget amount"));
       return;
     }
     if (editForm.period_end < editForm.period_start) {
-      toast.error("Period end date cannot be before start date");
+      toast.error(tr("Period end date cannot be before start date"));
       return;
     }
     setSavingEdit(true);
@@ -270,7 +272,7 @@ export function BudgetListPage() {
       });
       if (res.success && res.data) {
         setBudgets((prev) => prev.map((b) => (b.id === editing.id ? res.data! : b)));
-        toast.success("Budget updated");
+        toast.success(tr("Budget updated"));
         setEditing(null);
       }
     } catch (err: any) {
@@ -286,7 +288,7 @@ export function BudgetListPage() {
     try {
       await apiDelete(`/budgets/${deleting.id}`);
       setBudgets((prev) => prev.filter((b) => b.id !== deleting.id));
-      toast.success("Budget deleted");
+      toast.success(tr("Budget deleted"));
       setDeleting(null);
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to delete budget");
@@ -305,8 +307,8 @@ export function BudgetListPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Recognition Budgets</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage recognition spending budgets by manager or department.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Recognition Budgets")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Manage recognition spending budgets by manager or department.")}</p>
         </div>
         {isAdmin && (
           <button
@@ -324,21 +326,21 @@ export function BudgetListPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-amber-500" />
-            <span className="text-xs font-medium uppercase text-gray-500">Total Allocated</span>
+            <span className="text-xs font-medium uppercase text-gray-500">{tr("Total Allocated")}</span>
           </div>
-          <p className="mt-1 text-xl font-bold text-gray-900">{totalAllocated.toLocaleString()}</p>
+          <p className="mt-1 text-xl font-bold text-gray-900">{totalAllocated.toLocaleString(activeLocale())}</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-amber-600" />
-            <span className="text-xs font-medium uppercase text-gray-500">Total Spent</span>
+            <span className="text-xs font-medium uppercase text-gray-500">{tr("Total Spent")}</span>
           </div>
-          <p className="mt-1 text-xl font-bold text-gray-900">{totalSpent.toLocaleString()}</p>
+          <p className="mt-1 text-xl font-bold text-gray-900">{totalSpent.toLocaleString(activeLocale())}</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-emerald-500" />
-            <span className="text-xs font-medium uppercase text-gray-500">Active Budgets</span>
+            <span className="text-xs font-medium uppercase text-gray-500">{tr("Active Budgets")}</span>
           </div>
           <p className="mt-1 text-xl font-bold text-gray-900">{activeBudgets}</p>
         </div>
@@ -347,39 +349,39 @@ export function BudgetListPage() {
       {/* Create form */}
       {showForm && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-gray-900">New Budget</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-900">{tr("New Budget")}</h3>
           <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Budget Type</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Budget Type")}</label>
               <div className="relative">
                 <select
                   value={form.budget_type}
                   onChange={(e) => setForm((f) => ({ ...f, budget_type: e.target.value as any }))}
                   className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 >
-                  <option value="manager">Manager</option>
-                  <option value="department">Department</option>
+                  <option value="manager">{tr("Manager")}</option>
+                  <option value="department">{tr("Department")}</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Period</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Period")}</label>
               <div className="relative">
                 <select
                   value={form.period}
                   onChange={(e) => setForm((f) => ({ ...f, period: e.target.value as any }))}
                   className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 >
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annual">Annual</option>
+                  <option value="monthly">{tr("Monthly")}</option>
+                  <option value="quarterly">{tr("Quarterly")}</option>
+                  <option value="annual">{tr("Annual")}</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Total Amount (Points)</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Total Amount (Points)")}</label>
               <input
                 type="number"
                 value={form.total_amount}
@@ -391,7 +393,7 @@ export function BudgetListPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Period Start</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Period Start")}</label>
               <input
                 type="date"
                 value={form.period_start}
@@ -401,7 +403,7 @@ export function BudgetListPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Period End</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Period End")}</label>
               <input
                 type="date"
                 value={form.period_end}
@@ -443,13 +445,13 @@ export function BudgetListPage() {
       ) : (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Wallet className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No budgets configured yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No budgets configured yet.")}</p>
           {isAdmin && (
             <button
               onClick={() => setShowForm(true)}
               className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:text-amber-700"
             >
-              <Plus className="h-4 w-4" /> Create your first budget
+              <Plus className="h-4 w-4" />  {tr("Create your first budget")}
             </button>
           )}
         </div>
@@ -460,14 +462,14 @@ export function BudgetListPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Edit Budget</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{tr("Edit Budget")}</h3>
               <button onClick={() => setEditing(null)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">Total Amount (Points)</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700">{tr("Total Amount (Points)")}</label>
                 <input
                   type="number"
                   min={1}
@@ -477,12 +479,13 @@ export function BudgetListPage() {
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
                 <p className="mt-1 text-xs text-gray-400">
-                  Spent so far: {Number(editing.spent_amount).toLocaleString()}
+
+                  {tr("Spent so far:")} {Number(editing.spent_amount).toLocaleString(activeLocale())}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700">Period Start</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">{tr("Period Start")}</label>
                   <input
                     type="date"
                     value={editForm.period_start}
@@ -492,7 +495,7 @@ export function BudgetListPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700">Period End</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">{tr("Period End")}</label>
                   <input
                     type="date"
                     value={editForm.period_end}
@@ -509,7 +512,8 @@ export function BudgetListPage() {
                   onChange={(e) => setEditForm((f) => ({ ...f, is_active: e.target.checked }))}
                   className="rounded border-gray-300 text-amber-500 focus:ring-amber-400"
                 />
-                Active
+
+                {tr("Active")}
               </label>
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -517,7 +521,8 @@ export function BudgetListPage() {
                   onClick={() => setEditing(null)}
                   className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Cancel
+
+                  {tr("Cancel")}
                 </button>
                 <button
                   type="submit"
@@ -525,7 +530,8 @@ export function BudgetListPage() {
                   className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                 >
                   {savingEdit && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Save Changes
+
+                  {tr("Save Changes")}
                 </button>
               </div>
             </form>
@@ -537,17 +543,19 @@ export function BudgetListPage() {
       {deleting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900">Delete Budget?</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{tr("Delete Budget?")}</h3>
             <p className="mt-2 text-sm text-gray-500">
-              This permanently deletes the {deleting.budget_type} budget
-              {" "}({Number(deleting.total_amount).toLocaleString()} points). This cannot be undone.
+
+              {tr("This permanently deletes the")} {deleting.budget_type}  {tr("budget")}
+              {" "}({Number(deleting.total_amount).toLocaleString(activeLocale())}  {tr("points). This cannot be undone.")}
             </p>
             <div className="mt-5 flex justify-end gap-3">
               <button
                 onClick={() => setDeleting(null)}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                Cancel
+
+                {tr("Cancel")}
               </button>
               <button
                 onClick={handleConfirmDelete}
@@ -555,7 +563,8 @@ export function BudgetListPage() {
                 className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {deletingBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-                Delete
+
+                {tr("Delete")}
               </button>
             </div>
           </div>

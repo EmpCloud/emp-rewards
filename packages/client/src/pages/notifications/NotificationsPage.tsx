@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { apiGet } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { cn, formatDate } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface KudosItem {
   id: string;
@@ -113,9 +114,10 @@ export function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("Notifications")}</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Your recent recognition activity and updates.
+
+          {tr("Your recent recognition activity and updates.")}
         </p>
       </div>
 
@@ -126,7 +128,7 @@ export function NotificationsPage() {
       ) : notifications.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Bell className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No notifications yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No notifications yet.")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -146,7 +148,7 @@ export function NotificationsPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-gray-400">{formatDate(item.created_at)}</span>
                     {item.points != null && item.points > 0 && (
-                      <span className="text-xs text-amber-600 font-medium">+{item.points} pts</span>
+                      <span className="text-xs text-amber-600 font-medium">+{item.points}  {tr("pts")}</span>
                     )}
                   </div>
                 </div>

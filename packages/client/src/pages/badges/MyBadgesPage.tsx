@@ -3,6 +3,7 @@ import { Award, Star, Trophy, Lock, Loader2, Target } from "lucide-react";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface BadgeDefinition {
   id: string;
@@ -110,32 +111,32 @@ export function MyBadgesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Badges</h1>
-        <p className="mt-1 text-sm text-gray-500">Badges and achievements you have earned.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("My Badges")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{tr("Badges and achievements you have earned.")}</p>
       </div>
 
       {/* Stats bar */}
       <div className="flex items-center gap-6 rounded-lg border border-gray-200 bg-white px-6 py-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-amber-600">{earned.length}</p>
-          <p className="text-xs text-gray-500">Earned</p>
+          <p className="text-xs text-gray-500">{tr("Earned")}</p>
         </div>
         <div className="h-8 w-px bg-gray-200" />
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-400">{locked.length}</p>
-          <p className="text-xs text-gray-500">Locked</p>
+          <p className="text-xs text-gray-500">{tr("Locked")}</p>
         </div>
         <div className="h-8 w-px bg-gray-200" />
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-900">{allBadges.length}</p>
-          <p className="text-xs text-gray-500">Total</p>
+          <p className="text-xs text-gray-500">{tr("Total")}</p>
         </div>
       </div>
 
       {/* Earned badges */}
       {earned.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Earned Badges</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{tr("Earned Badges")}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {earned.map((badge, idx) => {
               const iconSet = BADGE_ICONS[idx % BADGE_ICONS.length];
@@ -152,17 +153,18 @@ export function MyBadgesPage() {
                   </div>
                   <h3 className="mt-3 text-base font-semibold text-gray-900">{badge.name}</h3>
                   {badge.description && (
-                    <p className="mt-1 text-sm text-gray-500">{badge.description}</p>
+                    <p className="mt-1 text-sm text-gray-500">{tr(badge.description)}</p>
                   )}
                   <div className="mt-3 flex items-center gap-2">
                     {badge.points_awarded > 0 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
-                        +{badge.points_awarded} pts
+                        +{badge.points_awarded}  {tr("pts")}
                       </span>
                     )}
                     {userBadge && (
                       <span className="text-xs text-gray-400">
-                        Earned {formatDate(userBadge.created_at)}
+
+                        {tr("Earned")} {formatDate(userBadge.created_at)}
                       </span>
                     )}
                   </div>
@@ -176,7 +178,7 @@ export function MyBadgesPage() {
       {/* Locked badges */}
       {locked.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Locked Badges</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{tr("Locked Badges")}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {locked.map((badge, idx) => {
               const iconSet = BADGE_ICONS[idx % BADGE_ICONS.length];
@@ -191,7 +193,7 @@ export function MyBadgesPage() {
                   </div>
                   <h3 className="mt-3 text-base font-semibold text-gray-500">{badge.name}</h3>
                   {badge.description && (
-                    <p className="mt-1 text-sm text-gray-400">{badge.description}</p>
+                    <p className="mt-1 text-sm text-gray-400">{tr(badge.description)}</p>
                   )}
                   {badge.criteria_type !== "manual" && badge.criteria_value && (
                     <div className="mt-3">
@@ -209,7 +211,7 @@ export function MyBadgesPage() {
                     </div>
                   )}
                   {badge.criteria_type === "manual" && (
-                    <p className="mt-3 text-xs text-gray-400">Awarded by admins</p>
+                    <p className="mt-3 text-xs text-gray-400">{tr("Awarded by admins")}</p>
                   )}
                 </div>
               );
@@ -221,7 +223,7 @@ export function MyBadgesPage() {
       {/* Milestones */}
       {milestones.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Milestones</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{tr("Milestones")}</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {milestones.map((m) => (
               <div
@@ -240,11 +242,12 @@ export function MyBadgesPage() {
                 <div className="mt-3 flex items-center gap-2">
                   {m.points_awarded > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
-                      +{m.points_awarded} pts
+                      +{m.points_awarded}  {tr("pts")}
                     </span>
                   )}
                   <span className="text-xs text-gray-400">
-                    Achieved {formatDate(m.achieved_at)}
+
+                    {tr("Achieved")} {formatDate(m.achieved_at)}
                   </span>
                 </div>
               </div>
@@ -256,7 +259,7 @@ export function MyBadgesPage() {
       {allBadges.length === 0 && milestones.length === 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Award className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No badges or milestones available yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No badges or milestones available yet.")}</p>
         </div>
       )}
     </div>

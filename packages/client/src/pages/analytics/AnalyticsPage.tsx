@@ -8,6 +8,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { apiGet } from "@/api/client";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 interface Overview {
   totalKudos: number;
@@ -99,7 +101,7 @@ function StatCard({
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
           <p className={`mt-1 text-2xl font-bold ${t.value}`}>
-            {typeof value === "number" ? value.toLocaleString() : value}
+            {typeof value === "number" ? value.toLocaleString(activeLocale()) : value}
           </p>
           {sub && <p className="mt-0.5 text-[11px] text-gray-400">{sub}</p>}
         </div>
@@ -286,8 +288,8 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500">Recognition trends, engagement metrics, and reports.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Analytics")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Recognition trends, engagement metrics, and reports.")}</p>
         </div>
         {/* Range chips — drive the Kudos Trends fetch. Stat cards, top-user
             lists, etc. stay cumulative since they don't have a natural
@@ -315,7 +317,7 @@ export function AnalyticsPage() {
               );
             })}
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">Filters the trends chart</p>
+          <p className="mt-1 text-[11px] text-gray-400">{tr("Filters the trends chart")}</p>
         </div>
       </div>
 
@@ -323,12 +325,12 @@ export function AnalyticsPage() {
           and pinned right so the number reads first. */}
       {overview && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          <StatCard icon={Heart}        tone="amber"   label="Total Kudos"        value={overview.totalKudos} />
-          <StatCard icon={Coins}        tone="indigo"  label="Points Distributed" value={overview.pointsDistributed} />
-          <StatCard icon={Award}        tone="emerald" label="Badges Awarded"     value={overview.badgesAwarded} />
-          <StatCard icon={Target}       tone="violet"  label="Active Programs"    value={overview.activePrograms} />
-          <StatCard icon={Gift}         tone="rose"    label="Redemptions"        value={overview.totalRedemptions} />
-          <StatCard icon={TrendingUp}   tone="sky"     label="Points Redeemed"    value={overview.pointsRedeemed} />
+          <StatCard icon={Heart}        tone="amber"   label={tr("Total Kudos")}        value={overview.totalKudos} />
+          <StatCard icon={Coins}        tone="indigo"  label={tr("Points Distributed")} value={overview.pointsDistributed} />
+          <StatCard icon={Award}        tone="emerald" label={tr("Badges Awarded")}     value={overview.badgesAwarded} />
+          <StatCard icon={Target}       tone="violet"  label={tr("Active Programs")}    value={overview.activePrograms} />
+          <StatCard icon={Gift}         tone="rose"    label={tr("Redemptions")}        value={overview.totalRedemptions} />
+          <StatCard icon={TrendingUp}   tone="sky"     label={tr("Points Redeemed")}    value={overview.pointsRedeemed} />
         </div>
       )}
 
@@ -345,7 +347,7 @@ export function AnalyticsPage() {
           )}
           <div className="mb-4 flex items-start justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Kudos Trends</h3>
+              <h3 className="text-sm font-semibold text-gray-900">{tr("Kudos Trends")}</h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 {range === "7d" ? "Daily recognition volume — last 7 days"
                   : range === "30d" ? "Daily recognition volume — last 30 days"
@@ -355,9 +357,9 @@ export function AnalyticsPage() {
             </div>
             {trends.length > 0 && (
               <div className="text-right">
-                <p className="text-xs text-gray-400">Period total</p>
+                <p className="text-xs text-gray-400">{tr("Period total")}</p>
                 <p className="text-base font-bold text-amber-700">
-                  {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString()}
+                  {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString(activeLocale())}
                 </p>
               </div>
             )}
@@ -392,7 +394,7 @@ export function AnalyticsPage() {
           ) : (
             <EmptyChart
               icon={TrendingUp}
-              title="No trend data yet"
+              title={tr("No trend data yet")}
               hint="Once your team starts sending kudos, weekly volume will plot here."
             />
           )}
@@ -403,8 +405,8 @@ export function AnalyticsPage() {
             labels at small widths. */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-900">Kudos by Category</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Where recognition is flowing</p>
+            <h3 className="text-sm font-semibold text-gray-900">{tr("Kudos by Category")}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{tr("Where recognition is flowing")}</p>
           </div>
           {categories.length > 0 ? (
             <div className="flex items-center gap-6">
@@ -432,9 +434,9 @@ export function AnalyticsPage() {
                 </ResponsiveContainer>
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                   <p className="text-2xl font-bold text-gray-900">
-                    {categories.reduce((s, c) => s + c.kudos_count, 0).toLocaleString()}
+                    {categories.reduce((s, c) => s + c.kudos_count, 0).toLocaleString(activeLocale())}
                   </p>
-                  <p className="text-[10px] uppercase tracking-wide text-gray-400">Kudos</p>
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400">{tr("Kudos")}</p>
                 </div>
               </div>
               <ul className="flex-1 space-y-2 min-w-0">
@@ -457,7 +459,7 @@ export function AnalyticsPage() {
           ) : (
             <EmptyChart
               icon={Sparkles}
-              title="No category breakdown yet"
+              title={tr("No category breakdown yet")}
               hint="Send kudos with a category attached and they'll show up grouped here."
             />
           )}
@@ -468,9 +470,10 @@ export function AnalyticsPage() {
           the right edge to maximise the bar area. */}
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-900">Department Participation</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tr("Department Participation")}</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            Share of employees per department who have sent or received kudos
+
+            {tr("Share of employees per department who have sent or received kudos")}
           </p>
         </div>
         {departments.length > 0 ? (
@@ -515,7 +518,7 @@ export function AnalyticsPage() {
         ) : (
           <EmptyChart
             icon={BarChart3}
-            title="No department data yet"
+            title={tr("No department data yet")}
             hint="Once kudos flow across departments, participation rates plot here."
           />
         )}
@@ -526,7 +529,7 @@ export function AnalyticsPage() {
           user, and per-user designation under the name. */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TopUserList
-          title="Top Recognizers"
+          title={tr("Top Recognizers")}
           subtitle="Most active kudos senders"
           icon={Trophy}
           users={topRecognizers}
@@ -534,7 +537,7 @@ export function AnalyticsPage() {
           metricLabel="kudos sent"
         />
         <TopUserList
-          title="Top Recognized"
+          title={tr("Top Recognized")}
           subtitle="Most recognized employees"
           icon={Heart}
           users={topRecognized}
@@ -573,7 +576,7 @@ function TopUserList({
         </div>
       </div>
       {users.length === 0 ? (
-        <p className="px-5 py-12 text-center text-sm text-gray-400">No data yet</p>
+        <p className="px-5 py-12 text-center text-sm text-gray-400">{tr("No data yet")}</p>
       ) : (
         <ol className="divide-y divide-gray-100">
           {users.map((user, idx) => {

@@ -4,6 +4,7 @@ import { Heart, ThumbsUp, Award, MessageSquare, Loader2 } from "lucide-react";
 import { apiGet, apiPost, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate, getInitials } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface KudosItem {
   id: string;
@@ -146,8 +147,8 @@ export function MyKudosPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Kudos</h1>
-        <p className="mt-1 text-sm text-gray-500">View kudos you have sent and received.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("My Kudos")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{tr("View kudos you have sent and received.")}</p>
       </div>
 
       {/* Tabs */}
@@ -161,7 +162,8 @@ export function MyKudosPage() {
               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
           )}
         >
-          Received
+
+          {tr("Received")}
         </button>
         <button
           onClick={() => setTab("sent")}
@@ -172,7 +174,8 @@ export function MyKudosPage() {
               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
           )}
         >
-          Sent
+
+          {tr("Sent")}
         </button>
       </div>
 
@@ -214,11 +217,11 @@ export function MyKudosPage() {
                             <span className="font-semibold">
                               {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
                             </span>
-                            <span className="text-gray-500"> sent you kudos</span>
+                            <span className="text-gray-500">  {tr("sent you kudos")}</span>
                           </>
                         ) : (
                           <>
-                            <span className="text-gray-500">You recognized </span>
+                            <span className="text-gray-500">{tr("You recognized")} </span>
                             <span className="font-semibold">
                               {kudos.receiver_name || `User #${kudos.receiver_id}`}
                             </span>
@@ -231,7 +234,7 @@ export function MyKudosPage() {
                   {kudos.points > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
                       <Award className="h-3 w-3" />
-                      +{kudos.points} pts
+                      +{kudos.points}  {tr("pts")}
                     </span>
                   )}
                 </div>

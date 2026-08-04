@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { Route } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { tr } from "@/lib/i18n";
 
 // Lazy-loaded pages
 const LoginPage = lazy(() =>
@@ -179,7 +180,7 @@ export function AppRoutes() {
       </Route>
 
       {/* 404 */}
-      <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-900">Page Not Found</h1></div>} />
+      <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold text-gray-900">{tr("Page Not Found")}</h1></div>} />
     </>
   );
 }
