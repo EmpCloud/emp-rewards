@@ -349,10 +349,10 @@ export function AnalyticsPage() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900">{tr("Kudos Trends")}</h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                {range === "7d" ? "Daily recognition volume — last 7 days"
-                  : range === "30d" ? "Daily recognition volume — last 30 days"
-                  : range === "90d" ? "Weekly recognition volume — last 90 days"
-                  : "Monthly recognition volume — all time"}
+                {range === "7d" ? tr("Daily recognition volume — last 7 days")
+                  : range === "30d" ? tr("Daily recognition volume — last 30 days")
+                  : range === "90d" ? tr("Weekly recognition volume — last 90 days")
+                  : tr("Monthly recognition volume — all time")}
               </p>
             </div>
             {trends.length > 0 && (

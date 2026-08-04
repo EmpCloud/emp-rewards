@@ -71,7 +71,7 @@ export function NotificationsPage() {
               type: "badge_earned",
               message: b.awarded_reason
                 ? `You earned a badge: ${b.awarded_reason}`
-                : "You earned a new badge!",
+                : tr("You earned a new badge!"),
               created_at: b.created_at,
               link: "/badges/mine",
             });

@@ -48,7 +48,7 @@ export function RewardCatalogPage() {
         setTotalPages(res.data.totalPages);
       }
     } catch {
-      setError("Failed to load rewards");
+      setError(tr("Failed to load rewards"));
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ export function RewardCatalogPage() {
         quantity_available: addForm.quantity_available ? Number(addForm.quantity_available) : null,
         image_url: addForm.image_url || null,
       });
-      setSuccess("Reward added successfully!");
+      setSuccess(tr("Reward added successfully!"));
       setShowAddForm(false);
       setAddForm({ name: "", description: "", category: "gift_card", points_cost: 500, quantity_available: "", image_url: "" });
       fetchRewards();
@@ -140,7 +140,7 @@ export function RewardCatalogPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            {showAddForm ? "Cancel" : "Add Reward"}
+            {showAddForm ? tr("Cancel") : tr("Add Reward")}
           </button>
         )}
       </div>
@@ -222,7 +222,7 @@ export function RewardCatalogPage() {
               disabled={addingReward || !addForm.name}
               className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
             >
-              {addingReward ? "Adding..." : "Add Reward"}
+              {addingReward ? tr("Adding...") : tr("Add Reward")}
             </button>
           </div>
         </form>
@@ -291,8 +291,8 @@ export function RewardCatalogPage() {
           <Gift className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
             {search || categoryFilter !== "all"
-              ? "No rewards match your filters."
-              : "No rewards available yet."}
+              ? tr("No rewards match your filters.")
+              : tr("No rewards available yet.")}
           </p>
         </div>
       ) : (
@@ -351,7 +351,7 @@ export function RewardCatalogPage() {
                         }`}
                       >
                         {reward.quantity_available <= 0
-                          ? "Out of stock"
+                          ? tr("Out of stock")
                           : `${reward.quantity_available} left`}
                       </span>
                     )}

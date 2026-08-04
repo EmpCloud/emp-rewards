@@ -326,7 +326,7 @@ export function CelebrationPage() {
                     >
                       <Heart className="h-3.5 w-3.5" />
                       {celebration.wish_count || 0}  {tr("wish")}
-                      {(celebration.wish_count || 0) !== 1 ? "es" : ""}
+                      {(celebration.wish_count || 0) !== 1 ? tr("es") : ""}
                       <ChevronRight
                         className={cn(
                           "h-3 w-3 transition-transform",

@@ -110,7 +110,7 @@ export function DashboardLayout() {
   }
 
   const user = getUser();
-  const displayName = user ? `${user.firstName} ${user.lastName}` : "User";
+  const displayName = user ? `${user.firstName} ${user.lastName}` : tr("User");
   const ROLE_LABELS: Record<string, string> = {
     super_admin: "Super Admin",
     org_admin: "Org Admin",

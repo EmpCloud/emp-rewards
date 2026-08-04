@@ -585,7 +585,7 @@ export function SettingsPage() {
                 disabled={saving}
                 className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Settings"}
+                {saving ? tr("Saving...") : tr("Save Settings")}
               </button>
             </div>
           )}
@@ -611,7 +611,7 @@ export function SettingsPage() {
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">
-                  {editingCat ? "Edit Category" : "New Category"}
+                  {editingCat ? tr("Edit Category") : tr("New Category")}
                 </h3>
                 <button onClick={closeCatForm} className="text-gray-400 hover:text-gray-600">
                   <X className="h-4 w-4" />
@@ -702,7 +702,7 @@ export function SettingsPage() {
                     disabled={savingCategory}
                     className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingCategory ? "Saving..." : editingCat ? "Update" : "Create"}
+                    {savingCategory ? tr("Saving...") : editingCat ? tr("Update") : tr("Create")}
                   </button>
                 </div>
               </form>
@@ -898,7 +898,7 @@ export function SettingsPage() {
                     disabled={savingSlack}
                     className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingSlack ? "Saving..." : "Save Slack Settings"}
+                    {savingSlack ? tr("Saving...") : tr("Save Slack Settings")}
                   </button>
 
                   {testResult && (
@@ -1094,7 +1094,7 @@ export function SettingsPage() {
                     disabled={savingTeams}
                     className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingTeams ? "Saving..." : "Save Teams Settings"}
+                    {savingTeams ? tr("Saving...") : tr("Save Teams Settings")}
                   </button>
 
                   {teamsTestResult && (
@@ -1175,12 +1175,12 @@ export function SettingsPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
-                      {pushSubscribed ? "Push notifications are enabled" : "Push notifications are disabled"}
+                      {pushSubscribed ? tr("Push notifications are enabled") : tr("Push notifications are disabled")}
                     </p>
                     <p className="text-xs text-gray-500">
                       {pushSubscribed
-                        ? "You will receive notifications for kudos, badges, and milestones on this device."
-                        : "Enable to receive real-time notifications on this device."}
+                        ? tr("You will receive notifications for kudos, badges, and milestones on this device.")
+                        : tr("Enable to receive real-time notifications on this device.")}
                     </p>
                   </div>
                 </div>

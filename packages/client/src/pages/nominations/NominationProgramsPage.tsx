@@ -58,7 +58,7 @@ export function NominationProgramsPage() {
         setPrograms(res.data.data);
       }
     } catch {
-      setError("Failed to load programs");
+      setError(tr("Failed to load programs"));
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export function NominationProgramsPage() {
 
     // Validate end date >= start date
     if (formData.end_date && formData.start_date && formData.end_date < formData.start_date) {
-      setError("End date cannot be before start date");
+      setError(tr("End date cannot be before start date"));
       return;
     }
 
@@ -252,7 +252,7 @@ export function NominationProgramsPage() {
                 <div className="flex items-center gap-2 text-xs text-gray-400">
                   <span>
                     {formatDate(program.start_date)}
-                    {program.end_date ? ` - ${formatDate(program.end_date)}` : " - Ongoing"}
+                    {program.end_date ? ` - ${formatDate(program.end_date)}` : tr("- Ongoing")}
                   </span>
                 </div>
               </div>
@@ -278,7 +278,7 @@ export function NominationProgramsPage() {
           <div className="mx-4 w-full max-w-lg rounded-lg bg-white shadow-xl">
             <div className="border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">
-                {editingProgram ? "Edit Program" : "Create Nomination Program"}
+                {editingProgram ? tr("Edit Program") : tr("Create Nomination Program")}
               </h2>
             </div>
 
@@ -394,7 +394,7 @@ export function NominationProgramsPage() {
                   disabled={formLoading}
                   className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
                 >
-                  {formLoading ? "Saving..." : editingProgram ? "Update" : "Create"}
+                  {formLoading ? tr("Saving...") : editingProgram ? tr("Update") : tr("Create")}
                 </button>
               </div>
             </form>

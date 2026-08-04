@@ -91,7 +91,7 @@ function BudgetCard({
         </div>
         <div className="flex items-center gap-2">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${budget.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
-            {budget.is_active ? "Active" : "Inactive"}
+            {budget.is_active ? tr("Active") : tr("Inactive")}
           </span>
           {isAdmin && (
             <>
@@ -316,7 +316,7 @@ export function BudgetListPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
           >
             {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {showForm ? "Cancel" : "Create Budget"}
+            {showForm ? tr("Cancel") : tr("Create Budget")}
           </button>
         )}
       </div>
@@ -418,7 +418,7 @@ export function BudgetListPage() {
                 disabled={submitting}
                 className="w-full rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
               >
-                {submitting ? "Creating..." : "Create Budget"}
+                {submitting ? tr("Creating...") : tr("Create Budget")}
               </button>
             </div>
           </form>

@@ -206,7 +206,7 @@ export function ChallengeDetailPage() {
               disabled={joining}
               className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
-              {joining ? "Joining..." : "Join Challenge"}
+              {joining ? tr("Joining...") : tr("Join Challenge")}
             </button>
           )}
           {hasJoined && (
@@ -221,7 +221,7 @@ export function ChallengeDetailPage() {
             disabled={refreshing}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            {refreshing ? "Refreshing..." : "Refresh Progress"}
+            {refreshing ? tr("Refreshing...") : tr("Refresh Progress")}
           </button>
           {isAdmin && challenge.status === "active" && (
             <button

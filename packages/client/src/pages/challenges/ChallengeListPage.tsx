@@ -230,7 +230,7 @@ export function ChallengeListPage() {
               disabled={creating || !form.title || !form.start_date || !form.end_date}
               className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
-              {creating ? "Creating..." : "Create Challenge"}
+              {creating ? tr("Creating...") : tr("Create Challenge")}
             </button>
           </div>
         </div>

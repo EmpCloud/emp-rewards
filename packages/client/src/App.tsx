@@ -51,7 +51,7 @@ function SSOGate({ children }: { children: React.ReactNode }) {
       } catch (err: any) {
         if (cancelled) return;
         console.error("SSO exchange failed:", err);
-        setError("SSO login failed. Please try logging in manually.");
+        setError(tr("SSO login failed. Please try logging in manually."));
         setReady(true);
       }
     })();

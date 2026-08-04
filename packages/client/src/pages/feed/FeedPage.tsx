@@ -426,7 +426,7 @@ export function FeedPage() {
 
                   {(celebration.wish_count || 0) > 0 && (
                     <p className="mt-1.5 text-xs text-gray-400">
-                      {celebration.wish_count}  {tr("wish")}{(celebration.wish_count || 0) !== 1 ? "es" : ""}
+                      {celebration.wish_count}  {tr("wish")}{(celebration.wish_count || 0) !== 1 ? tr("es") : ""}
                     </p>
                   )}
                 </div>
@@ -470,7 +470,7 @@ export function FeedPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         <span className="font-semibold">
-                          {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
+                          {kudos.is_anonymous ? tr("Anonymous") : kudos.sender_name || `User #${kudos.sender_id}`}
                         </span>
                         <span className="text-gray-500">  {tr("recognized")} </span>
                         <span className="font-semibold">

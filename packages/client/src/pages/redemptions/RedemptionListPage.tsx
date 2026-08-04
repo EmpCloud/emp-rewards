@@ -65,7 +65,7 @@ export function RedemptionListPage() {
         setTotal(res.data.total);
       }
     } catch {
-      setError("Failed to load redemptions");
+      setError(tr("Failed to load redemptions"));
     } finally {
       setLoading(false);
     }
@@ -115,12 +115,12 @@ export function RedemptionListPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {isAdmin ? "Redemptions" : "My Redemptions"}
+          {isAdmin ? tr("Redemptions") : tr("My Redemptions")}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           {isAdmin
-            ? "Manage and review reward redemption requests."
-            : "Track your reward redemption requests."}
+            ? tr("Manage and review reward redemption requests.")
+            : tr("Track your reward redemption requests.")}
         </p>
       </div>
 
@@ -162,7 +162,7 @@ export function RedemptionListPage() {
           <p className="mt-3 text-sm text-gray-500">
             {activeTab !== "all"
               ? `No ${activeTab} redemptions found.`
-              : "No redemptions yet."}
+              : tr("No redemptions yet.")}
           </p>
         </div>
       ) : (

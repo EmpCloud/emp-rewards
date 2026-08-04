@@ -79,12 +79,12 @@ export function NominationSubmitPage() {
             setSelectedProgramId("");
             setSearchParams({}, { replace: true });
             setError(
-              "That program is no longer accepting nominations — please choose another.",
+              tr("That program is no longer accepting nominations — please choose another."),
             );
           }
         }
       } catch {
-        setError("Failed to load nomination programs");
+        setError(tr("Failed to load nomination programs"));
       } finally {
         setProgramsLoading(false);
       }
@@ -151,15 +151,15 @@ export function NominationSubmitPage() {
     setError(null);
 
     if (!selectedProgramId) {
-      setError("Please select a nomination program");
+      setError(tr("Please select a nomination program"));
       return;
     }
     if (!selectedNominee) {
-      setError("Please select a colleague to nominate");
+      setError(tr("Please select a colleague to nominate"));
       return;
     }
     if (!reason.trim()) {
-      setError("Please describe why you are nominating them");
+      setError(tr("Please describe why you are nominating them"));
       return;
     }
 
@@ -293,7 +293,7 @@ export function NominationSubmitPage() {
                         {formatDate(selectedProgram.start_date)}
                         {selectedProgram.end_date
                           ? ` - ${formatDate(selectedProgram.end_date)}`
-                          : " - Ongoing"}
+                          : tr("- Ongoing")}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <Users className="h-3.5 w-3.5 text-gray-400" />
@@ -426,7 +426,7 @@ export function NominationSubmitPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {submitting ? "Submitting..." : "Submit Nomination"}
+              {submitting ? tr("Submitting...") : tr("Submit Nomination")}
             </button>
           </div>
         </form>

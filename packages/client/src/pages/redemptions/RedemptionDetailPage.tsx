@@ -59,7 +59,7 @@ export function RedemptionDetailPage() {
         }
       }
     } catch {
-      setError("Failed to load redemption details");
+      setError(tr("Failed to load redemption details"));
     } finally {
       setLoading(false);
     }
@@ -308,14 +308,14 @@ export function RedemptionDetailPage() {
                       disabled={actionLoading}
                       className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
                     >
-                      {actionLoading ? "Processing..." : "Approve"}
+                      {actionLoading ? tr("Processing...") : tr("Approve")}
                     </button>
                     <button
                       onClick={() => handleAction("reject")}
                       disabled={actionLoading}
                       className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                     >
-                      {actionLoading ? "Processing..." : "Reject"}
+                      {actionLoading ? tr("Processing...") : tr("Reject")}
                     </button>
                   </>
                 )}
@@ -325,7 +325,7 @@ export function RedemptionDetailPage() {
                     disabled={actionLoading}
                     className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
-                    {actionLoading ? "Processing..." : "Mark as Fulfilled"}
+                    {actionLoading ? tr("Processing...") : tr("Mark as Fulfilled")}
                   </button>
                 )}
                 {!isAdmin && redemption.status === "pending" && (
@@ -334,7 +334,7 @@ export function RedemptionDetailPage() {
                     disabled={actionLoading}
                     className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                   >
-                    {actionLoading ? "Processing..." : "Cancel Redemption"}
+                    {actionLoading ? tr("Processing...") : tr("Cancel Redemption")}
                   </button>
                 )}
               </div>

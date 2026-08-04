@@ -80,11 +80,11 @@ export function SendKudosPage() {
     setError(null);
 
     if (!selectedRecipient) {
-      setError("Please select a recipient");
+      setError(tr("Please select a recipient"));
       return;
     }
     if (!message.trim()) {
-      setError("Please enter a message");
+      setError(tr("Please enter a message"));
       return;
     }
 
@@ -370,7 +370,7 @@ export function SendKudosPage() {
           ) : (
             <Send className="h-4 w-4" />
           )}
-          {submitting ? "Sending..." : "Send Kudos"}
+          {submitting ? tr("Sending...") : tr("Send Kudos")}
         </button>
       </form>
     </div>

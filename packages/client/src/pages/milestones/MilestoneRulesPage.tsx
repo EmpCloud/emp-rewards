@@ -91,7 +91,7 @@ export function MilestoneRulesPage() {
       resetForm();
       await fetchRules();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || `Failed to ${editingId ? "update" : "create"} rule`);
+      toast.error(err.response?.data?.error?.message || `Failed to ${editingId ? tr("update") : tr("create")} rule`);
     } finally {
       setSaving(false);
     }
@@ -156,7 +156,7 @@ export function MilestoneRulesPage() {
       {showForm && isAdmin && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            {editingId ? "Edit Rule" : "Create Rule"}
+            {editingId ? tr("Edit Rule") : tr("Create Rule")}
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -234,7 +234,7 @@ export function MilestoneRulesPage() {
               disabled={saving || !form.name}
               className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
-              {saving ? "Saving..." : editingId ? "Update Rule" : "Create Rule"}
+              {saving ? tr("Saving...") : editingId ? tr("Update Rule") : tr("Create Rule")}
             </button>
           </div>
         </div>

@@ -166,7 +166,7 @@ export function BadgeListPage() {
       {showForm && isAdmin && (
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingBadge ? "Edit Badge" : "Create New Badge"}
+            {editingBadge ? tr("Edit Badge") : tr("Create New Badge")}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -231,12 +231,12 @@ export function BadgeListPage() {
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                     placeholder={
                       formCriteriaType === "auto_kudos_count"
-                        ? "Number of kudos"
+                        ? tr("Number of kudos")
                         : formCriteriaType === "auto_points"
-                          ? "Points threshold"
+                          ? tr("Points threshold")
                           : formCriteriaType === "auto_kudos_streak"
-                            ? "Consecutive days"
-                            : "Months"
+                            ? tr("Consecutive days")
+                            : tr("Months")
                     }
                   />
                 </div>
@@ -254,7 +254,7 @@ export function BadgeListPage() {
                 className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
               >
                 {formSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {editingBadge ? "Save Changes" : "Create Badge"}
+                {editingBadge ? tr("Save Changes") : tr("Create Badge")}
               </button>
               <button
                 type="button"

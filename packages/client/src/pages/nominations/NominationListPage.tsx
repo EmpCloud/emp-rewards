@@ -84,7 +84,7 @@ export function NominationListPage() {
         setTotal(res.data.total);
       }
     } catch {
-      setError("Failed to load nominations");
+      setError(tr("Failed to load nominations"));
     } finally {
       setLoading(false);
     }
@@ -106,8 +106,8 @@ export function NominationListPage() {
       await apiPut(`/nominations/${id}/review`, { status });
       setSuccess(
         status === "selected"
-          ? "Nomination approved! Points have been awarded."
-          : "Nomination marked as not selected.",
+          ? tr("Nomination approved! Points have been awarded.")
+          : tr("Nomination marked as not selected."),
       );
       fetchNominations();
     } catch (err: any) {
@@ -143,8 +143,8 @@ export function NominationListPage() {
               <h1 className="text-2xl font-bold text-gray-900">{tr("Nominations")}</h1>
               <p className="mt-1 text-sm text-gray-500">
                 {isAdmin
-                  ? "Review and manage nominations across all programs."
-                  : "Track nominations you have submitted."}
+                  ? tr("Review and manage nominations across all programs.")
+                  : tr("Track nominations you have submitted.")}
               </p>
             </div>
           </div>

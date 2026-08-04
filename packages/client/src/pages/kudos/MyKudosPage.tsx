@@ -188,8 +188,8 @@ export function MyKudosPage() {
           <Heart className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
             {tab === "received"
-              ? "No kudos received yet."
-              : "No kudos sent yet. Go send some recognition!"}
+              ? tr("No kudos received yet.")
+              : tr("No kudos sent yet. Go send some recognition!")}
           </p>
         </div>
       ) : (
@@ -215,7 +215,7 @@ export function MyKudosPage() {
                         {tab === "received" ? (
                           <>
                             <span className="font-semibold">
-                              {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
+                              {kudos.is_anonymous ? tr("Anonymous") : kudos.sender_name || `User #${kudos.sender_id}`}
                             </span>
                             <span className="text-gray-500">  {tr("sent you kudos")}</span>
                           </>

@@ -275,7 +275,7 @@ export function DashboardPage() {
                     <p className="text-sm text-gray-900">
                       <span className="font-semibold">
                         {kudos.is_anonymous
-                          ? "Anonymous"
+                          ? tr("Anonymous")
                           : kudos.sender_name || `User #${kudos.sender_id}`}
                       </span>
                       <span className="text-gray-500">  {tr("recognized")} </span>
