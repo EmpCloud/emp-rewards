@@ -573,5 +573,13 @@
   "received": "已收到",
   "sent": "发送",
   "text": "文本",
-  "update": "更新"
+  "update": "更新",
+  "Badges & awards": "徽章和奖项",
+  "Leaderboards": "排行榜",
+  "Point system": "积分制度",
+  "Gift cards": "礼品卡",
+  "Recognition wall": "表彰墙",
+  "Sign in": "登入",
+  "Login failed": "登录失败",
+  "Login failed. Check your credentials.": "登录失败。检查您的凭据。"
 }

@@ -573,5 +573,13 @@
   "received": "reçu",
   "sent": "envoyé",
   "text": "texte",
-  "update": "mise à jour"
+  "update": "mise à jour",
+  "Badges & awards": "Insignes et récompenses",
+  "Leaderboards": "Classements",
+  "Point system": "Système de points",
+  "Gift cards": "Cartes cadeaux",
+  "Recognition wall": "Mur de reconnaissance",
+  "Sign in": "Se connecter",
+  "Login failed": "La connexion a échoué",
+  "Login failed. Check your credentials.": "La connexion a échoué. Vérifiez vos informations d'identification."
 }

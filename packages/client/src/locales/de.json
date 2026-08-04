@@ -573,5 +573,13 @@
   "received": "erhalten",
   "sent": "gesendet",
   "text": "Text",
-  "update": "aktualisieren"
+  "update": "aktualisieren",
+  "Badges & awards": "Abzeichen und Auszeichnungen",
+  "Leaderboards": "Bestenlisten",
+  "Point system": "Punktesystem",
+  "Gift cards": "Geschenkkarten",
+  "Recognition wall": "Anerkennungswand",
+  "Sign in": "anmelden",
+  "Login failed": "Fehler bei der Anmeldung",
+  "Login failed. Check your credentials.": "Fehler bei der Anmeldung. Überprüfen Sie Ihre Anmeldeinformationen."
 }

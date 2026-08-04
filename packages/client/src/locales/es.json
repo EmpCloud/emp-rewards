@@ -573,5 +573,13 @@
   "received": "recibió",
   "sent": "enviado",
   "text": "texto",
-  "update": "actualizar"
+  "update": "actualizar",
+  "Badges & awards": "Insignias y premios",
+  "Leaderboards": "Tablas de clasificación",
+  "Point system": "Sistema de puntos",
+  "Gift cards": "Tarjetas de regalo",
+  "Recognition wall": "Muro de reconocimiento",
+  "Sign in": "Iniciar sesión",
+  "Login failed": "error de inicio de sesion",
+  "Login failed. Check your credentials.": "Error de inicio de sesion. Verifique sus credenciales."
 }

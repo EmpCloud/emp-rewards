@@ -573,5 +573,13 @@
   "received": "recebido",
   "sent": "enviado",
   "text": "texto",
-  "update": "atualizar"
+  "update": "atualizar",
+  "Badges & awards": "Emblemas e prêmios",
+  "Leaderboards": "Tabelas de classificação",
+  "Point system": "Sistema de pontos",
+  "Gift cards": "Cartões-presente",
+  "Recognition wall": "Parede de reconhecimento",
+  "Sign in": "Entrar",
+  "Login failed": "falha no login",
+  "Login failed. Check your credentials.": "Falha no login. Verifique suas credenciais."
 }

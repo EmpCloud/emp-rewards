@@ -573,5 +573,13 @@
   "received": "تلقى",
   "sent": "مرسل",
   "text": "نص",
-  "update": "تحديث"
+  "update": "تحديث",
+  "Badges & awards": "الشارات والجوائز",
+  "Leaderboards": "المتصدرين",
+  "Point system": "نظام النقاط",
+  "Gift cards": "بطاقات الهدايا",
+  "Recognition wall": "جدار الاعتراف",
+  "Sign in": "تسجيل الدخول",
+  "Login failed": "فشل تسجيل الدخول",
+  "Login failed. Check your credentials.": "فشل تسجيل الدخول. تحقق من بيانات الاعتماد الخاصة بك."
 }

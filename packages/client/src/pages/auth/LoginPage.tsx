@@ -37,10 +37,10 @@ export function LoginPage() {
         toast.success(`Welcome back, ${res.data.user.firstName}!`);
         navigate("/dashboard");
       } else {
-        toast.error(res.error?.message || "Login failed");
+        toast.error(tr(res.error?.message || "Login failed"));
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Login failed. Check your credentials.");
+      toast.error(tr(err.response?.data?.error?.message || "Login failed. Check your credentials."));
     }
   }
 
@@ -70,7 +70,7 @@ export function LoginPage() {
             {FEATURES.map((feature) => (
               <div key={feature} className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-brand-300" />
-                <span className="text-sm text-brand-100">{feature}</span>
+                <span className="text-sm text-brand-100">{tr(feature)}</span>
               </div>
             ))}
           </div>
@@ -154,7 +154,7 @@ export function LoginPage() {
                     {tr("Signing in...")}
                   </>
                 ) : (
-                  "Sign in"
+                  tr("Sign in")
                 )}
               </button>
             </form>

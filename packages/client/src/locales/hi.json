@@ -573,5 +573,13 @@
   "received": "प्राप्त",
   "sent": "भेजा",
   "text": "मूलपाठ",
-  "update": "अद्यतन"
+  "update": "अद्यतन",
+  "Badges & awards": "बैज और पुरस्कार",
+  "Leaderboards": "लीडरबोर्ड",
+  "Point system": "बिंदु प्रणाली",
+  "Gift cards": "उपहार कार्ड",
+  "Recognition wall": "पहचान की दीवार",
+  "Sign in": "दाखिल करना",
+  "Login failed": "लॉगिन विफल",
+  "Login failed. Check your credentials.": "लॉगिन विफल। अपनी साख जांचें."
 }

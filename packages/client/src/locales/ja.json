@@ -573,5 +573,13 @@
   "received": "受け取った",
   "sent": "送信済み",
   "text": "文章",
-  "update": "アップデート"
+  "update": "アップデート",
+  "Badges & awards": "バッジと賞",
+  "Leaderboards": "リーダーボード",
+  "Point system": "ポイント制度",
+  "Gift cards": "ギフトカード",
+  "Recognition wall": "認識の壁",
+  "Sign in": "サインイン",
+  "Login failed": "ログインに失敗しました",
+  "Login failed. Check your credentials.": "ログインに失敗しました。資格情報を確認してください。"
 }

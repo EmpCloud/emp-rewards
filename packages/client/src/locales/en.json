@@ -573,5 +573,13 @@
   "received": "received",
   "sent": "sent",
   "text": "text",
-  "update": "update"
+  "update": "update",
+  "Badges & awards": "Badges & awards",
+  "Leaderboards": "Leaderboards",
+  "Point system": "Point system",
+  "Gift cards": "Gift cards",
+  "Recognition wall": "Recognition wall",
+  "Sign in": "Sign in",
+  "Login failed": "Login failed",
+  "Login failed. Check your credentials.": "Login failed. Check your credentials."
 }
