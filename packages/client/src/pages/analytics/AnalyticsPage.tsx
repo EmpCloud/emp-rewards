@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   BarChart3, TrendingUp, Award, Gift, Target, Coins,
-  Heart, Sparkles, Trophy, Crown, Medal,
+  Heart, Sparkles, Trophy, Crown, Medal, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import {
-  AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { apiGet } from "@/api/client";
@@ -68,13 +68,16 @@ const PIE_COLORS = [
 
 type StatTone = "amber" | "indigo" | "emerald" | "violet" | "rose" | "sky";
 
-const STAT_TONES: Record<StatTone, { bg: string; ring: string; icon: string; value: string }> = {
-  amber:   { bg: "bg-amber-50",   ring: "ring-amber-100",   icon: "bg-amber-500 text-white",   value: "text-amber-700" },
-  indigo:  { bg: "bg-indigo-50",  ring: "ring-indigo-100",  icon: "bg-indigo-500 text-white",  value: "text-indigo-700" },
-  emerald: { bg: "bg-emerald-50", ring: "ring-emerald-100", icon: "bg-emerald-500 text-white", value: "text-emerald-700" },
-  violet:  { bg: "bg-violet-50",  ring: "ring-violet-100",  icon: "bg-violet-500 text-white",  value: "text-violet-700" },
-  rose:    { bg: "bg-rose-50",    ring: "ring-rose-100",    icon: "bg-rose-500 text-white",    value: "text-rose-700" },
-  sky:     { bg: "bg-sky-50",     ring: "ring-sky-100",     icon: "bg-sky-500 text-white",     value: "text-sky-700" },
+// Restrained, enterprise-style tones: a subtle tinted icon chip carries the
+// per-metric colour, while the value stays neutral (near-black) so the number
+// reads first and the six cards feel like one calm set rather than a rainbow.
+const STAT_TONES: Record<StatTone, string> = {
+  amber:   "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
+  indigo:  "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400",
+  emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
+  violet:  "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
+  rose:    "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
+  sky:     "bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400",
 };
 
 function StatCard({
@@ -90,23 +93,18 @@ function StatCard({
   sub?: string;
   tone: StatTone;
 }) {
-  const t = STAT_TONES[tone];
   return (
-    <div
-      className={`rounded-xl border border-gray-200 bg-white p-4 ring-1 ${t.ring} transition-shadow hover:shadow-sm`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-          <p className={`mt-1 text-2xl font-bold ${t.value}`}>
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </p>
-          {sub && <p className="mt-0.5 text-[11px] text-gray-400">{sub}</p>}
-        </div>
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${t.icon}`}>
+    <div className="rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300">
+      <div className="flex items-center gap-2.5">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${STAT_TONES[tone]}`}>
           <Icon className="h-4 w-4" />
         </div>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
       </div>
+      <p className="mt-3 text-[26px] font-bold leading-none tracking-tight text-gray-900">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+      {sub && <p className="mt-1.5 text-[11px] text-gray-400">{sub}</p>}
     </div>
   );
 }
@@ -149,6 +147,40 @@ function EmptyChart({ icon: Icon, title, hint }: { icon: any; title: string; hin
       <p className="mt-3 text-sm font-medium text-gray-700">{title}</p>
       {hint && <p className="mt-1 max-w-xs text-xs text-gray-400">{hint}</p>}
     </div>
+  );
+}
+
+// Period-over-period delta for the trends headline: compares the two most
+// recent buckets so the chart carries a "↑ 12% vs previous" signal rather
+// than a bare total. Renders nothing when there isn't a clean prior bucket to
+// compare against (avoids a misleading +100% off a zero base).
+function TrendDelta({ trends }: { trends: TrendPoint[] }) {
+  if (trends.length < 2) return null;
+  const curr = trends[trends.length - 1].kudos_count;
+  const prev = trends[trends.length - 2].kudos_count;
+  if (prev === 0) return null;
+  const pct = Math.round(((curr - prev) / prev) * 100);
+  if (pct === 0) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500">
+        0%
+      </span>
+    );
+  }
+  const up = pct > 0;
+  return (
+    <span
+      title="vs previous period"
+      className={
+        "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold " +
+        (up
+          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+          : "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400")
+      }
+    >
+      {up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+      {Math.abs(pct)}%
+    </span>
   );
 }
 
@@ -286,7 +318,7 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Analytics</h1>
           <p className="mt-1 text-sm text-gray-500">Recognition trends, engagement metrics, and reports.</p>
         </div>
         {/* Range chips — drive the Kudos Trends fetch. Stat cards, top-user
@@ -323,12 +355,12 @@ export function AnalyticsPage() {
           and pinned right so the number reads first. */}
       {overview && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          <StatCard icon={Heart}        tone="amber"   label="Total Kudos"        value={overview.totalKudos} />
-          <StatCard icon={Coins}        tone="indigo"  label="Points Distributed" value={overview.pointsDistributed} />
-          <StatCard icon={Award}        tone="emerald" label="Badges Awarded"     value={overview.badgesAwarded} />
-          <StatCard icon={Target}       tone="violet"  label="Active Programs"    value={overview.activePrograms} />
-          <StatCard icon={Gift}         tone="rose"    label="Redemptions"        value={overview.totalRedemptions} />
-          <StatCard icon={TrendingUp}   tone="sky"     label="Points Redeemed"    value={overview.pointsRedeemed} />
+          <StatCard icon={Heart}        tone="amber"   label="Total Kudos"        value={overview.totalKudos}        sub="Recognition sent" />
+          <StatCard icon={Coins}        tone="indigo"  label="Points Distributed" value={overview.pointsDistributed} sub="Awarded to date" />
+          <StatCard icon={Award}        tone="emerald" label="Badges Awarded"     value={overview.badgesAwarded}     sub="Milestones hit" />
+          <StatCard icon={Target}       tone="violet"  label="Active Programs"    value={overview.activePrograms}    sub="Running now" />
+          <StatCard icon={Gift}         tone="rose"    label="Redemptions"        value={overview.totalRedemptions}  sub="Rewards claimed" />
+          <StatCard icon={TrendingUp}   tone="sky"     label="Points Redeemed"    value={overview.pointsRedeemed}    sub="Spent on rewards" />
         </div>
       )}
 
@@ -356,9 +388,12 @@ export function AnalyticsPage() {
             {trends.length > 0 && (
               <div className="text-right">
                 <p className="text-xs text-gray-400">Period total</p>
-                <p className="text-base font-bold text-amber-700">
-                  {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString()}
-                </p>
+                <div className="flex items-center justify-end gap-2">
+                  <p className="text-base font-bold text-gray-900">
+                    {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString()}
+                  </p>
+                  <TrendDelta trends={trends} />
+                </div>
               </div>
             )}
           </div>
@@ -464,60 +499,28 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Department Participation — gradient bar fill, no axis labels on
-          the right edge to maximise the bar area. */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="mb-4">
+      {/* Department Participation — a compact metrics table (departments,
+          headcount, active senders/receivers, and a participation rate with
+          an inline bar). A table reads far better than a bar chart here
+          because participation rates cluster near the top, where equal-length
+          amber bars carry almost no signal. Sorted by participation desc. */}
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-5 py-4">
           <h3 className="text-sm font-semibold text-gray-900">Department Participation</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             Share of employees per department who have sent or received kudos
           </p>
         </div>
         {departments.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={departments} layout="vertical" margin={{ top: 10, right: 30, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="deptGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#fbbf24" />
-                  <stop offset="100%" stopColor="#f59e0b" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 11 }}
-                stroke="#9ca3af"
-                tickLine={false}
-                domain={[0, 100]}
-                unit="%"
-              />
-              <YAxis
-                dataKey="department_name"
-                type="category"
-                width={120}
-                tick={{ fontSize: 12, fill: "#374151" }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                cursor={{ fill: "rgba(245, 158, 11, 0.06)" }}
-                contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
-                formatter={(value: any) => [`${value}%`, "Participation"]}
-              />
-              <Bar
-                dataKey="participationRate"
-                fill="url(#deptGradient)"
-                radius={[0, 6, 6, 0]}
-                background={{ fill: "#f9fafb", radius: 6 }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <DepartmentTable departments={departments} />
         ) : (
-          <EmptyChart
-            icon={BarChart3}
-            title="No department data yet"
-            hint="Once kudos flow across departments, participation rates plot here."
-          />
+          <div className="p-5">
+            <EmptyChart
+              icon={BarChart3}
+              title="No department data yet"
+              hint="Once kudos flow across departments, participation rates plot here."
+            />
+          </div>
         )}
       </div>
 
@@ -607,6 +610,70 @@ function TopUserList({
           })}
         </ol>
       )}
+    </div>
+  );
+}
+
+// Participation rate → colour band. High engagement reads green, mid amber,
+// low rose — so a glance down the column surfaces which departments are
+// lagging, which a single-colour bar chart couldn't convey.
+function participationTone(rate: number) {
+  if (rate >= 80) return { bar: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400" };
+  if (rate >= 60) return { bar: "bg-amber-500", text: "text-amber-700 dark:text-amber-400" };
+  return { bar: "bg-rose-500", text: "text-rose-700 dark:text-rose-400" };
+}
+
+function DepartmentTable({ departments }: { departments: DeptParticipation[] }) {
+  const rows = [...departments].sort((a, b) => b.participationRate - a.participationRate);
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[620px] table-fixed text-sm">
+        {/* Fixed column widths so the three numeric columns are evenly
+            distributed instead of collapsing to their content and dumping all
+            slack into the last column. */}
+        <colgroup>
+          <col className="w-[28%]" />
+          <col className="w-[13%]" />
+          <col className="w-[13%]" />
+          <col className="w-[13%]" />
+          <col className="w-[33%]" />
+        </colgroup>
+        <thead>
+          <tr className="border-b border-gray-200 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            <th className="px-5 py-2.5 font-semibold">Department</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Employees</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Senders</th>
+            <th className="px-3 py-2.5 text-center font-semibold">Receivers</th>
+            <th className="px-5 py-2.5 font-semibold">Participation</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((d) => {
+            const tone = participationTone(d.participationRate);
+            return (
+              <tr key={d.department_name} className="hover:bg-gray-50">
+                <td className="px-5 py-3 font-medium text-gray-900">{d.department_name}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.total_employees}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.active_senders}</td>
+                <td className="px-3 py-3 text-center tabular-nums text-gray-600">{d.active_receivers}</td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className={`h-full rounded-full ${tone.bar}`}
+                        style={{ width: `${Math.min(100, Math.max(0, d.participationRate))}%` }}
+                      />
+                    </div>
+                    <span className={`w-10 shrink-0 text-right text-xs font-semibold tabular-nums ${tone.text}`}>
+                      {d.participationRate}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
