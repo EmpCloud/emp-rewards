@@ -82,7 +82,7 @@ function BudgetCard({
               {budget.owner_name ||
                 (budget.budget_type === "department"
                   ? `Department ${budget.department_id ?? ""}`.trim()
-                  : `Owner #${budget.owner_id}`)}
+                  : `${tr("Owner")} #${budget.owner_id}`)}
             </p>
             <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium capitalize text-gray-600">
               {budget.budget_type}

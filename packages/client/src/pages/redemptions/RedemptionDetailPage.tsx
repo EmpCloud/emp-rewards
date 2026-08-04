@@ -172,7 +172,7 @@ export function RedemptionDetailPage() {
                 )}
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">{reward?.name || "Reward"}</h3>
+                <h3 className="font-medium text-gray-900">{reward?.name || tr("Reward")}</h3>
                 {reward?.description && (
                   <p className="mt-1 text-sm text-gray-500">{tr(reward.description)}</p>
                 )}

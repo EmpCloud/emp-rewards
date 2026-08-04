@@ -295,7 +295,7 @@ export function ChallengeDetailPage() {
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm font-medium truncate", isMe ? "text-brand-700" : "text-gray-900")}>
                     {p.first_name} {p.last_name}
-                    {isMe && " (you)"}
+                    {isMe && ` ${tr("(you)")}`}
                   </p>
                   <p className="text-xs text-gray-500">{p.designation}</p>
                 </div>

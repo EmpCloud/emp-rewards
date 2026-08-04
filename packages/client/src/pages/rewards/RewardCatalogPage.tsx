@@ -103,7 +103,7 @@ export function RewardCatalogPage() {
 
     try {
       await apiPost(`/rewards/${rewardId}/redeem`);
-      setSuccess(`Successfully redeemed "${rewardName}"!`);
+      setSuccess(`${tr("Successfully redeemed")} "${rewardName}"!`);
       // Auto-dismiss so a stale banner doesn't linger and look like it
       // applies to the current (now-reduced) balance.
       window.setTimeout(() => setSuccess(null), 4000);
@@ -369,9 +369,9 @@ export function RewardCatalogPage() {
                     {isRedeeming ? (
                       <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                     ) : outOfStock ? (
-                      "Out of Stock"
+                      tr("Out of Stock")
                     ) : !canAfford ? (
-                      "Insufficient Points"
+                      tr("Insufficient Points")
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         <ShoppingCart className="h-4 w-4" />

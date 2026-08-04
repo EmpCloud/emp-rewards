@@ -395,7 +395,7 @@ export function AnalyticsPage() {
             <EmptyChart
               icon={TrendingUp}
               title={tr("No trend data yet")}
-              hint="Once your team starts sending kudos, weekly volume will plot here."
+              hint={tr("Once your team starts sending kudos, weekly volume will plot here.")}
             />
           )}
         </div>
@@ -460,7 +460,7 @@ export function AnalyticsPage() {
             <EmptyChart
               icon={Sparkles}
               title={tr("No category breakdown yet")}
-              hint="Send kudos with a category attached and they'll show up grouped here."
+              hint={tr("Send kudos with a category attached and they'll show up grouped here.")}
             />
           )}
         </div>
@@ -505,7 +505,7 @@ export function AnalyticsPage() {
               <Tooltip
                 cursor={{ fill: "rgba(245, 158, 11, 0.06)" }}
                 contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
-                formatter={(value: any) => [`${value}%`, "Participation"]}
+                formatter={(value: any) => [`${value}%`, tr("Participation")]}
               />
               <Bar
                 dataKey="participationRate"
@@ -519,7 +519,7 @@ export function AnalyticsPage() {
           <EmptyChart
             icon={BarChart3}
             title={tr("No department data yet")}
-            hint="Once kudos flow across departments, participation rates plot here."
+            hint={tr("Once kudos flow across departments, participation rates plot here.")}
           />
         )}
       </div>

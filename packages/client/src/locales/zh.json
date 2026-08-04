@@ -581,5 +581,20 @@
   "Recognition wall": "表彰墙",
   "Sign in": "登入",
   "Login failed": "登录失败",
-  "Login failed. Check your credentials.": "登录失败。检查您的凭据。"
+  "Login failed. Check your credentials.": "登录失败。检查您的凭据。",
+  "Once your team starts sending kudos, weekly volume will plot here.": "一旦您的团队开始发送荣誉，每周的数量将在此处绘制。",
+  "Send kudos with a category attached and they'll show up grouped here.": "发送附有类别的荣誉，它们将显示在此处。",
+  "Participation": "参与",
+  "Once kudos flow across departments, participation rates plot here.": "一旦荣誉在各个部门之间流动，参与率就会出现在此处。",
+  "Org avg:": "组织平均：",
+  "Team Kudos": "团队荣誉",
+  "Milestone": "里程碑",
+  "Owner": "所有者",
+  "(you)": "（你）",
+  "of nomination(s) used": "使用的提名数",
+  "No redemptions found.": "没有找到赎回。",
+  "Reward": "报酬",
+  "Out of Stock": "缺货",
+  "Insufficient Points": "积分不足",
+  "Successfully redeemed": "兑换成功"
 }

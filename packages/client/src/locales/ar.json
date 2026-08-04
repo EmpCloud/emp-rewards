@@ -581,5 +581,20 @@
   "Recognition wall": "جدار الاعتراف",
   "Sign in": "تسجيل الدخول",
   "Login failed": "فشل تسجيل الدخول",
-  "Login failed. Check your credentials.": "فشل تسجيل الدخول. تحقق من بيانات الاعتماد الخاصة بك."
+  "Login failed. Check your credentials.": "فشل تسجيل الدخول. تحقق من بيانات الاعتماد الخاصة بك.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "بمجرد أن يبدأ فريقك في إرسال الثناء، سيتم عرض المجلد الأسبوعي هنا.",
+  "Send kudos with a category attached and they'll show up grouped here.": "أرسل التكريم مع فئة مرفقة وستظهر مجمعة هنا.",
+  "Participation": "مشاركة",
+  "Once kudos flow across departments, participation rates plot here.": "بمجرد تدفق الشهرة عبر الأقسام، يتم رسم معدلات المشاركة هنا.",
+  "Org avg:": "متوسط ​​المؤسسة:",
+  "Team Kudos": "مجد الفريق",
+  "Milestone": "منعطف",
+  "Owner": "مالك",
+  "(you)": "(أنت)",
+  "of nomination(s) used": "من الترشيح (الترشيحات) المستخدمة",
+  "No redemptions found.": "لم يتم العثور على أي عمليات استرداد.",
+  "Reward": "جائزة",
+  "Out of Stock": "إنتهى من المخزن",
+  "Insufficient Points": "نقاط غير كافية",
+  "Successfully redeemed": "تم الاسترداد بنجاح"
 }

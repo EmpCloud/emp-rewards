@@ -190,7 +190,7 @@ export function DashboardLayout() {
           {collapsed ? (
             <button
               onClick={logout}
-              title={`${displayName} — Sign out`}
+              title={`${displayName} — ${tr("Sign out")}`}
               className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-700 text-sm font-semibold hover:bg-brand-200"
             >
               {getInitials(displayName)}

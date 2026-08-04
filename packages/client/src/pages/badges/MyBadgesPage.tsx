@@ -234,7 +234,7 @@ export function MyBadgesPage() {
                   <Target className="h-7 w-7" />
                 </div>
                 <h3 className="mt-3 text-base font-semibold text-gray-900">
-                  {m.rule_name || "Milestone"}
+                  {m.rule_name || tr("Milestone")}
                 </h3>
                 {m.rule_description && (
                   <p className="mt-1 text-sm text-gray-500">{m.rule_description}</p>

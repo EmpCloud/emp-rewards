@@ -161,7 +161,7 @@ export function RedemptionListPage() {
           <ShoppingCart className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
             {activeTab !== "all"
-              ? `No ${activeTab} redemptions found.`
+              ? `${tr("No redemptions found.")} (${tr(activeTab)})`
               : tr("No redemptions yet.")}
           </p>
         </div>

@@ -581,5 +581,20 @@
   "Recognition wall": "Recognition wall",
   "Sign in": "Sign in",
   "Login failed": "Login failed",
-  "Login failed. Check your credentials.": "Login failed. Check your credentials."
+  "Login failed. Check your credentials.": "Login failed. Check your credentials.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "Once your team starts sending kudos, weekly volume will plot here.",
+  "Send kudos with a category attached and they'll show up grouped here.": "Send kudos with a category attached and they'll show up grouped here.",
+  "Participation": "Participation",
+  "Once kudos flow across departments, participation rates plot here.": "Once kudos flow across departments, participation rates plot here.",
+  "Org avg:": "Org avg:",
+  "Team Kudos": "Team Kudos",
+  "Milestone": "Milestone",
+  "Owner": "Owner",
+  "(you)": "(you)",
+  "of nomination(s) used": "of nomination(s) used",
+  "No redemptions found.": "No redemptions found.",
+  "Reward": "Reward",
+  "Out of Stock": "Out of Stock",
+  "Insufficient Points": "Insufficient Points",
+  "Successfully redeemed": "Successfully redeemed"
 }

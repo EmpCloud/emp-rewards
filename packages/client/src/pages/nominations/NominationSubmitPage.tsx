@@ -298,8 +298,8 @@ export function NominationSubmitPage() {
                       <span className="inline-flex items-center gap-1">
                         <Users className="h-3.5 w-3.5 text-gray-400" />
                         {myUsedCount !== null
-                          ? `${myUsedCount} of ${selectedProgram.nominations_per_user} nomination(s) used`
-                          : `${selectedProgram.nominations_per_user} nomination(s) per person`}
+                          ? `${myUsedCount}/${selectedProgram.nominations_per_user} ${tr("of nomination(s) used")}`
+                          : `${selectedProgram.nominations_per_user} ${tr("nomination(s) per person")}`}
                       </span>
                     </div>
                   </div>

@@ -261,7 +261,7 @@ export function ManagerDashboardPage() {
           icon={TrendingUp}
           label={tr("Engagement Score")}
           value={dashboard.engagementScore}
-          sub={`Org avg: ${dashboard.orgAverageEngagement}`}
+          sub={`${tr("Org avg:")} ${dashboard.orgAverageEngagement}`}
           color="bg-green-500"
         />
       </div>
@@ -326,7 +326,7 @@ export function ManagerDashboardPage() {
                   stroke="#f59e0b"
                   strokeWidth={2}
                   dot={{ fill: "#f59e0b", r: 4 }}
-                  name="Team Kudos"
+                  name={tr("Team Kudos")}
                 />
                 <Legend />
               </LineChart>

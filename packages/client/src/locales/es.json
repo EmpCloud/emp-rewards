@@ -581,5 +581,20 @@
   "Recognition wall": "Muro de reconocimiento",
   "Sign in": "Iniciar sesión",
   "Login failed": "error de inicio de sesion",
-  "Login failed. Check your credentials.": "Error de inicio de sesion. Verifique sus credenciales."
+  "Login failed. Check your credentials.": "Error de inicio de sesion. Verifique sus credenciales.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "Una vez que su equipo comience a enviar felicitaciones, el volumen semanal se trazará aquí.",
+  "Send kudos with a category attached and they'll show up grouped here.": "Envíe felicitaciones con una categoría adjunta y aparecerán agrupadas aquí.",
+  "Participation": "Participación",
+  "Once kudos flow across departments, participation rates plot here.": "Una vez que los elogios fluyen entre los departamentos, las tasas de participación se trazan aquí.",
+  "Org avg:": "Promedio organizacional:",
+  "Team Kudos": "Felicitaciones al equipo",
+  "Milestone": "Hito",
+  "Owner": "Dueño",
+  "(you)": "(tú)",
+  "of nomination(s) used": "de nominaciones utilizadas",
+  "No redemptions found.": "No se encontraron canjes.",
+  "Reward": "Premio",
+  "Out of Stock": "Agotado",
+  "Insufficient Points": "Puntos insuficientes",
+  "Successfully redeemed": "Canjeado con éxito"
 }

@@ -34,7 +34,7 @@ export function LoginPage() {
       const res = await loginMutation.mutateAsync({ email, password });
       if (res.success) {
         login(res.data.user, res.data.tokens);
-        toast.success(`Welcome back, ${res.data.user.firstName}!`);
+        toast.success(`${tr("Welcome back")}, ${res.data.user.firstName}!`);
         navigate("/dashboard");
       } else {
         toast.error(tr(res.error?.message || "Login failed"));

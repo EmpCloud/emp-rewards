@@ -581,5 +581,20 @@
   "Recognition wall": "Mur de reconnaissance",
   "Sign in": "Se connecter",
   "Login failed": "La connexion a échoué",
-  "Login failed. Check your credentials.": "La connexion a échoué. Vérifiez vos informations d'identification."
+  "Login failed. Check your credentials.": "La connexion a échoué. Vérifiez vos informations d'identification.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "Une fois que votre équipe commence à envoyer des félicitations, le volume hebdomadaire sera tracé ici.",
+  "Send kudos with a category attached and they'll show up grouped here.": "Envoyez des félicitations avec une catégorie attachée et elles apparaîtront regroupées ici.",
+  "Participation": "Participation",
+  "Once kudos flow across departments, participation rates plot here.": "Une fois que les félicitations circulent à travers les départements, les taux de participation sont tracés ici.",
+  "Org avg:": "Moyenne de l'organisation :",
+  "Team Kudos": "Félicitations à l'équipe",
+  "Milestone": "Jalon",
+  "Owner": "Propriétaire",
+  "(you)": "(toi)",
+  "of nomination(s) used": "de candidature(s) utilisée(s)",
+  "No redemptions found.": "Aucun rachat trouvé.",
+  "Reward": "Récompense",
+  "Out of Stock": "En rupture de stock",
+  "Insufficient Points": "Points insuffisants",
+  "Successfully redeemed": "Récupéré avec succès"
 }

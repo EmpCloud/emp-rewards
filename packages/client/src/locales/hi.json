@@ -581,5 +581,20 @@
   "Recognition wall": "पहचान की दीवार",
   "Sign in": "दाखिल करना",
   "Login failed": "लॉगिन विफल",
-  "Login failed. Check your credentials.": "लॉगिन विफल। अपनी साख जांचें."
+  "Login failed. Check your credentials.": "लॉगिन विफल। अपनी साख जांचें.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "एक बार जब आपकी टीम प्रशंसा भेजना शुरू कर देगी, तो साप्ताहिक वॉल्यूम यहां प्लॉट किया जाएगा।",
+  "Send kudos with a category attached and they'll show up grouped here.": "एक श्रेणी संलग्न करके प्रशंसा भेजें और वे यहां समूहीकृत दिखाई देंगी।",
+  "Participation": "भाग लेना",
+  "Once kudos flow across departments, participation rates plot here.": "एक बार जब विभागों में प्रशंसा प्रवाहित हो जाती है, तो भागीदारी दरें यहां आ जाती हैं।",
+  "Org avg:": "संगठन का औसत:",
+  "Team Kudos": "टीम को साधुवाद",
+  "Milestone": "मील का पत्थर",
+  "Owner": "मालिक",
+  "(you)": "(आप)",
+  "of nomination(s) used": "उपयोग किए गए नामांकन(नामों) का",
+  "No redemptions found.": "कोई मोचन नहीं मिला.",
+  "Reward": "इनाम",
+  "Out of Stock": "स्टॉक ख़त्म",
+  "Insufficient Points": "अपर्याप्त अंक",
+  "Successfully redeemed": "सफलतापूर्वक छुड़ाया गया"
 }

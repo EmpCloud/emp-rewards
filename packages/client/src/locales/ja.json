@@ -581,5 +581,20 @@
   "Recognition wall": "認識の壁",
   "Sign in": "サインイン",
   "Login failed": "ログインに失敗しました",
-  "Login failed. Check your credentials.": "ログインに失敗しました。資格情報を確認してください。"
+  "Login failed. Check your credentials.": "ログインに失敗しました。資格情報を確認してください。",
+  "Once your team starts sending kudos, weekly volume will plot here.": "チームが称賛の送信を開始すると、週ごとのボリュームがここにプロットされます。",
+  "Send kudos with a category attached and they'll show up grouped here.": "カテゴリを付けて称賛を送信すると、ここにグループ化されて表示されます。",
+  "Participation": "参加",
+  "Once kudos flow across departments, participation rates plot here.": "賞賛の声が部門を超えて流れると、参加率がここにプロットされます。",
+  "Org avg:": "組織の平均:",
+  "Team Kudos": "チームの称賛",
+  "Milestone": "マイルストーン",
+  "Owner": "所有者",
+  "(you)": "（あなた）",
+  "of nomination(s) used": "使用された推薦の数",
+  "No redemptions found.": "償還は見つかりませんでした。",
+  "Reward": "褒美",
+  "Out of Stock": "在庫切れ",
+  "Insufficient Points": "ポイントが不足しています",
+  "Successfully redeemed": "正常に引き換えられました"
 }

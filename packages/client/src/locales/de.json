@@ -581,5 +581,20 @@
   "Recognition wall": "Anerkennungswand",
   "Sign in": "anmelden",
   "Login failed": "Fehler bei der Anmeldung",
-  "Login failed. Check your credentials.": "Fehler bei der Anmeldung. Überprüfen Sie Ihre Anmeldeinformationen."
+  "Login failed. Check your credentials.": "Fehler bei der Anmeldung. Überprüfen Sie Ihre Anmeldeinformationen.",
+  "Once your team starts sending kudos, weekly volume will plot here.": "Sobald Ihr Team anfängt, Kudos zu senden, wird hier das wöchentliche Volumen angezeigt.",
+  "Send kudos with a category attached and they'll show up grouped here.": "Senden Sie Kudos mit einer angehängten Kategorie und sie werden hier gruppiert angezeigt.",
+  "Participation": "Teilnahme",
+  "Once kudos flow across departments, participation rates plot here.": "Sobald Anerkennung über Abteilungen hinweg fließt, werden hier die Beteiligungsquoten dargestellt.",
+  "Org avg:": "Organisationsdurchschnitt:",
+  "Team Kudos": "Ein großes Lob an das Team",
+  "Milestone": "Meilenstein",
+  "Owner": "Eigentümer",
+  "(you)": "(Du)",
+  "of nomination(s) used": "Anzahl der verwendeten Nominierungen",
+  "No redemptions found.": "Keine Einlösungen gefunden.",
+  "Reward": "Belohnen",
+  "Out of Stock": "Ausverkauft",
+  "Insufficient Points": "Unzureichende Punkte",
+  "Successfully redeemed": "Erfolgreich eingelöst"
 }
