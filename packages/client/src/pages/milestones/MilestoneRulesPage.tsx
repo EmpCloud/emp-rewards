@@ -176,14 +176,14 @@ export function MilestoneRulesPage() {
                 onChange={(e) => setForm({ ...form, trigger_type: e.target.value })}
               >
                 {Object.entries(TRIGGER_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>{tr(label)}</option>
                 ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
 
-                {tr("Trigger Value (")}{TRIGGER_DESCRIPTIONS[form.trigger_type]})
+                {tr("Trigger Value (")}{tr(TRIGGER_DESCRIPTIONS[form.trigger_type])})
               </label>
               <input
                 type="number"
@@ -282,10 +282,10 @@ export function MilestoneRulesPage() {
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
-                  {TRIGGER_LABELS[rule.trigger_type] || rule.trigger_type}
+                  {tr(TRIGGER_LABELS[rule.trigger_type] || rule.trigger_type)}
                 </span>
                 <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                  {rule.trigger_value} {TRIGGER_DESCRIPTIONS[rule.trigger_type]}
+                  {rule.trigger_value} {tr(TRIGGER_DESCRIPTIONS[rule.trigger_type])}
                 </span>
                 {rule.reward_points > 0 && (
                   <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">

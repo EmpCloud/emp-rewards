@@ -596,5 +596,20 @@
   "Reward": "褒美",
   "Out of Stock": "在庫切れ",
   "Insufficient Points": "ポイントが不足しています",
-  "Successfully redeemed": "正常に引き換えられました"
+  "Successfully redeemed": "正常に引き換えられました",
+  "Solo": "個人",
+  "One-time": "一回限り",
+  "Weekly": "毎週",
+  "Work Anniversary": "勤続記念日",
+  "Total Points": "合計ポイント",
+  "Referrals Hired": "採用された紹介者",
+  "First Kudos Sent": "最初の称賛を送信",
+  "years of service": "勤続年数",
+  "kudos received": "受け取った称賛",
+  "total points earned": "獲得ポイント合計",
+  "badges earned": "獲得したバッジ",
+  "referrals hired": "採用された紹介者",
+  "kudos sent": "送信した称賛",
+  "Tenure": "勤続期間",
+  "Kudos Streak": "称賛の連続記録"
 }

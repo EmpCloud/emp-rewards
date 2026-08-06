@@ -596,5 +596,20 @@
   "Reward": "报酬",
   "Out of Stock": "缺货",
   "Insufficient Points": "积分不足",
-  "Successfully redeemed": "兑换成功"
+  "Successfully redeemed": "兑换成功",
+  "Solo": "个人",
+  "One-time": "一次性",
+  "Weekly": "每周",
+  "Work Anniversary": "工作周年",
+  "Total Points": "总积分",
+  "Referrals Hired": "已聘用推荐人",
+  "First Kudos Sent": "首次发送赞赏",
+  "years of service": "服务年限",
+  "kudos received": "收到的赞赏",
+  "total points earned": "获得的总积分",
+  "badges earned": "获得的徽章",
+  "referrals hired": "已聘用推荐人",
+  "kudos sent": "发送的赞赏",
+  "Tenure": "任职年限",
+  "Kudos Streak": "连续赞赏"
 }

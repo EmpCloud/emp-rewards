@@ -312,7 +312,7 @@ export function AnalyticsPage() {
                       : "text-gray-500 hover:bg-gray-50 hover:text-gray-700")
                   }
                 >
-                  {RANGE_LABELS[r]}
+                  {tr(RANGE_LABELS[r])}
                 </button>
               );
             })}
