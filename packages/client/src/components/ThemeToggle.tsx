@@ -1,5 +1,6 @@
 import { useTheme } from "@/lib/theme";
 import { Sun, Moon, Monitor } from "lucide-react";
+import { tr } from "@/lib/i18n";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -19,7 +20,7 @@ export function ThemeToggle() {
           <button
             key={opt.value}
             onClick={() => setTheme(opt.value)}
-            title={opt.label}
+            title={tr(opt.label)}
             aria-label={`${opt.label} theme`}
             className={`rounded-md p-1.5 transition-colors ${
               active

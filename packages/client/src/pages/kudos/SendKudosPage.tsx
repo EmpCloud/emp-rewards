@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, Search, Send, ArrowLeft, Loader2 } from "lucide-react";
 import { apiPost, apiGet } from "@/api/client";
 import { cn } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface Employee {
   id: number;
@@ -79,11 +80,11 @@ export function SendKudosPage() {
     setError(null);
 
     if (!selectedRecipient) {
-      setError("Please select a recipient");
+      setError(tr("Please select a recipient"));
       return;
     }
     if (!message.trim()) {
-      setError("Please enter a message");
+      setError(tr("Please enter a message"));
       return;
     }
 
@@ -115,8 +116,8 @@ export function SendKudosPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <Heart className="h-8 w-8 text-green-600" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">Kudos Sent!</h2>
-          <p className="mt-1 text-sm text-gray-500">Your recognition has been shared.</p>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">{tr("Kudos Sent!")}</h2>
+          <p className="mt-1 text-sm text-gray-500">{tr("Your recognition has been shared.")}</p>
         </div>
       </div>
     );
@@ -132,15 +133,15 @@ export function SendKudosPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Send Kudos</h1>
-          <p className="mt-1 text-sm text-gray-500">Recognize a colleague for their great work.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Send Kudos")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Recognize a colleague for their great work.")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 overflow-visible">
         {/* Recipient search */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Recipient</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr("Recipient")}</label>
           {selectedRecipient ? (
             <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
               <div>
@@ -157,7 +158,8 @@ export function SendKudosPage() {
                 }}
                 className="text-xs text-amber-600 hover:text-amber-700 font-medium"
               >
-                Change
+
+                {tr("Change")}
               </button>
             </div>
           ) : (
@@ -165,7 +167,7 @@ export function SendKudosPage() {
               <Search className="absolute left-3 top-[13px] h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search employees by name or email..."
+                placeholder={tr("Search employees by name or email...")}
                 value={recipientSearch}
                 onChange={(e) => {
                   setRecipientSearch(e.target.value);
@@ -204,18 +206,20 @@ export function SendKudosPage() {
               )}
               {showDropdown && recipientSearch.length > 0 && recipients.length === 0 && (
                 <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 shadow-lg">
-                  No matching employees found.
+
+                  {tr("No matching employees found.")}
                 </div>
               )}
               <p className="mt-1 text-xs text-gray-400">
-                Enter the Employee ID number directly if search is unavailable
+
+                {tr("Enter the Employee ID number directly if search is unavailable")}
               </p>
               {/* Manual ID entry fallback */}
               <div className="mt-2 flex items-center gap-2">
                 <input
                   id="manual-employee-id"
                   type="number"
-                  placeholder="Or enter Employee ID"
+                  placeholder={tr("Or enter Employee ID")}
                   className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -250,7 +254,8 @@ export function SendKudosPage() {
                   }}
                   className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 >
-                  Select
+
+                  {tr("Select")}
                 </button>
               </div>
             </div>
@@ -259,7 +264,7 @@ export function SendKudosPage() {
 
         {/* Category */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr("Category")}</label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {categories.map((cat) => (
               <button
@@ -281,7 +286,7 @@ export function SendKudosPage() {
                 </span>
                 <div>
                   <p className="font-medium text-gray-900">{cat.name}</p>
-                  <p className="text-xs text-amber-600">{Number(cat.points_multiplier ?? 1)}x points</p>
+                  <p className="text-xs text-amber-600">{Number(cat.points_multiplier ?? 1)}{tr("x points")}</p>
                 </div>
               </button>
             ))}
@@ -290,10 +295,10 @@ export function SendKudosPage() {
 
         {/* Message */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Message</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr("Message")}</label>
           <textarea
             rows={4}
-            placeholder="Tell them why you appreciate their work..."
+            placeholder={tr("Tell them why you appreciate their work...")}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             maxLength={1000}
@@ -306,7 +311,7 @@ export function SendKudosPage() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Visibility */}
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Visibility:</label>
+            <label className="text-sm font-medium text-gray-700">{tr("Visibility:")}</label>
             <div className="flex rounded-lg border border-gray-200">
               <button
                 type="button"
@@ -318,7 +323,8 @@ export function SendKudosPage() {
                     : "text-gray-600 hover:bg-gray-50",
                 )}
               >
-                Public
+
+                {tr("Public")}
               </button>
               <button
                 type="button"
@@ -330,7 +336,8 @@ export function SendKudosPage() {
                     : "text-gray-600 hover:bg-gray-50",
                 )}
               >
-                Private
+
+                {tr("Private")}
               </button>
             </div>
           </div>
@@ -343,7 +350,7 @@ export function SendKudosPage() {
               onChange={(e) => setIsAnonymous(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-400"
             />
-            <span className="text-sm text-gray-700">Send anonymously</span>
+            <span className="text-sm text-gray-700">{tr("Send anonymously")}</span>
           </label>
         </div>
 
@@ -363,7 +370,7 @@ export function SendKudosPage() {
           ) : (
             <Send className="h-4 w-4" />
           )}
-          {submitting ? "Sending..." : "Send Kudos"}
+          {submitting ? tr("Sending...") : tr("Send Kudos")}
         </button>
       </form>
     </div>

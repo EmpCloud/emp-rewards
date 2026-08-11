@@ -4,6 +4,7 @@ import { Target, Plus, Trash2, Edit3, Loader2 } from "lucide-react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface MilestoneRule {
   id: string;
@@ -90,7 +91,7 @@ export function MilestoneRulesPage() {
       resetForm();
       await fetchRules();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || `Failed to ${editingId ? "update" : "create"} rule`);
+      toast.error(err.response?.data?.error?.message || `Failed to ${editingId ? tr("update") : tr("create")} rule`);
     } finally {
       setSaving(false);
     }
@@ -136,8 +137,8 @@ export function MilestoneRulesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Milestone Rules</h1>
-          <p className="mt-1 text-sm text-gray-500">Configure automated milestone rewards for your organization.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Milestone Rules")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Configure automated milestone rewards for your organization.")}</p>
         </div>
         {isAdmin && (
           <button
@@ -145,7 +146,8 @@ export function MilestoneRulesPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             <Plus className="h-4 w-4" />
-            New Rule
+
+            {tr("New Rule")}
           </button>
         )}
       </div>
@@ -154,20 +156,20 @@ export function MilestoneRulesPage() {
       {showForm && isAdmin && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            {editingId ? "Edit Rule" : "Create Rule"}
+            {editingId ? tr("Edit Rule") : tr("Create Rule")}
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Name")}</label>
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g., Kudos Champion"
+                placeholder={tr("e.g., Kudos Champion")}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trigger Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Trigger Type")}</label>
               <select
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                 value={form.trigger_type}
@@ -180,7 +182,8 @@ export function MilestoneRulesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Trigger Value ({TRIGGER_DESCRIPTIONS[form.trigger_type]})
+
+                {tr("Trigger Value (")}{TRIGGER_DESCRIPTIONS[form.trigger_type]})
               </label>
               <input
                 type="number"
@@ -190,7 +193,7 @@ export function MilestoneRulesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reward Points</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Reward Points")}</label>
               <input
                 type="number"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -199,12 +202,12 @@ export function MilestoneRulesPage() {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Description")}</label>
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                value={form.description}
+                value={tr(form.description)}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Optional description"
+                placeholder={tr("Optional description")}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -215,7 +218,7 @@ export function MilestoneRulesPage() {
                 onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
                 className="rounded border-gray-300 text-brand-600"
               />
-              <label htmlFor="is_active" className="text-sm text-gray-700">Active</label>
+              <label htmlFor="is_active" className="text-sm text-gray-700">{tr("Active")}</label>
             </div>
           </div>
           <div className="flex justify-end gap-3">
@@ -223,14 +226,15 @@ export function MilestoneRulesPage() {
               onClick={resetForm}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+
+              {tr("Cancel")}
             </button>
             <button
               onClick={handleSave}
               disabled={saving || !form.name}
               className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
             >
-              {saving ? "Saving..." : editingId ? "Update Rule" : "Create Rule"}
+              {saving ? tr("Saving...") : editingId ? tr("Update Rule") : tr("Create Rule")}
             </button>
           </div>
         </div>
@@ -255,7 +259,7 @@ export function MilestoneRulesPage() {
                   <div>
                     <h3 className="text-base font-semibold text-gray-900">{rule.name}</h3>
                     {rule.description && (
-                      <p className="text-sm text-gray-500">{rule.description}</p>
+                      <p className="text-sm text-gray-500">{tr(rule.description)}</p>
                     )}
                   </div>
                 </div>
@@ -285,12 +289,13 @@ export function MilestoneRulesPage() {
                 </span>
                 {rule.reward_points > 0 && (
                   <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
-                    +{rule.reward_points} pts
+                    +{rule.reward_points}  {tr("pts")}
                   </span>
                 )}
                 {!rule.is_active && (
                   <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-600">
-                    Inactive
+
+                    {tr("Inactive")}
                   </span>
                 )}
               </div>
@@ -300,13 +305,14 @@ export function MilestoneRulesPage() {
       ) : (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Target className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No milestone rules configured yet.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No milestone rules configured yet.")}</p>
           {isAdmin && (
             <button
               onClick={() => { resetForm(); setShowForm(true); }}
               className="mt-4 text-sm text-brand-600 underline"
             >
-              Create your first rule
+
+              {tr("Create your first rule")}
             </button>
           )}
         </div>

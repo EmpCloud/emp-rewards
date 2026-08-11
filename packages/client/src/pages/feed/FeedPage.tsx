@@ -22,6 +22,7 @@ import {
 import { apiGet, apiPost, apiDelete } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
 import { cn, formatDate, getInitials } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 // ---------------------------------------------------------------------------
 // Celebration types for the feed
@@ -330,9 +331,10 @@ export function FeedPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Recognition Feed</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Recognition Feed")}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            See all public kudos, celebrations, and recognitions across your organization.
+
+            {tr("See all public kudos, celebrations, and recognitions across your organization.")}
           </p>
         </div>
         <button
@@ -340,7 +342,8 @@ export function FeedPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-colors"
         >
           <Plus className="h-4 w-4" />
-          Send Kudos
+
+          {tr("Send Kudos")}
         </button>
       </div>
 
@@ -349,7 +352,7 @@ export function FeedPage() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <PartyPopper className="h-4 w-4 text-amber-500" />
-            <h2 className="text-sm font-semibold text-gray-700">Today's Celebrations</h2>
+            <h2 className="text-sm font-semibold text-gray-700">{tr("Today's Celebrations")}</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {todayCelebrations.map((celebration) => {
@@ -383,7 +386,7 @@ export function FeedPage() {
                         {getTypeLabel(celebration.type)}
                       </span>
                       <h3 className={cn("font-semibold text-sm leading-tight", style.accent)}>
-                        {celebration.title}
+                        {tr(celebration.title)}
                       </h3>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {celebration.first_name} {celebration.last_name}
@@ -396,7 +399,7 @@ export function FeedPage() {
                   <div className="flex items-center gap-2 mt-3">
                     <input
                       type="text"
-                      placeholder="Send a wish..."
+                      placeholder={tr("Send a wish...")}
                       value={wishInputs[celebration.id] || ""}
                       onChange={(e) =>
                         setWishInputs((prev) => ({
@@ -423,7 +426,7 @@ export function FeedPage() {
 
                   {(celebration.wish_count || 0) > 0 && (
                     <p className="mt-1.5 text-xs text-gray-400">
-                      {celebration.wish_count} wish{(celebration.wish_count || 0) !== 1 ? "es" : ""}
+                      {celebration.wish_count}  {tr("wish")}{(celebration.wish_count || 0) !== 1 ? tr("es") : ""}
                     </p>
                   )}
                 </div>
@@ -444,7 +447,7 @@ export function FeedPage() {
       ) : kudosList.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <MessageSquare className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No recognitions yet. Be the first to send kudos!</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No recognitions yet. Be the first to send kudos!")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -467,9 +470,9 @@ export function FeedPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         <span className="font-semibold">
-                          {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
+                          {kudos.is_anonymous ? tr("Anonymous") : kudos.sender_name || `User #${kudos.sender_id}`}
                         </span>
-                        <span className="text-gray-500"> recognized </span>
+                        <span className="text-gray-500">  {tr("recognized")} </span>
                         <span className="font-semibold">
                           {kudos.receiver_name || `User #${kudos.receiver_id}`}
                         </span>
@@ -481,10 +484,11 @@ export function FeedPage() {
                     {kudos.source === "slack" && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-600"
-                        title="Sent via Slack"
+                        title={tr("Sent via Slack")}
                       >
                         <MessageSquare className="h-3 w-3" />
-                        Slack
+
+                        {tr("Slack")}
                       </span>
                     )}
                     {kudos.category_name && (
@@ -509,7 +513,7 @@ export function FeedPage() {
                   <div className="mt-3">
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
                       <Award className="h-3 w-3" />
-                      +{kudos.points} points
+                      +{kudos.points}  {tr("points")}
                     </span>
                   </div>
                 )}
@@ -542,7 +546,8 @@ export function FeedPage() {
                     className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
-                    Comments
+
+                    {tr("Comments")}
                     {isExpanded ? (
                       <ChevronUp className="h-3 w-3" />
                     ) : (
@@ -555,7 +560,7 @@ export function FeedPage() {
                 {isExpanded && (
                   <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
                     {comments.length === 0 && (
-                      <p className="text-xs text-gray-400">No comments yet.</p>
+                      <p className="text-xs text-gray-400">{tr("No comments yet.")}</p>
                     )}
                     {comments.map((comment) => (
                       <div key={comment.id} className="flex items-start gap-2">
@@ -586,7 +591,7 @@ export function FeedPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder="Add a comment..."
+                        placeholder={tr("Add a comment...")}
                         value={commentInputs[kudos.id] || ""}
                         onChange={(e) =>
                           setCommentInputs((prev) => ({ ...prev, [kudos.id]: e.target.value }))
@@ -617,17 +622,20 @@ export function FeedPage() {
                 disabled={page === 1}
                 className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+
+                {tr("Previous")}
               </button>
               <span className="text-sm text-gray-500">
-                Page {page} of {totalPages}
+
+                {tr("Page")} {page}  {tr("of")} {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+
+                {tr("Next")}
               </button>
             </div>
           )}
@@ -642,7 +650,7 @@ export function FeedPage() {
             <div className="sticky top-4 rounded-lg border border-gray-200 bg-white p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="h-4 w-4 text-amber-500" />
-                <h3 className="text-sm font-semibold text-gray-700">Upcoming Celebrations</h3>
+                <h3 className="text-sm font-semibold text-gray-700">{tr("Upcoming Celebrations")}</h3>
               </div>
               <div className="space-y-3">
                 {upcomingCelebrations.slice(0, 10).map((celebration) => {
@@ -681,7 +689,8 @@ export function FeedPage() {
                 onClick={() => navigate("/celebrations")}
                 className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-amber-50 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors"
               >
-                View all
+
+                {tr("View all")}
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>

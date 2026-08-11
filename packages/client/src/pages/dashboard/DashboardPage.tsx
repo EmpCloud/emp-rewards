@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { apiGet } from "@/api/client";
 import { getUser } from "@/lib/auth-store";
-import { cn, formatDate, getInitials } from "@/lib/utils";
+import { cn, formatDate, getInitials, activeLocale } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 interface KudosItem {
   id: string;
@@ -184,10 +185,10 @@ export function DashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-gray-900">
-                Welcome back, {user?.firstName || "there"}!
+                {tr("Welcome back,")} {user?.firstName || "there"}!
               </h1>
               <p className="text-sm text-gray-500">
-                {roleLabel} · Here's your recognition overview.
+                {tr(roleLabel)} · {tr("Here's your recognition overview.")}
               </p>
             </div>
           </div>
@@ -196,7 +197,7 @@ export function DashboardPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600 hover:shadow-amber-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
           >
             <Heart className="h-4 w-4" />
-            Send Kudos
+            {tr("Send Kudos")}
           </button>
         </div>
       </div>
@@ -206,7 +207,7 @@ export function DashboardPage() {
         {/* Points balance — orange gradient centerpiece with tier + progress */}
         <Link
           to="/rewards"
-          aria-label="View rewards you can redeem with your points"
+          aria-label={tr("View rewards you can redeem with your points")}
           className="group relative col-span-1 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 p-5 text-white shadow-lg shadow-amber-500/30 transition hover:shadow-xl hover:shadow-amber-500/40 lg:col-span-5"
         >
           <Coins className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 text-white/10" />
@@ -216,33 +217,33 @@ export function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium text-amber-50">
                 <Trophy className="h-4 w-4" />
-                Points Balance
+                {tr("Points Balance")}
               </div>
               {/* Tier badge */}
               <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">
                 <Crown className="h-3.5 w-3.5" />
-                {tier.name}
+                {tr(tier.name)}
               </span>
             </div>
 
             <div className="mt-2 flex items-end gap-2">
               <span className="text-4xl font-extrabold leading-none tracking-tight">
-                {(balance?.current_balance ?? 0).toLocaleString()}
+                {(balance?.current_balance ?? 0).toLocaleString(activeLocale())}
               </span>
-              <span className="mb-0.5 text-base font-semibold text-amber-50">pts</span>
+              <span className="mb-0.5 text-base font-semibold text-amber-50">{tr("pts")}</span>
             </div>
 
             {balance && (
               <div className="mt-3 flex items-center gap-5 text-sm">
                 <span className="inline-flex items-center gap-1.5 text-amber-50">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="font-semibold">{Number(balance.total_earned).toLocaleString()}</span>
-                  <span className="text-amber-100/80">earned</span>
+                  <span className="font-semibold">{Number(balance.total_earned).toLocaleString(activeLocale())}</span>
+                  <span className="text-amber-100/80">{tr("earned")}</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-amber-50">
                   <TrendingDown className="h-4 w-4" />
-                  <span className="font-semibold">{Number(balance.total_redeemed).toLocaleString()}</span>
-                  <span className="text-amber-100/80">spent</span>
+                  <span className="font-semibold">{Number(balance.total_redeemed).toLocaleString(activeLocale())}</span>
+                  <span className="text-amber-100/80">{tr("spent")}</span>
                 </span>
               </div>
             )}
@@ -250,8 +251,8 @@ export function DashboardPage() {
             {/* Progress toward next tier */}
             <div className="mt-4">
               <div className="mb-1 flex items-center justify-between text-xs text-amber-50/90">
-                <span>{tier.isMax ? "Top tier reached" : `Next: ${tier.nextName}`}</span>
-                {!tier.isMax && <span>{tier.toNext.toLocaleString()} pts to go</span>}
+                <span>{tier.isMax ? tr("Top tier reached") : `${tr("Next:")} ${tr(tier.nextName || "")}`}</span>
+                {!tier.isMax && <span>{tier.toNext.toLocaleString(activeLocale())} {tr("pts to go")}</span>}
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/25">
                 <div className="h-full rounded-full bg-white" style={{ width: `${tier.progress}%` }} />
@@ -260,7 +261,7 @@ export function DashboardPage() {
 
             <div className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25">
               <Gift className="h-4 w-4" />
-              Redeem rewards
+              {tr("Redeem rewards")}
               <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
             </div>
           </div>
@@ -281,10 +282,10 @@ export function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold tracking-tight text-gray-900">
-                  {stat.value.toLocaleString()}
+                  {stat.value.toLocaleString(activeLocale())}
                 </p>
                 <p className="flex items-center gap-1 text-sm text-gray-500">
-                  {stat.label}
+                  {tr(stat.label)}
                   <ArrowRight className="h-3 w-3 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
                 </p>
               </div>
@@ -295,7 +296,7 @@ export function DashboardPage() {
 
       {/* ── Quick Actions ──────────────────────────────────────────────── */}
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Quick Actions</h2>
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">{tr("Quick Actions")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {QUICK_ACTIONS.map((a) => (
             <Link
@@ -306,7 +307,7 @@ export function DashboardPage() {
               <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition group-hover:scale-105", a.tone)}>
                 <a.icon className="h-[18px] w-[18px]" />
               </span>
-              <span className="text-xs font-medium text-gray-700">{a.label}</span>
+              <span className="text-xs font-medium text-gray-700">{tr(a.label)}</span>
             </Link>
           ))}
         </div>
@@ -319,13 +320,13 @@ export function DashboardPage() {
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
               <Sparkles className="h-4 w-4" />
             </span>
-            Recent Activity
+            {tr("Recent Activity")}
           </h2>
           <button
             onClick={() => navigate("/feed")}
             className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition hover:text-amber-700"
           >
-            View all
+            {tr("View all")}
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -335,7 +336,7 @@ export function DashboardPage() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-500/15">
               <Gift className="h-7 w-7 text-amber-500 dark:text-amber-400" />
             </div>
-            <p className="mt-4 text-sm font-medium text-gray-900">No recognition yet</p>
+            <p className="mt-4 text-sm font-medium text-gray-900">{tr("No recognition yet")}</p>
             <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500">
               Kick things off by sending kudos to a teammate — it only takes a moment.
             </p>
@@ -344,7 +345,7 @@ export function DashboardPage() {
               className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
             >
               <Heart className="h-4 w-4" />
-              Send your first kudos
+              {tr("Send your first kudos")}
             </button>
           </div>
         ) : (
@@ -369,9 +370,9 @@ export function DashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-gray-900">
                       <span className="font-semibold">
-                        {kudos.is_anonymous ? "Anonymous" : kudos.sender_name || `User #${kudos.sender_id}`}
+                        {kudos.is_anonymous ? tr("Anonymous") : kudos.sender_name || `User #${kudos.sender_id}`}
                       </span>
-                      <span className="text-gray-500"> recognized </span>
+                      <span className="text-gray-500"> {tr("recognized")} </span>
                       <span className="font-semibold">
                         {kudos.receiver_name || `User #${kudos.receiver_id}`}
                       </span>

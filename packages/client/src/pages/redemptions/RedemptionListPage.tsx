@@ -5,6 +5,8 @@ import { apiGet, apiPut } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import type { RewardRedemption, PaginatedResponse, RedemptionStatus } from "@emp-rewards/shared";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 const STATUS_TABS: { label: string; value: string }[] = [
   { label: "All", value: "all" },
@@ -63,7 +65,7 @@ export function RedemptionListPage() {
         setTotal(res.data.total);
       }
     } catch {
-      setError("Failed to load redemptions");
+      setError(tr("Failed to load redemptions"));
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ export function RedemptionListPage() {
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
+    new Date(dateStr).toLocaleDateString(activeLocale(), {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -113,12 +115,12 @@ export function RedemptionListPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {isAdmin ? "Redemptions" : "My Redemptions"}
+          {isAdmin ? tr("Redemptions") : tr("My Redemptions")}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           {isAdmin
-            ? "Manage and review reward redemption requests."
-            : "Track your reward redemption requests."}
+            ? tr("Manage and review reward redemption requests.")
+            : tr("Track your reward redemption requests.")}
         </p>
       </div>
 
@@ -132,7 +134,7 @@ export function RedemptionListPage() {
 
       {/* Status Filter Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+        <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label={tr("Tabs")}>
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.value}
@@ -143,7 +145,7 @@ export function RedemptionListPage() {
                   : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               }`}
             >
-              {tab.label}
+              {tr(tab.label)}
             </button>
           ))}
         </nav>
@@ -159,8 +161,8 @@ export function RedemptionListPage() {
           <ShoppingCart className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
             {activeTab !== "all"
-              ? `No ${activeTab} redemptions found.`
-              : "No redemptions yet."}
+              ? `${tr("No redemptions found.")} (${tr(activeTab)})`
+              : tr("No redemptions yet.")}
           </p>
         </div>
       ) : (
@@ -170,24 +172,30 @@ export function RedemptionListPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Redemption
+
+                    {tr("Redemption")}
                   </th>
                   {isAdmin && (
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      User
+
+                      {tr("User")}
                     </th>
                   )}
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Points
+
+                    {tr("Points")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Status
+
+                    {tr("Status")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Date
+
+                    {tr("Date")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Actions
+
+                    {tr("Actions")}
                   </th>
                 </tr>
               </thead>
@@ -208,11 +216,12 @@ export function RedemptionListPage() {
                       </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-sm text-gray-700">
-                          User #{r.user_id}
+
+                          {tr("User #")}{r.user_id}
                         </td>
                       )}
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {r.points_spent.toLocaleString()} pts
+                        {r.points_spent.toLocaleString(activeLocale())}  {tr("pts")}
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -255,13 +264,15 @@ export function RedemptionListPage() {
                                     onClick={() => handleAction(r.id, "approve")}
                                     className="rounded bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors"
                                   >
-                                    Approve
+
+                                    {tr("Approve")}
                                   </button>
                                   <button
                                     onClick={() => handleAction(r.id, "reject")}
                                     className="rounded bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
                                   >
-                                    Reject
+
+                                    {tr("Reject")}
                                   </button>
                                 </>
                               )}
@@ -270,7 +281,8 @@ export function RedemptionListPage() {
                                   onClick={() => handleAction(r.id, "fulfill")}
                                   className="rounded bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
                                 >
-                                  Fulfill
+
+                                  {tr("Fulfill")}
                                 </button>
                               )}
                               {canCancel && (
@@ -278,7 +290,8 @@ export function RedemptionListPage() {
                                   onClick={() => setConfirmCancelId(r.id)}
                                   className="rounded bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
                                 >
-                                  Cancel
+
+                                  {tr("Cancel")}
                                 </button>
                               )}
                             </div>
@@ -295,7 +308,8 @@ export function RedemptionListPage() {
           {/* Table Footer / Pagination */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-3">
             <p className="text-sm text-gray-500">
-              Showing {redemptions.length} of {total} redemptions
+
+              {tr("Showing")} {redemptions.length}  {tr("of")} {total}  {tr("redemptions")}
             </p>
             {totalPages > 1 && (
               <div className="flex items-center gap-2">
@@ -304,7 +318,8 @@ export function RedemptionListPage() {
                   disabled={page === 1}
                   className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-white disabled:opacity-50"
                 >
-                  Previous
+
+                  {tr("Previous")}
                 </button>
                 <span className="text-sm text-gray-500">
                   {page} / {totalPages}
@@ -314,7 +329,8 @@ export function RedemptionListPage() {
                   disabled={page === totalPages}
                   className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-white disabled:opacity-50"
                 >
-                  Next
+
+                  {tr("Next")}
                 </button>
               </div>
             )}
@@ -324,7 +340,7 @@ export function RedemptionListPage() {
 
       <ConfirmDialog
         open={!!confirmCancelId}
-        title="Cancel Redemption?"
+        title={tr("Cancel Redemption?")}
         message="This redemption will be cancelled and your points refunded to your balance."
         confirmLabel="Cancel Redemption"
         cancelLabel="Keep It"

@@ -15,6 +15,8 @@ import {
 import { apiGet, apiPut } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import type { Nomination, NominationProgram, PaginatedResponse } from "@emp-rewards/shared";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 // The list endpoint enriches each nomination with the resolved names.
 type NominationWithNames = Nomination & { nominator_name?: string; nominee_name?: string };
@@ -82,7 +84,7 @@ export function NominationListPage() {
         setTotal(res.data.total);
       }
     } catch {
-      setError("Failed to load nominations");
+      setError(tr("Failed to load nominations"));
     } finally {
       setLoading(false);
     }
@@ -104,8 +106,8 @@ export function NominationListPage() {
       await apiPut(`/nominations/${id}/review`, { status });
       setSuccess(
         status === "selected"
-          ? "Nomination approved! Points have been awarded."
-          : "Nomination marked as not selected.",
+          ? tr("Nomination approved! Points have been awarded.")
+          : tr("Nomination marked as not selected."),
       );
       fetchNominations();
     } catch (err: any) {
@@ -119,7 +121,7 @@ export function NominationListPage() {
     programs.find((p) => p.id === programId)?.name || programId.slice(0, 8) + "...";
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
+    new Date(dateStr).toLocaleDateString(activeLocale(), {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -138,11 +140,11 @@ export function NominationListPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Nominations</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{tr("Nominations")}</h1>
               <p className="mt-1 text-sm text-gray-500">
                 {isAdmin
-                  ? "Review and manage nominations across all programs."
-                  : "Track nominations you have submitted."}
+                  ? tr("Review and manage nominations across all programs.")
+                  : tr("Track nominations you have submitted.")}
               </p>
             </div>
           </div>
@@ -167,7 +169,7 @@ export function NominationListPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
         {/* Status Tabs */}
         <div className="flex-1 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+          <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label={tr("Tabs")}>
             {STATUS_TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -178,7 +180,7 @@ export function NominationListPage() {
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 }`}
               >
-                {tab.label}
+                {tr(tab.label)}
               </button>
             ))}
           </nav>
@@ -191,7 +193,7 @@ export function NominationListPage() {
             onChange={(e) => { setProgramFilter(e.target.value); setPage(1); }}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           >
-            <option value="all">All Programs</option>
+            <option value="all">{tr("All Programs")}</option>
             {programs.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -207,7 +209,7 @@ export function NominationListPage() {
       ) : nominations.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
           <Crown className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-500">No nominations found.</p>
+          <p className="mt-3 text-sm text-gray-500">{tr("No nominations found.")}</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -216,26 +218,33 @@ export function NominationListPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Program
+
+                    {tr("Program")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Nominator
+
+                    {tr("Nominator")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Nominee
+
+                    {tr("Nominee")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Reason
+
+                    {tr("Reason")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Status
+
+                    {tr("Status")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Date
+
+                    {tr("Date")}
                   </th>
                   {isAdmin && (
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                      Actions
+
+                      {tr("Actions")}
                     </th>
                   )}
                 </tr>
@@ -287,19 +296,21 @@ export function NominationListPage() {
                                   <button
                                     onClick={() => handleReview(nom.id, "selected")}
                                     className="rounded bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors"
-                                    title="Select"
+                                    title={tr("Select")}
                                   >
                                     <span className="flex items-center gap-1">
                                       <Award className="h-3 w-3" />
-                                      Select
+
+                                      {tr("Select")}
                                     </span>
                                   </button>
                                   <button
                                     onClick={() => handleReview(nom.id, "not_selected")}
                                     className="rounded bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                                    title="Not Selected"
+                                    title={tr("Not Selected")}
                                   >
-                                    Decline
+
+                                    {tr("Decline")}
                                   </button>
                                 </>
                               )}
@@ -322,7 +333,8 @@ export function NominationListPage() {
           {/* Table Footer / Pagination */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-3">
             <p className="text-sm text-gray-500">
-              Showing {nominations.length} of {total} nominations
+
+              {tr("Showing")} {nominations.length}  {tr("of")} {total}  {tr("nominations")}
             </p>
             {totalPages > 1 && (
               <div className="flex items-center gap-2">
@@ -331,7 +343,8 @@ export function NominationListPage() {
                   disabled={page === 1}
                   className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-white disabled:opacity-50"
                 >
-                  Previous
+
+                  {tr("Previous")}
                 </button>
                 <span className="text-sm text-gray-500">
                   {page} / {totalPages}
@@ -341,7 +354,8 @@ export function NominationListPage() {
                   disabled={page === totalPages}
                   className="rounded border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-white disabled:opacity-50"
                 >
-                  Next
+
+                  {tr("Next")}
                 </button>
               </div>
             )}

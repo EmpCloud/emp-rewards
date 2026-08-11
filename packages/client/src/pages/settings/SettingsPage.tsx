@@ -4,6 +4,7 @@ import { apiGet, apiPut, apiPost, apiDelete } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import toast from "react-hot-toast";
+import { tr } from "@/lib/i18n";
 
 interface RecognitionSettings {
   id: string;
@@ -170,7 +171,7 @@ export function SettingsPage() {
       });
       if (res.success && res.data) {
         setSettings(res.data);
-        toast.success("Settings saved");
+        toast.success(tr("Settings saved"));
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to save settings");
@@ -192,7 +193,7 @@ export function SettingsPage() {
       });
       if (res.success && res.data) {
         setSlackConfig(res.data as SlackConfig);
-        toast.success("Slack settings saved");
+        toast.success(tr("Slack settings saved"));
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to save Slack settings");
@@ -203,7 +204,7 @@ export function SettingsPage() {
 
   async function testWebhookConnection() {
     if (!slackConfig.slack_webhook_url) {
-      toast.error("Please enter a webhook URL first");
+      toast.error(tr("Please enter a webhook URL first"));
       return;
     }
     setTestingWebhook(true);
@@ -238,7 +239,7 @@ export function SettingsPage() {
       });
       if (res.success && res.data) {
         setTeamsConfig(res.data as TeamsConfig);
-        toast.success("Teams settings saved");
+        toast.success(tr("Teams settings saved"));
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to save Teams settings");
@@ -249,7 +250,7 @@ export function SettingsPage() {
 
   async function testTeamsConnection() {
     if (!teamsConfig.teams_webhook_url) {
-      toast.error("Please enter a webhook URL first");
+      toast.error(tr("Please enter a webhook URL first"));
       return;
     }
     setTestingTeams(true);
@@ -277,7 +278,7 @@ export function SettingsPage() {
       // Get VAPID public key
       const vapidRes = await apiGet<{ publicKey: string }>("/push/vapid-key");
       if (!vapidRes.success || !vapidRes.data?.publicKey) {
-        toast.error("Push notifications are not configured on the server.");
+        toast.error(tr("Push notifications are not configured on the server."));
         return;
       }
 
@@ -310,10 +311,10 @@ export function SettingsPage() {
       });
 
       setPushSubscribed(true);
-      toast.success("Push notifications enabled!");
+      toast.success(tr("Push notifications enabled!"));
     } catch (err: any) {
       if (err.name === "NotAllowedError") {
-        toast.error("Notification permission was denied. Please allow notifications in your browser settings.");
+        toast.error(tr("Notification permission was denied. Please allow notifications in your browser settings."));
       } else {
         const rawMessage: string =
           err.response?.data?.error?.message || err.message || "";
@@ -341,9 +342,9 @@ export function SettingsPage() {
         await subscription.unsubscribe();
       }
       setPushSubscribed(false);
-      toast.success("Push notifications disabled");
+      toast.success(tr("Push notifications disabled"));
     } catch (err: any) {
-      toast.error("Failed to disable push notifications");
+      toast.error(tr("Failed to disable push notifications"));
     } finally {
       setSubscribingPush(false);
     }
@@ -366,7 +367,7 @@ export function SettingsPage() {
   async function saveCategory(e: React.FormEvent) {
     e.preventDefault();
     if (!catForm.name.trim()) {
-      toast.error("Category name is required");
+      toast.error(tr("Category name is required"));
       return;
     }
     setSavingCategory(true);
@@ -383,13 +384,13 @@ export function SettingsPage() {
         const res = await apiPut<Category>(`/settings/categories/${editingCat.id}`, body);
         if (res.success && res.data) {
           setCategories((prev) => prev.map((c) => (c.id === editingCat.id ? res.data! : c)));
-          toast.success("Category updated");
+          toast.success(tr("Category updated"));
         }
       } else {
         const res = await apiPost<Category>("/settings/categories", body);
         if (res.success && res.data) {
           setCategories((prev) => [...prev, res.data!]);
-          toast.success("Category created");
+          toast.success(tr("Category created"));
         }
       }
       closeCatForm();
@@ -406,7 +407,7 @@ export function SettingsPage() {
     try {
       await apiDelete(`/settings/categories/${id}`);
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, is_active: false } : c)));
-      toast.success("Category deactivated");
+      toast.success(tr("Category deactivated"));
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || "Failed to delete category");
     }
@@ -442,8 +443,8 @@ export function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">Configure recognition settings, categories, and preferences.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{tr("Settings")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{tr("Configure recognition settings, categories, and preferences.")}</p>
       </div>
 
       {/* Tabs */}
@@ -462,7 +463,7 @@ export function SettingsPage() {
               {t.key === "slack" && <MessageSquare className="mr-1.5 inline h-3.5 w-3.5" />}
               {t.key === "teams" && <MessageSquare className="mr-1.5 inline h-3.5 w-3.5" />}
               {t.key === "push" && <Bell className="mr-1.5 inline h-3.5 w-3.5" />}
-              {t.label}
+              {tr(t.label)}
             </button>
           ))}
         </div>
@@ -471,10 +472,10 @@ export function SettingsPage() {
       {/* General Tab */}
       {tab === "general" && settings && (
         <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h3 className="mb-5 text-base font-semibold text-gray-900">Recognition Configuration</h3>
+          <h3 className="mb-5 text-base font-semibold text-gray-900">{tr("Recognition Configuration")}</h3>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Points Per Kudos</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Points Per Kudos")}</label>
               <input
                 type="number"
                 value={settings.points_per_kudos}
@@ -483,10 +484,10 @@ export function SettingsPage() {
                 min={0}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
               />
-              <p className="mt-1 text-xs text-gray-400">Default points awarded per kudos</p>
+              <p className="mt-1 text-xs text-gray-400">{tr("Default points awarded per kudos")}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Kudos Per Day</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Max Kudos Per Day")}</label>
               <input
                 type="number"
                 value={settings.max_kudos_per_day}
@@ -495,10 +496,10 @@ export function SettingsPage() {
                 min={1}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
               />
-              <p className="mt-1 text-xs text-gray-400">Limit per user per day</p>
+              <p className="mt-1 text-xs text-gray-400">{tr("Limit per user per day")}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Points Currency Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Points Currency Name")}</label>
               <input
                 type="text"
                 value={settings.points_currency_name}
@@ -506,18 +507,18 @@ export function SettingsPage() {
                 disabled={!isAdmin}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
               />
-              <p className="mt-1 text-xs text-gray-400">e.g. "Points", "Stars", "Coins"</p>
+              <p className="mt-1 text-xs text-gray-400">{tr("e.g. \"Points\", \"Stars\", \"Coins\"")}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Default Visibility</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{tr("Default Visibility")}</label>
               <select
                 value={settings.default_visibility}
                 onChange={(e) => setSettings((s) => s && { ...s, default_visibility: e.target.value })}
                 disabled={!isAdmin}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
               >
-                <option value="public">Public</option>
-                <option value="private">Private</option>
+                <option value="public">{tr("Public")}</option>
+                <option value="private">{tr("Private")}</option>
               </select>
             </div>
           </div>
@@ -532,8 +533,8 @@ export function SettingsPage() {
                 className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
               />
               <div>
-                <span className="text-sm font-medium text-gray-700">Allow Anonymous Kudos</span>
-                <p className="text-xs text-gray-400">Users can send kudos without revealing their identity</p>
+                <span className="text-sm font-medium text-gray-700">{tr("Allow Anonymous Kudos")}</span>
+                <p className="text-xs text-gray-400">{tr("Users can send kudos without revealing their identity")}</p>
               </div>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
@@ -545,8 +546,8 @@ export function SettingsPage() {
                 className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
               />
               <div>
-                <span className="text-sm font-medium text-gray-700">Allow Self-Kudos</span>
-                <p className="text-xs text-gray-400">Users can send kudos to themselves</p>
+                <span className="text-sm font-medium text-gray-700">{tr("Allow Self-Kudos")}</span>
+                <p className="text-xs text-gray-400">{tr("Users can send kudos to themselves")}</p>
               </div>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
@@ -558,8 +559,8 @@ export function SettingsPage() {
                 className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
               />
               <div>
-                <span className="text-sm font-medium text-gray-700">Require Category</span>
-                <p className="text-xs text-gray-400">Users must select a category when sending kudos</p>
+                <span className="text-sm font-medium text-gray-700">{tr("Require Category")}</span>
+                <p className="text-xs text-gray-400">{tr("Users must select a category when sending kudos")}</p>
               </div>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
@@ -571,8 +572,8 @@ export function SettingsPage() {
                 className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
               />
               <div>
-                <span className="text-sm font-medium text-gray-700">Require Message</span>
-                <p className="text-xs text-gray-400">Users must write a message when sending kudos</p>
+                <span className="text-sm font-medium text-gray-700">{tr("Require Message")}</span>
+                <p className="text-xs text-gray-400">{tr("Users must write a message when sending kudos")}</p>
               </div>
             </label>
           </div>
@@ -584,7 +585,7 @@ export function SettingsPage() {
                 disabled={saving}
                 className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Settings"}
+                {saving ? tr("Saving...") : tr("Save Settings")}
               </button>
             </div>
           )}
@@ -600,7 +601,7 @@ export function SettingsPage() {
                 onClick={() => { closeCatForm(); setShowCatForm(true); }}
                 className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
               >
-                <Plus className="h-4 w-4" /> Add Category
+                <Plus className="h-4 w-4" />  {tr("Add Category")}
               </button>
             </div>
           )}
@@ -610,7 +611,7 @@ export function SettingsPage() {
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">
-                  {editingCat ? "Edit Category" : "New Category"}
+                  {editingCat ? tr("Edit Category") : tr("New Category")}
                 </h3>
                 <button onClick={closeCatForm} className="text-gray-400 hover:text-gray-600">
                   <X className="h-4 w-4" />
@@ -619,18 +620,18 @@ export function SettingsPage() {
               <form onSubmit={saveCategory} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Name")}</label>
                     <input
                       type="text"
                       value={catForm.name}
                       onChange={(e) => setCatForm((f) => ({ ...f, name: e.target.value }))}
                       required
-                      placeholder="e.g. Teamwork"
+                      placeholder={tr("e.g. Teamwork")}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Points Multiplier</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Points Multiplier")}</label>
                     <input
                       type="number"
                       value={catForm.points_multiplier}
@@ -643,17 +644,17 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Description")}</label>
                   <input
                     type="text"
-                    value={catForm.description}
+                    value={tr(catForm.description)}
                     onChange={(e) => setCatForm((f) => ({ ...f, description: e.target.value }))}
-                    placeholder="Optional description"
+                    placeholder={tr("Optional description")}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2">Icon</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-2">{tr("Icon")}</label>
                   <div className="flex flex-wrap gap-2">
                     {ICON_OPTIONS.map((icon) => (
                       <button
@@ -672,7 +673,7 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2">Color</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-2">{tr("Color")}</label>
                   <div className="flex gap-2">
                     {COLOR_OPTIONS.map((color) => (
                       <button
@@ -693,14 +694,15 @@ export function SettingsPage() {
                     onClick={closeCatForm}
                     className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+
+                    {tr("Cancel")}
                   </button>
                   <button
                     type="submit"
                     disabled={savingCategory}
                     className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingCategory ? "Saving..." : editingCat ? "Update" : "Create"}
+                    {savingCategory ? tr("Saving...") : editingCat ? tr("Update") : tr("Create")}
                   </button>
                 </div>
               </form>
@@ -712,7 +714,7 @@ export function SettingsPage() {
             {categories.length === 0 && (
               <div className="p-12 text-center">
                 <Palette className="mx-auto h-10 w-10 text-gray-300" />
-                <p className="mt-2 text-sm text-gray-500">No categories yet.</p>
+                <p className="mt-2 text-sm text-gray-500">{tr("No categories yet.")}</p>
               </div>
             )}
             {categories.map((cat) => (
@@ -730,16 +732,16 @@ export function SettingsPage() {
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-gray-900">{cat.name}</p>
                     {!cat.is_active && (
-                      <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">Inactive</span>
+                      <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">{tr("Inactive")}</span>
                     )}
                   </div>
                   {cat.description && (
-                    <p className="text-xs text-gray-500 truncate">{cat.description}</p>
+                    <p className="text-xs text-gray-500 truncate">{tr(cat.description)}</p>
                   )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-700">{cat.points_multiplier}x</p>
-                  <p className="text-[10px] text-gray-400">multiplier</p>
+                  <p className="text-[10px] text-gray-400">{tr("multiplier")}</p>
                 </div>
                 {isAdmin && (
                   <div className="flex gap-1">
@@ -775,8 +777,8 @@ export function SettingsPage() {
                 <MessageSquare className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-gray-900">Slack Integration</h3>
-                <p className="text-xs text-gray-500">Post kudos and celebrations to a Slack channel automatically.</p>
+                <h3 className="text-base font-semibold text-gray-900">{tr("Slack Integration")}</h3>
+                <p className="text-xs text-gray-500">{tr("Post kudos and celebrations to a Slack channel automatically.")}</p>
               </div>
             </div>
 
@@ -785,7 +787,8 @@ export function SettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Zap className="mr-1 inline h-3.5 w-3.5 text-amber-500" />
-                  Webhook URL
+
+                  {tr("Webhook URL")}
                 </label>
                 <input
                   type="url"
@@ -796,7 +799,8 @@ export function SettingsPage() {
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
                 />
                 <p className="mt-1 text-xs text-gray-400">
-                  Your Slack incoming webhook URL. Keep this secret.
+
+                  {tr("Your Slack incoming webhook URL. Keep this secret.")}
                 </p>
               </div>
 
@@ -804,18 +808,20 @@ export function SettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Hash className="mr-1 inline h-3.5 w-3.5 text-gray-400" />
-                  Channel Name
+
+                  {tr("Channel Name")}
                 </label>
                 <input
                   type="text"
                   value={slackConfig.slack_channel_name || ""}
                   onChange={(e) => setSlackConfig((s) => ({ ...s, slack_channel_name: e.target.value || null }))}
                   disabled={!isAdmin}
-                  placeholder="e.g. #recognition"
+                  placeholder={tr("e.g. #recognition")}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
                 />
                 <p className="mt-1 text-xs text-gray-400">
-                  For display only. The actual channel is configured in Slack when creating the webhook.
+
+                  {tr("For display only. The actual channel is configured in Slack when creating the webhook.")}
                 </p>
               </div>
 
@@ -830,8 +836,8 @@ export function SettingsPage() {
                     className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
                   />
                   <div>
-                    <span className="text-sm font-medium text-gray-700">Enable Slack Notifications</span>
-                    <p className="text-xs text-gray-400">Master toggle for all Slack notifications</p>
+                    <span className="text-sm font-medium text-gray-700">{tr("Enable Slack Notifications")}</span>
+                    <p className="text-xs text-gray-400">{tr("Master toggle for all Slack notifications")}</p>
                   </div>
                 </label>
 
@@ -845,9 +851,10 @@ export function SettingsPage() {
                   />
                   <div>
                     <span className={`text-sm font-medium ${slackConfig.slack_notifications_enabled ? "text-gray-700" : "text-gray-400"}`}>
-                      Notify on Kudos
+
+                      {tr("Notify on Kudos")}
                     </span>
-                    <p className="text-xs text-gray-400">Post a message when someone sends kudos</p>
+                    <p className="text-xs text-gray-400">{tr("Post a message when someone sends kudos")}</p>
                   </div>
                 </label>
 
@@ -861,9 +868,10 @@ export function SettingsPage() {
                   />
                   <div>
                     <span className={`text-sm font-medium ${slackConfig.slack_notifications_enabled ? "text-gray-700" : "text-gray-400"}`}>
-                      Notify on Celebrations
+
+                      {tr("Notify on Celebrations")}
                     </span>
-                    <p className="text-xs text-gray-400">Post birthdays and work anniversaries</p>
+                    <p className="text-xs text-gray-400">{tr("Post birthdays and work anniversaries")}</p>
                   </div>
                 </label>
               </div>
@@ -881,7 +889,8 @@ export function SettingsPage() {
                     ) : (
                       <Zap className="h-4 w-4" />
                     )}
-                    Test Connection
+
+                    {tr("Test Connection")}
                   </button>
 
                   <button
@@ -889,7 +898,7 @@ export function SettingsPage() {
                     disabled={savingSlack}
                     className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingSlack ? "Saving..." : "Save Slack Settings"}
+                    {savingSlack ? tr("Saving...") : tr("Save Slack Settings")}
                   </button>
 
                   {testResult && (
@@ -909,47 +918,50 @@ export function SettingsPage() {
 
           {/* Setup Instructions */}
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">How to set up Slack integration</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">{tr("How to set up Slack integration")}</h3>
             <ol className="space-y-2.5 text-sm text-gray-600">
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">1</span>
                 <span>
-                  Go to{" "}
+
+                  {tr("Go to")}{" "}
                   <a
                     href="https://api.slack.com/apps"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-amber-600 underline hover:text-amber-700"
                   >
-                    api.slack.com/apps
+
+                    {tr("api.slack.com/apps")}
                     <ExternalLink className="ml-0.5 inline h-3 w-3" />
                   </a>{" "}
-                  and create a new app (or select an existing one).
+
+                  {tr("and create a new app (or select an existing one).")}
                 </span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">2</span>
-                <span>Under "Features", click <strong>Incoming Webhooks</strong> and toggle it on.</span>
+                <span>{tr("Under \"Features\", click")} <strong>{tr("Incoming Webhooks")}</strong>  {tr("and toggle it on.")}</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">3</span>
-                <span>Click <strong>"Add New Webhook to Workspace"</strong> and select the channel where you want recognition messages to appear.</span>
+                <span>{tr("Click")} <strong>{tr("\"Add New Webhook to Workspace\"")}</strong>  {tr("and select the channel where you want recognition messages to appear.")}</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">4</span>
-                <span>Copy the <strong>Webhook URL</strong> and paste it above.</span>
+                <span>{tr("Copy the")} <strong>{tr("Webhook URL")}</strong>  {tr("and paste it above.")}</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">5</span>
-                <span>Click <strong>"Test Connection"</strong> to verify it works, then save.</span>
+                <span>{tr("Click")} <strong>{tr("\"Test Connection\"")}</strong>  {tr("to verify it works, then save.")}</span>
               </li>
             </ol>
 
             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
               <p className="text-xs text-amber-800">
-                <strong>Slash commands (optional):</strong> To allow your team to send kudos directly from Slack using{" "}
-                <code className="rounded bg-amber-100 px-1 py-0.5">/kudos @user message</code>, create a{" "}
-                <strong>Slash Command</strong> in your Slack app pointing to your server's webhook endpoint. Contact your admin for the URL.
+                <strong>{tr("Slash commands (optional):")}</strong>  {tr("To allow your team to send kudos directly from Slack using")}{" "}
+                <code className="rounded bg-amber-100 px-1 py-0.5">/kudos @user message</code>{tr(", create a")}{" "}
+                <strong>{tr("Slash Command")}</strong>  {tr("in your Slack app pointing to your server's webhook endpoint. Contact your admin for the URL.")}
               </p>
             </div>
           </div>
@@ -965,8 +977,8 @@ export function SettingsPage() {
                 <MessageSquare className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-gray-900">Microsoft Teams Integration</h3>
-                <p className="text-xs text-gray-500">Post kudos, celebrations, and milestones to a Teams channel automatically.</p>
+                <h3 className="text-base font-semibold text-gray-900">{tr("Microsoft Teams Integration")}</h3>
+                <p className="text-xs text-gray-500">{tr("Post kudos, celebrations, and milestones to a Teams channel automatically.")}</p>
               </div>
             </div>
 
@@ -975,7 +987,8 @@ export function SettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Zap className="mr-1 inline h-3.5 w-3.5 text-amber-500" />
-                  Webhook URL
+
+                  {tr("Webhook URL")}
                 </label>
                 <input
                   type="url"
@@ -986,7 +999,8 @@ export function SettingsPage() {
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:bg-gray-100"
                 />
                 <p className="mt-1 text-xs text-gray-400">
-                  Your Microsoft Teams incoming webhook URL. Keep this secret.
+
+                  {tr("Your Microsoft Teams incoming webhook URL. Keep this secret.")}
                 </p>
               </div>
 
@@ -1001,8 +1015,8 @@ export function SettingsPage() {
                     className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
                   />
                   <div>
-                    <span className="text-sm font-medium text-gray-700">Enable Teams Notifications</span>
-                    <p className="text-xs text-gray-400">Master toggle for all Teams notifications</p>
+                    <span className="text-sm font-medium text-gray-700">{tr("Enable Teams Notifications")}</span>
+                    <p className="text-xs text-gray-400">{tr("Master toggle for all Teams notifications")}</p>
                   </div>
                 </label>
 
@@ -1016,9 +1030,10 @@ export function SettingsPage() {
                   />
                   <div>
                     <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
-                      Notify on Kudos
+
+                      {tr("Notify on Kudos")}
                     </span>
-                    <p className="text-xs text-gray-400">Post a message when someone sends kudos</p>
+                    <p className="text-xs text-gray-400">{tr("Post a message when someone sends kudos")}</p>
                   </div>
                 </label>
 
@@ -1032,9 +1047,10 @@ export function SettingsPage() {
                   />
                   <div>
                     <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
-                      Notify on Celebrations
+
+                      {tr("Notify on Celebrations")}
                     </span>
-                    <p className="text-xs text-gray-400">Post birthdays and work anniversaries</p>
+                    <p className="text-xs text-gray-400">{tr("Post birthdays and work anniversaries")}</p>
                   </div>
                 </label>
 
@@ -1048,9 +1064,10 @@ export function SettingsPage() {
                   />
                   <div>
                     <span className={`text-sm font-medium ${teamsConfig.teams_enabled ? "text-gray-700" : "text-gray-400"}`}>
-                      Notify on Milestones
+
+                      {tr("Notify on Milestones")}
                     </span>
-                    <p className="text-xs text-gray-400">Post milestone achievements</p>
+                    <p className="text-xs text-gray-400">{tr("Post milestone achievements")}</p>
                   </div>
                 </label>
               </div>
@@ -1068,7 +1085,8 @@ export function SettingsPage() {
                     ) : (
                       <Zap className="h-4 w-4" />
                     )}
-                    Test Connection
+
+                    {tr("Test Connection")}
                   </button>
 
                   <button
@@ -1076,7 +1094,7 @@ export function SettingsPage() {
                     disabled={savingTeams}
                     className="rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
                   >
-                    {savingTeams ? "Saving..." : "Save Teams Settings"}
+                    {savingTeams ? tr("Saving...") : tr("Save Teams Settings")}
                   </button>
 
                   {teamsTestResult && (
@@ -1096,27 +1114,27 @@ export function SettingsPage() {
 
           {/* Setup Instructions */}
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">How to set up Microsoft Teams integration</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">{tr("How to set up Microsoft Teams integration")}</h3>
             <ol className="space-y-2.5 text-sm text-gray-600">
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">1</span>
-                <span>Open the Teams channel where you want recognition messages to appear.</span>
+                <span>{tr("Open the Teams channel where you want recognition messages to appear.")}</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">2</span>
-                <span>Click the <strong>"..."</strong> (more options) next to the channel name, then select <strong>"Connectors"</strong> or <strong>"Manage channel" &gt; "Connectors"</strong>.</span>
+                <span>{tr("Click the")} <strong>"..."</strong>  {tr("(more options) next to the channel name, then select")} <strong>{tr("\"Connectors\"")}</strong>  {tr("or")} <strong>{tr("\"Manage channel\" &gt; \"Connectors\"")}</strong>.</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">3</span>
-                <span>Search for <strong>"Incoming Webhook"</strong> and click <strong>"Configure"</strong>.</span>
+                <span>{tr("Search for")} <strong>{tr("\"Incoming Webhook\"")}</strong>  {tr("and click")} <strong>{tr("\"Configure\"")}</strong>.</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">4</span>
-                <span>Give the webhook a name (e.g., "EMP Rewards"), optionally upload an icon, and click <strong>"Create"</strong>.</span>
+                <span>{tr("Give the webhook a name (e.g., \"EMP Rewards\"), optionally upload an icon, and click")} <strong>{tr("\"Create\"")}</strong>.</span>
               </li>
               <li className="flex gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">5</span>
-                <span>Copy the <strong>Webhook URL</strong> and paste it above. Click <strong>"Test Connection"</strong> to verify, then save.</span>
+                <span>{tr("Copy the")} <strong>{tr("Webhook URL")}</strong>  {tr("and paste it above. Click")} <strong>{tr("\"Test Connection\"")}</strong>  {tr("to verify, then save.")}</span>
               </li>
             </ol>
           </div>
@@ -1132,15 +1150,16 @@ export function SettingsPage() {
                 <BellRing className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-gray-900">Push Notifications</h3>
-                <p className="text-xs text-gray-500">Receive browser notifications when you get kudos, earn badges, or hit milestones.</p>
+                <h3 className="text-base font-semibold text-gray-900">{tr("Push Notifications")}</h3>
+                <p className="text-xs text-gray-500">{tr("Receive browser notifications when you get kudos, earn badges, or hit milestones.")}</p>
               </div>
             </div>
 
             {!pushSupported ? (
               <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
                 <p className="text-sm text-yellow-800">
-                  Push notifications are not supported in your browser. Please use a modern browser (Chrome, Firefox, Edge) with HTTPS enabled.
+
+                  {tr("Push notifications are not supported in your browser. Please use a modern browser (Chrome, Firefox, Edge) with HTTPS enabled.")}
                 </p>
               </div>
             ) : (
@@ -1156,12 +1175,12 @@ export function SettingsPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
-                      {pushSubscribed ? "Push notifications are enabled" : "Push notifications are disabled"}
+                      {pushSubscribed ? tr("Push notifications are enabled") : tr("Push notifications are disabled")}
                     </p>
                     <p className="text-xs text-gray-500">
                       {pushSubscribed
-                        ? "You will receive notifications for kudos, badges, and milestones on this device."
-                        : "Enable to receive real-time notifications on this device."}
+                        ? tr("You will receive notifications for kudos, badges, and milestones on this device.")
+                        : tr("Enable to receive real-time notifications on this device.")}
                     </p>
                   </div>
                 </div>
@@ -1180,7 +1199,8 @@ export function SettingsPage() {
                         ) : (
                           <X className="h-4 w-4" />
                         )}
-                        Disable Notifications
+
+                        {tr("Disable Notifications")}
                       </button>
                       <button
                         onClick={testPushNotification}
@@ -1192,7 +1212,8 @@ export function SettingsPage() {
                         ) : (
                           <Zap className="h-4 w-4" />
                         )}
-                        Send Test Notification
+
+                        {tr("Send Test Notification")}
                       </button>
                     </>
                   ) : (
@@ -1206,26 +1227,30 @@ export function SettingsPage() {
                       ) : (
                         <Bell className="h-4 w-4" />
                       )}
-                      Enable Push Notifications
+
+                      {tr("Enable Push Notifications")}
                     </button>
                   )}
                 </div>
 
                 {/* What you'll receive */}
                 <div className="pt-3 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">You will be notified when:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">{tr("You will be notified when:")}</h4>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      Someone sends you kudos
+
+                      {tr("Someone sends you kudos")}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      You earn a new badge
+
+                      {tr("You earn a new badge")}
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      You achieve a milestone
+
+                      {tr("You achieve a milestone")}
                     </li>
                   </ul>
                 </div>
@@ -1235,12 +1260,12 @@ export function SettingsPage() {
 
           {/* Info */}
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">About push notifications</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">{tr("About push notifications")}</h3>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li>Notifications are per-device. Enable on each device where you want alerts.</li>
-              <li>Your browser must support the Push API (Chrome, Firefox, Edge).</li>
-              <li>Notifications work even when the EMP Rewards tab is closed.</li>
-              <li>You can disable notifications at any time from this page or your browser settings.</li>
+              <li>{tr("Notifications are per-device. Enable on each device where you want alerts.")}</li>
+              <li>{tr("Your browser must support the Push API (Chrome, Firefox, Edge).")}</li>
+              <li>{tr("Notifications work even when the EMP Rewards tab is closed.")}</li>
+              <li>{tr("You can disable notifications at any time from this page or your browser settings.")}</li>
             </ul>
           </div>
         </div>
@@ -1248,7 +1273,7 @@ export function SettingsPage() {
 
       <ConfirmDialog
         open={!!confirmCatId}
-        title="Deactivate Category?"
+        title={tr("Deactivate Category?")}
         message="This category will no longer appear in the Send Kudos form. You can reactivate it later."
         confirmLabel="Deactivate"
         tone="danger"

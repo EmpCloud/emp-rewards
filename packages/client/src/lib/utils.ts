@@ -1,3 +1,4 @@
+import i18n from "@/lib/i18n";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -14,8 +15,12 @@ export function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+export function activeLocale(): string {
+  return i18n.resolvedLanguage || i18n.language || "en";
+}
+
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return new Intl.DateTimeFormat(activeLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric",

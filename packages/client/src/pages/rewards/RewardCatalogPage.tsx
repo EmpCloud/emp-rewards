@@ -4,6 +4,8 @@ import { apiGet, apiPost } from "@/api/client";
 import { useAuthStore } from "@/lib/auth-store";
 import type { RewardCatalogItem, PointBalance, PaginatedResponse } from "@emp-rewards/shared";
 import { REWARD_CATEGORIES } from "@emp-rewards/shared";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 export function RewardCatalogPage() {
   const user = useAuthStore((s) => s.user);
@@ -46,7 +48,7 @@ export function RewardCatalogPage() {
         setTotalPages(res.data.totalPages);
       }
     } catch {
-      setError("Failed to load rewards");
+      setError(tr("Failed to load rewards"));
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ export function RewardCatalogPage() {
         quantity_available: addForm.quantity_available ? Number(addForm.quantity_available) : null,
         image_url: addForm.image_url || null,
       });
-      setSuccess("Reward added successfully!");
+      setSuccess(tr("Reward added successfully!"));
       setShowAddForm(false);
       setAddForm({ name: "", description: "", category: "gift_card", points_cost: 500, quantity_available: "", image_url: "" });
       fetchRewards();
@@ -101,7 +103,7 @@ export function RewardCatalogPage() {
 
     try {
       await apiPost(`/rewards/${rewardId}/redeem`);
-      setSuccess(`Successfully redeemed "${rewardName}"!`);
+      setSuccess(`${tr("Successfully redeemed")} "${rewardName}"!`);
       // Auto-dismiss so a stale banner doesn't linger and look like it
       // applies to the current (now-reduced) balance.
       window.setTimeout(() => setSuccess(null), 4000);
@@ -129,8 +131,8 @@ export function RewardCatalogPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reward Catalog</h1>
-          <p className="mt-1 text-sm text-gray-500">Browse and redeem rewards with your points.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Reward Catalog")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Browse and redeem rewards with your points.")}</p>
         </div>
         {isAdmin && (
           <button
@@ -138,7 +140,7 @@ export function RewardCatalogPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            {showAddForm ? "Cancel" : "Add Reward"}
+            {showAddForm ? tr("Cancel") : tr("Add Reward")}
           </button>
         )}
       </div>
@@ -146,33 +148,33 @@ export function RewardCatalogPage() {
       {/* Add Reward Form */}
       {showAddForm && isAdmin && (
         <form onSubmit={handleAddReward} className="rounded-xl border border-amber-200 bg-amber-50 p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-900">New Reward</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tr("New Reward")}</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Name")}</label>
               <input
                 type="text"
                 required
                 value={addForm.name}
                 onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Amazon Gift Card"
+                placeholder={tr("e.g. Amazon Gift Card")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Category")}</label>
               <select
                 value={addForm.category}
                 onChange={(e) => setAddForm((f) => ({ ...f, category: e.target.value }))}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               >
                 {REWARD_CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  <option key={cat.value} value={cat.value}>{tr(cat.label)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Points Cost</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Points Cost")}</label>
               <input
                 type="number"
                 required
@@ -183,18 +185,18 @@ export function RewardCatalogPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Quantity (blank = unlimited)</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Quantity (blank = unlimited)")}</label>
               <input
                 type="number"
                 min={0}
                 value={addForm.quantity_available}
                 onChange={(e) => setAddForm((f) => ({ ...f, quantity_available: e.target.value }))}
-                placeholder="Unlimited"
+                placeholder={tr("Unlimited")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Image URL (optional)</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Image URL (optional)")}</label>
               <input
                 type="text"
                 value={addForm.image_url}
@@ -204,12 +206,12 @@ export function RewardCatalogPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{tr("Description")}</label>
               <input
                 type="text"
-                value={addForm.description}
+                value={tr(addForm.description)}
                 onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Optional description"
+                placeholder={tr("Optional description")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
@@ -220,7 +222,7 @@ export function RewardCatalogPage() {
               disabled={addingReward || !addForm.name}
               className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
             >
-              {addingReward ? "Adding..." : "Add Reward"}
+              {addingReward ? tr("Adding...") : tr("Add Reward")}
             </button>
           </div>
         </form>
@@ -233,8 +235,8 @@ export function RewardCatalogPage() {
             <Coins className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-amber-100">Your Point Balance</p>
-            <p className="text-3xl font-bold">{balance.toLocaleString()} pts</p>
+            <p className="text-sm font-medium text-amber-100">{tr("Your Point Balance")}</p>
+            <p className="text-3xl font-bold">{balance.toLocaleString(activeLocale())}  {tr("pts")}</p>
           </div>
         </div>
       </div>
@@ -259,7 +261,7 @@ export function RewardCatalogPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search rewards..."
+            placeholder={tr("Search rewards...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -270,10 +272,10 @@ export function RewardCatalogPage() {
           onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
         >
-          <option value="all">All Categories</option>
+          <option value="all">{tr("All Categories")}</option>
           {REWARD_CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>
-              {cat.label}
+              {tr(cat.label)}
             </option>
           ))}
         </select>
@@ -289,8 +291,8 @@ export function RewardCatalogPage() {
           <Gift className="mx-auto h-12 w-12 text-gray-300" />
           <p className="mt-3 text-sm text-gray-500">
             {search || categoryFilter !== "all"
-              ? "No rewards match your filters."
-              : "No rewards available yet."}
+              ? tr("No rewards match your filters.")
+              : tr("No rewards available yet.")}
           </p>
         </div>
       ) : (
@@ -326,7 +328,7 @@ export function RewardCatalogPage() {
                   <h3 className="font-semibold text-gray-900 truncate">{reward.name}</h3>
                   {reward.description && (
                     <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                      {reward.description}
+                      {tr(reward.description)}
                     </p>
                   )}
 
@@ -334,9 +336,9 @@ export function RewardCatalogPage() {
                     <div className="flex items-center gap-1.5">
                       <Coins className="h-4 w-4 text-amber-500" />
                       <span className="text-lg font-bold text-amber-600">
-                        {reward.points_cost.toLocaleString()}
+                        {reward.points_cost.toLocaleString(activeLocale())}
                       </span>
-                      <span className="text-xs text-gray-400">pts</span>
+                      <span className="text-xs text-gray-400">{tr("pts")}</span>
                     </div>
                     {reward.quantity_available !== null && (
                       <span
@@ -349,7 +351,7 @@ export function RewardCatalogPage() {
                         }`}
                       >
                         {reward.quantity_available <= 0
-                          ? "Out of stock"
+                          ? tr("Out of stock")
                           : `${reward.quantity_available} left`}
                       </span>
                     )}
@@ -367,13 +369,14 @@ export function RewardCatalogPage() {
                     {isRedeeming ? (
                       <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                     ) : outOfStock ? (
-                      "Out of Stock"
+                      tr("Out of Stock")
                     ) : !canAfford ? (
-                      "Insufficient Points"
+                      tr("Insufficient Points")
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         <ShoppingCart className="h-4 w-4" />
-                        Redeem
+
+                        {tr("Redeem")}
                       </span>
                     )}
                   </button>
@@ -392,17 +395,20 @@ export function RewardCatalogPage() {
             disabled={page === 1}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Previous
+
+            {tr("Previous")}
           </button>
           <span className="text-sm text-gray-500">
-            Page {page} of {totalPages}
+
+            {tr("Page")} {page}  {tr("of")} {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Next
+
+            {tr("Next")}
           </button>
         </div>
       )}
@@ -411,25 +417,26 @@ export function RewardCatalogPage() {
       {confirmReward && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900">Redeem Reward?</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{tr("Redeem Reward?")}</h3>
             <p className="mt-2 text-sm text-gray-600">
-              You're about to redeem <span className="font-semibold">{confirmReward.name}</span>.
+
+              {tr("You're about to redeem")} <span className="font-semibold">{confirmReward.name}</span>.
             </p>
             <div className="mt-4 space-y-1.5 rounded-lg bg-amber-50 p-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Cost</span>
+                <span className="text-gray-600">{tr("Cost")}</span>
                 <span className="font-semibold text-amber-700">
-                  {confirmReward.points_cost.toLocaleString()} pts
+                  {confirmReward.points_cost.toLocaleString(activeLocale())}  {tr("pts")}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Your balance</span>
-                <span className="font-medium text-gray-900">{balance.toLocaleString()} pts</span>
+                <span className="text-gray-600">{tr("Your balance")}</span>
+                <span className="font-medium text-gray-900">{balance.toLocaleString(activeLocale())}  {tr("pts")}</span>
               </div>
               <div className="flex justify-between border-t border-amber-100 pt-1.5">
-                <span className="text-gray-600">Balance after</span>
+                <span className="text-gray-600">{tr("Balance after")}</span>
                 <span className="font-semibold text-gray-900">
-                  {(balance - confirmReward.points_cost).toLocaleString()} pts
+                  {(balance - confirmReward.points_cost).toLocaleString(activeLocale())}  {tr("pts")}
                 </span>
               </div>
             </div>
@@ -438,13 +445,15 @@ export function RewardCatalogPage() {
                 onClick={() => setConfirmReward(null)}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                Cancel
+
+                {tr("Cancel")}
               </button>
               <button
                 onClick={() => handleRedeem(confirmReward.id, confirmReward.name)}
                 className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
               >
-                Confirm Redeem
+
+                {tr("Confirm Redeem")}
               </button>
             </div>
           </div>

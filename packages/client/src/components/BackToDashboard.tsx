@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { tr } from "@/lib/i18n";
 
 export function BackToDashboard() {
   const isSSO = localStorage.getItem("sso_source") === "empcloud";
@@ -14,7 +15,7 @@ export function BackToDashboard() {
       className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
     >
       <ArrowLeft className="h-4 w-4" />
-      <span>EMP Cloud</span>
+      <span>{tr("EMP Cloud")}</span>
     </a>
   );
 }

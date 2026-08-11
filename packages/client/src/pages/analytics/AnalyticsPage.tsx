@@ -8,6 +8,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { apiGet } from "@/api/client";
+import { tr } from "@/lib/i18n";
+import { activeLocale } from "@/lib/utils";
 
 interface Overview {
   totalKudos: number;
@@ -102,7 +104,7 @@ function StatCard({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
       </div>
       <p className="mt-3 text-[26px] font-bold leading-none tracking-tight text-gray-900">
-        {typeof value === "number" ? value.toLocaleString() : value}
+        {typeof value === "number" ? value.toLocaleString(activeLocale()) : value}
       </p>
       {sub && <p className="mt-1.5 text-[11px] text-gray-400">{sub}</p>}
     </div>
@@ -318,8 +320,8 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500">Recognition trends, engagement metrics, and reports.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">{tr("Analytics")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr("Recognition trends, engagement metrics, and reports.")}</p>
         </div>
         {/* Range chips — drive the Kudos Trends fetch. Stat cards, top-user
             lists, etc. stay cumulative since they don't have a natural
@@ -355,12 +357,12 @@ export function AnalyticsPage() {
           and pinned right so the number reads first. */}
       {overview && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          <StatCard icon={Heart}        tone="amber"   label="Total Kudos"        value={overview.totalKudos}        sub="Recognition sent" />
-          <StatCard icon={Coins}        tone="indigo"  label="Points Distributed" value={overview.pointsDistributed} sub="Awarded to date" />
-          <StatCard icon={Award}        tone="emerald" label="Badges Awarded"     value={overview.badgesAwarded}     sub="Milestones hit" />
-          <StatCard icon={Target}       tone="violet"  label="Active Programs"    value={overview.activePrograms}    sub="Running now" />
-          <StatCard icon={Gift}         tone="rose"    label="Redemptions"        value={overview.totalRedemptions}  sub="Rewards claimed" />
-          <StatCard icon={TrendingUp}   tone="sky"     label="Points Redeemed"    value={overview.pointsRedeemed}    sub="Spent on rewards" />
+          <StatCard icon={Heart}        tone="amber"   label={tr("Total Kudos")}        value={overview.totalKudos}        sub={tr("Recognition sent")} />
+          <StatCard icon={Coins}        tone="indigo"  label={tr("Points Distributed")} value={overview.pointsDistributed} sub={tr("Awarded to date")} />
+          <StatCard icon={Award}        tone="emerald" label={tr("Badges Awarded")}     value={overview.badgesAwarded}     sub={tr("Milestones hit")} />
+          <StatCard icon={Target}       tone="violet"  label={tr("Active Programs")}    value={overview.activePrograms}    sub={tr("Running now")} />
+          <StatCard icon={Gift}         tone="rose"    label={tr("Redemptions")}        value={overview.totalRedemptions}  sub={tr("Rewards claimed")} />
+          <StatCard icon={TrendingUp}   tone="sky"     label={tr("Points Redeemed")}    value={overview.pointsRedeemed}    sub={tr("Spent on rewards")} />
         </div>
       )}
 
@@ -387,10 +389,10 @@ export function AnalyticsPage() {
             </div>
             {trends.length > 0 && (
               <div className="text-right">
-                <p className="text-xs text-gray-400">Period total</p>
+                <p className="text-xs text-gray-400">{tr("Period total")}</p>
                 <div className="flex items-center justify-end gap-2">
                   <p className="text-base font-bold text-gray-900">
-                    {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString()}
+                    {trends.reduce((s, t) => s + t.kudos_count, 0).toLocaleString(activeLocale())}
                   </p>
                   <TrendDelta trends={trends} />
                 </div>
@@ -506,9 +508,9 @@ export function AnalyticsPage() {
           amber bars carry almost no signal. Sorted by participation desc. */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4">
-          <h3 className="text-sm font-semibold text-gray-900">Department Participation</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tr("Department Participation")}</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            Share of employees per department who have sent or received kudos
+            {tr("Share of employees per department who have sent or received kudos")}
           </p>
         </div>
         {departments.length > 0 ? (
@@ -517,8 +519,8 @@ export function AnalyticsPage() {
           <div className="p-5">
             <EmptyChart
               icon={BarChart3}
-              title="No department data yet"
-              hint="Once kudos flow across departments, participation rates plot here."
+              title={tr("No department data yet")}
+              hint={tr("Once kudos flow across departments, participation rates plot here.")}
             />
           </div>
         )}
@@ -640,11 +642,11 @@ function DepartmentTable({ departments }: { departments: DeptParticipation[] }) 
         </colgroup>
         <thead>
           <tr className="border-b border-gray-200 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-            <th className="px-5 py-2.5 font-semibold">Department</th>
-            <th className="px-3 py-2.5 text-center font-semibold">Employees</th>
-            <th className="px-3 py-2.5 text-center font-semibold">Senders</th>
-            <th className="px-3 py-2.5 text-center font-semibold">Receivers</th>
-            <th className="px-5 py-2.5 font-semibold">Participation</th>
+            <th className="px-5 py-2.5 font-semibold">{tr("Department")}</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{tr("Employees")}</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{tr("Senders")}</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{tr("Receivers")}</th>
+            <th className="px-5 py-2.5 font-semibold">{tr("Participation")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">

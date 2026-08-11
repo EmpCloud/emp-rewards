@@ -4,6 +4,8 @@ import { Trophy, Eye, EyeOff, Loader2, Clock } from "lucide-react";
 import { useLogin } from "@/api/hooks";
 import { useAuthStore } from "@/lib/auth-store";
 import toast from "react-hot-toast";
+import { tr } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const FEATURES = [
   "Kudos",
@@ -32,18 +34,19 @@ export function LoginPage() {
       const res = await loginMutation.mutateAsync({ email, password });
       if (res.success) {
         login(res.data.user, res.data.tokens);
-        toast.success(`Welcome back, ${res.data.user.firstName}!`);
+        toast.success(`${tr("Welcome back")}, ${res.data.user.firstName}!`);
         navigate("/dashboard");
       } else {
-        toast.error(res.error?.message || "Login failed");
+        toast.error(tr(res.error?.message || "Login failed"));
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Login failed. Check your credentials.");
+      toast.error(tr(err.response?.data?.error?.message || "Login failed. Check your credentials."));
     }
   }
 
   return (
     <div className="flex min-h-screen">
+      <div className="absolute right-4 top-4 z-20 rounded-lg border border-gray-200 bg-white shadow-sm"><LanguageSwitcher /></div>
       {/* Left brand panel — hidden on mobile */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700 p-12">
         <div className="max-w-md text-white">
@@ -51,21 +54,23 @@ export function LoginPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
               <Trophy className="h-7 w-7 text-white" />
             </div>
-            <span className="text-2xl font-bold">EMP Rewards</span>
+            <span className="text-2xl font-bold">{tr("EMP Rewards")}</span>
           </div>
 
           <h1 className="text-4xl font-bold leading-tight">
-            Recognize and reward your team
+
+            {tr("Recognize and reward your team")}
           </h1>
           <p className="mt-4 text-lg text-brand-100">
-            Send kudos, award badges, track points, run nominations, and celebrate wins — all in one place.
+
+            {tr("Send kudos, award badges, track points, run nominations, and celebrate wins — all in one place.")}
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-3">
             {FEATURES.map((feature) => (
               <div key={feature} className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-brand-300" />
-                <span className="text-sm text-brand-100">{feature}</span>
+                <span className="text-sm text-brand-100">{tr(feature)}</span>
               </div>
             ))}
           </div>
@@ -80,19 +85,19 @@ export function LoginPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600">
               <Trophy className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">EMP Rewards</span>
+            <span className="text-xl font-bold text-gray-900">{tr("EMP Rewards")}</span>
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-            <p className="mt-1 text-sm text-gray-500">Sign in to recognize your team</p>
+            <h2 className="text-2xl font-bold text-gray-900">{tr("Welcome back")}</h2>
+            <p className="mt-1 text-sm text-gray-500">{tr("Sign in to recognize your team")}</p>
 
             {sessionExpired && (
               <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-800">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0" />
                 <div>
-                  <p className="font-medium">Your session has expired</p>
-                  <p className="mt-0.5 text-amber-700">Please sign in again to continue.</p>
+                  <p className="font-medium">{tr("Your session has expired")}</p>
+                  <p className="mt-0.5 text-amber-700">{tr("Please sign in again to continue.")}</p>
                 </div>
               </div>
             )}
@@ -100,7 +105,8 @@ export function LoginPage() {
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
+
+                  {tr("Email address")}
                 </label>
                 <input
                   id="email"
@@ -114,7 +120,8 @@ export function LoginPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
+
+                  {tr("Password")}
                 </label>
                 <div className="relative mt-1">
                   <input
@@ -143,10 +150,11 @@ export function LoginPage() {
                 {loginMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Signing in...
+
+                    {tr("Signing in...")}
                   </>
                 ) : (
-                  "Sign in"
+                  tr("Sign in")
                 )}
               </button>
             </form>
