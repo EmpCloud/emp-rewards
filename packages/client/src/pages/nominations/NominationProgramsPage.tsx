@@ -237,7 +237,7 @@ export function NominationProgramsPage() {
               <div className="mt-4 space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="h-4 w-4 text-gray-400" />
-                  <span>{FREQUENCY_LABELS[program.frequency] || program.frequency}</span>
+                  <span>{tr(FREQUENCY_LABELS[program.frequency] || program.frequency)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="h-4 w-4 text-gray-400" />
@@ -315,7 +315,7 @@ export function NominationProgramsPage() {
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
+                      <option key={value} value={value}>{tr(label)}</option>
                     ))}
                   </select>
                 </div>

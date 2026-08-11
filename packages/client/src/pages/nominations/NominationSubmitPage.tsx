@@ -288,7 +288,7 @@ export function NominationSubmitPage() {
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                        {FREQUENCY_LABELS[selectedProgram.frequency] || selectedProgram.frequency}
+                        {tr(FREQUENCY_LABELS[selectedProgram.frequency] || selectedProgram.frequency)}
                         {" · "}
                         {formatDate(selectedProgram.start_date)}
                         {selectedProgram.end_date

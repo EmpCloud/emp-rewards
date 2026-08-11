@@ -332,7 +332,7 @@ export function BadgeListPage() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                    {CRITERIA_LABELS[badge.criteria_type] || badge.criteria_type}
+                    {tr(CRITERIA_LABELS[badge.criteria_type] || badge.criteria_type)}
                     {badge.criteria_value ? `: ${badge.criteria_value}` : ""}
                   </span>
                   {badge.points_awarded > 0 && (

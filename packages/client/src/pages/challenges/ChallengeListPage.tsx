@@ -294,11 +294,11 @@ export function ChallengeListPage() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                     <Users className="h-3 w-3" />
-                    {TYPE_ICONS[c.type] || c.type}
+                    {tr(TYPE_ICONS[c.type] || c.type)}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
 
-                    {tr("Target:")} {c.target_value} {METRIC_LABELS[c.metric] || c.metric}
+                    {tr("Target:")} {c.target_value} {tr(METRIC_LABELS[c.metric] || c.metric)}
                   </span>
                   {c.reward_points > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
